@@ -1,0 +1,9 @@
+# Object files
+*.o
+
+# Log files
+*.log
+*.log.*
+
+# CMake directories/files
+build
