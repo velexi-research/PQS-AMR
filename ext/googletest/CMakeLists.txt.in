@@ -1,14 +1,22 @@
-# --------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Google Test
+# -----------
+# * Configure and build Google Test as an external package.
+# * Google Test package variables are made available via Google Test's
+#   build system.
+# ---------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
 # CMake initialization
-# --------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.5)
 project(googletest-builder NONE)
 include(ExternalProject)
 
-# --------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Configure googletest build (as an external project)
-# --------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 ExternalProject_Add(googletest
     URL ${CMAKE_SOURCE_DIR}/ext/googletest/googletest-release-1.8.0.tar.gz
