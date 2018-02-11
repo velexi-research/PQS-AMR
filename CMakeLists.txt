@@ -64,13 +64,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # --- Software with pre-defined CMake package modules
 
+# Boost
 if (BOOST)
     set(BOOST_ROOT ${BOOST})
 endif (BOOST)
 find_package(Boost REQUIRED)
 
+# Git
 find_package(Git)
 
+# HDF5
 if (HDF5)
     set(HDF5_ROOT ${HDF5})
     find_package(HDF5 QUIET)
@@ -88,17 +91,23 @@ if (HDF5)
     endif (HDF5_FOUND)
 endif (HDF5)
 
+# MPI
 if (MPI)
-    set(MPI_ROOT ${MPI})
+    set(CMAKE_PREFIX_PATH_SAVE ${CMAKE_PREFIX_PATH})
+    set(CMAKE_PREFIX_PATH ${MPI})
 endif (MPI)
 find_package(MPI REQUIRED)
+if (MPI)
+    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH_SAVE})
+    unset(CMAKE_PREFIX_PATH_SAVE)
+endif (MPI)
 
+# Threads
 find_package(Threads REQUIRED)
 
 # --- Software with customized checks
 
 # include-what-you-use
-
 find_program(IWYU NAMES include-what-you-use iwyu)
 
 if (IWYU)
