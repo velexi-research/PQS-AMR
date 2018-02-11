@@ -3,7 +3,7 @@
 # --------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.5)
-project(amr
+project(snap-amr
         LANGUAGES C CXX Fortran
         VERSION 0.1.0)
 
@@ -22,11 +22,17 @@ project(amr
 #    message("-- Setting floating-point precision to 'double'")
 #endif (SINGLE_PRECISION)
 
-# SAMRAI
-#set(SAMRAI "" CACHE FILEPATH "Location of SAMRAI library")
+# Boost
+set(BOOST "" CACHE FILEPATH "Location of Boost library")
 
 # HDF5
-#set(HDF5 "" CACHE FILEPATH "Location of HDF5 library")
+set(HDF5 "" CACHE FILEPATH "Location of HDF5 library")
+
+# MPI
+set(MPI "" CACHE FILEPATH "Location of MPI library")
+
+# SAMRAI
+set(SAMRAI "" CACHE FILEPATH "Location of SAMRAI library")
 
 # CMake build type
 set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type")
@@ -58,10 +64,40 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # --- Software with pre-defined CMake package modules
 
-find_package(Threads REQUIRED)
+if (BOOST)
+    set(BOOST_ROOT ${BOOST})
+endif (BOOST)
+find_package(Boost REQUIRED)
+
 find_package(Git)
 
-# --- include-what-you-use
+if (HDF5)
+    set(HDF5_ROOT ${HDF5})
+    find_package(HDF5 QUIET)
+    if (HDF5_FOUND)
+        message("Found HDF5: " ${HDF5_LIBRARIES} "(found version \"${HDF5_VERSION\"")
+    else (HDF5_FOUND)
+        unset(HDF5_ROOT)
+
+        # Deal with bugs(?) in HDF5 CMake package
+        # by unsetting problematic HDF5 package variables
+        unset(HDF5_C_INCLUDE_DIR)
+        unset(HDF5_C_INCLUDE_DIRS)
+
+        find_package(HDF5 REQUIRED)
+    endif (HDF5_FOUND)
+endif (HDF5)
+
+if (MPI)
+    set(MPI_ROOT ${MPI})
+endif (MPI)
+find_package(MPI REQUIRED)
+
+find_package(Threads REQUIRED)
+
+# --- Software with customized checks
+
+# include-what-you-use
 
 find_program(IWYU NAMES include-what-you-use iwyu)
 
@@ -73,107 +109,13 @@ else (IWYU)
             "Analysis of #includes will be skipped.")
 endif (IWYU)
 
-# Determine whether or not to enable parallel library
-if (SAMRAI)
-    set(ENABLE_PARALLEL ON)
-else (SAMRAI)
-    set(ENABLE_PARALLEL OFF)
-endif (SAMRAI)
-
-# Enable parallel library
-if (ENABLE_PARALLEL)
-
-    # SAMRAI
-    add_subdirectory(${EXT_PROJECTS_DIR}/samrai)
-
-    # Boost
-    find_package(Boost REQUIRED)
-
-    # MPI
-    find_package(MPI REQUIRED)
-
-    # HDF5
-    if (HDF5)
-        find_file(HDF5_H hdf5.h ${HDF5}/include)
-        find_library(LIBHDF5 hdf5 ${HDF5}/lib)
-
-        # Verify that HDF5 header files were found
-        if (HDF5_H)
-            message("-- Found HDF5 header files: TRUE (${HDF5_H})")
-            set(HDF5_INCLUDE_DIR ${HDF5}/include)
-        else (HDF5_H)
-            message(FATAL_ERROR "Could NOT find HDF5 header files.")
-        endif (HDF5_H)
-
-        # Verify that HDF5 library files were found
-        if (LIBHDF5)
-            message("-- Found HDF5 libraries: TRUE (${LIBHDF5})")
-        else (LIBHDF5)
-            message(FATAL_ERROR "Could NOT find HDF5 libraries.")
-        endif (LIBHDF5)
-    else (HDF5)
-        find_package(HDF5 REQUIRED)
-    endif (HDF5)
-
-endif (ENABLE_PARALLEL)
+# SAMRAI
+add_subdirectory(${EXT_PROJECTS_DIR}/samrai)
 
 # --------------------------------------------------------------
 # Process template files
 # --------------------------------------------------------------
 
-# Floating-point precision
-#if (SINGLE_PRECISION)
-#
-#    set(LSMLIB_REAL "float")
-#    set(LSMLIB_ZERO_TOL 1.e-5)
-#    set(LSMLIB_REAL_MAX "FLT_MAX")
-#    set(LSMLIB_REAL_MIN "FLT_MIN")
-#    set(LSMLIB_REAL_EPSILON "FLT_EPSILON")
-#
-#else (SINGLE_PRECISION)
-#
-#    set(LSMLIB_DOUBLE_PRECISION ON)
-#
-#    set(LSMLIB_REAL "double")
-#    set(LSMLIB_ZERO_TOL 1.e-11)
-#    set(LSMLIB_REAL_MAX "DBL_MAX")
-#    set(LSMLIB_REAL_MIN "DBL_MIN")
-#    set(LSMLIB_REAL_EPSILON "DBL_EPSILON")
-#
-#    # Set Fortran compiler flags
-#    get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER}
-#                            NAME)
-#    message ("-- Fortran compiler: " ${CMAKE_Fortran_COMPILER})
-#
-#    if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-#
-#        # gfortran
-#        set(CMAKE_Fortran_FLAGS
-#            "-fdefault-real-8 -fdefault-double-8 ${CMAKE_Fortran_FLAG}")
-#
-#    elseif (Fortran_COMPILER_NAME MATCHES "g77.*")
-#
-#        # g77
-#        set(CMAKE_Fortran_FLAGS
-#            "-fdefault-real-8 -fdefault-double-8 ${CMAKE_Fortran_FLAG}")
-#
-#    elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
-#
-#        # ifort
-#        set(CMAKE_Fortran_FLAGS "-r8 ${CMAKE_Fortran_FLAG}")
-#
-#    else (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-#
-#        # Unknown fortran compiler
-#        message ("Trying GNU Fortran flags.")
-#
-#        set(CMAKE_Fortran_FLAGS
-#            "-fdefault-real-8 -fdefault-double-8 ${CMAKE_Fortran_FLAG}")
-#
-#    endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-#
-#endif (SINGLE_PRECISION)
-#
 ## Generate configuration header files
 #configure_file(config/LSMLIB_config.h.in
 #               ${BINARY_INCLUDE_DIR}/LSMLIB_config.h)
@@ -192,7 +134,7 @@ endif (ENABLE_PARALLEL)
 # Testing
 # --------------------------------------------------------------
 
-# --- Configure googletest
+# --- Build and configure googletest
 
 configure_file(ext/googletest/CMakeLists.txt.in ext/googletest/CMakeLists.txt)
 execute_process(
@@ -208,8 +150,9 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This adds the following targets:
 # gtest, gtest_main, gmock and gmock_main
-add_subdirectory("${CMAKE_BINARY_DIR}/ext/googletest/googletest-src"
-                 "${CMAKE_BINARY_DIR}/ext/googletest/googletest-build")
+add_subdirectory("${CMAKE_BINARY_DIR}/ext/googletest/googletest-src")
+#add_subdirectory("${CMAKE_BINARY_DIR}/ext/googletest/googletest-src"
+#                 "${CMAKE_BINARY_DIR}/ext/googletest/googletest-build")
 
 # The gtest/gmock targets carry header search path dependencies automatically
 # when using CMake 2.8.11 or later. Otherwise we have to add them here
