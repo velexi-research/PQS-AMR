@@ -7,3 +7,6 @@
 
 # CMake directories/files
 build
+
+# Manually built/installed external software dependencies
+opt
