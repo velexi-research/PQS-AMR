@@ -1,15 +1,15 @@
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # CMake initialization
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.5)
 project(snap-amr
         LANGUAGES C CXX Fortran
         VERSION 0.1.0)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Configuration options
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Build shared libraries
 #option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -37,12 +37,12 @@ set(SAMRAI "" CACHE FILEPATH "Location of SAMRAI library")
 # CMake build type
 set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type")
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Build parameters
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Path variables
-#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 set(BINARY_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
@@ -58,9 +58,9 @@ include_directories(${BINARY_INCLUDE_DIR})
 # CMake options
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Build requirements
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # --- Software with pre-defined CMake package modules
 
@@ -124,27 +124,27 @@ endif (IWYU)
 # SAMRAI
 add_subdirectory(${EXT_PROJECTS_DIR}/samrai)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Process template files
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 ## Generate configuration header files
 #configure_file(config/LSMLIB_config.h.in
 #               ${BINARY_INCLUDE_DIR}/LSMLIB_config.h)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Build targets
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Testing: SAMRAI LinAdv
-#add_subdirectory(${PROJECT_SOURCE_DIR}/src/LinAdv)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/LinAdv)
 
 # examples
 #add_subdirectory(examples/toolbox EXCLUDE_FROM_ALL)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Testing
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # --- Build and configure googletest
 
@@ -185,9 +185,9 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 # Add test directory to build
 add_subdirectory(${PROJECT_SOURCE_DIR}/test)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Installation
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Header files
 #file(GLOB HEADER_FILES ${SRCDIR}/*.h)
@@ -214,9 +214,9 @@ add_custom_target(uninstall
             -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
 )
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Source code distribution
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 if (GIT_FOUND)
     # Add target to build source code distribution
@@ -257,10 +257,10 @@ fi"
     endif (UNIX)
 endif (GIT_FOUND)
 
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 # Build preparations
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
 
 # Create build output directories
-# TODO: file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
 file(MAKE_DIRECTORY ${LIBRARY_OUTPUT_PATH})
