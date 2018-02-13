@@ -75,21 +75,24 @@ find_package(Git)
 
 # HDF5
 if (HDF5)
+
     set(HDF5_ROOT ${HDF5})
     find_package(HDF5 QUIET)
     if (HDF5_FOUND)
-        message("Found HDF5: " ${HDF5_LIBRARIES} "(found version \"${HDF5_VERSION\"")
-    else (HDF5_FOUND)
-        unset(HDF5_ROOT)
-
-        # Deal with bugs(?) in HDF5 CMake package
-        # by unsetting problematic HDF5 package variables
-        unset(HDF5_C_INCLUDE_DIR)
-        unset(HDF5_C_INCLUDE_DIRS)
-
-        find_package(HDF5 REQUIRED)
+        message("-- Found HDF5: " ${HDF5_LIBRARIES} "(found version \"${HDF5_VERSION}\"")
     endif (HDF5_FOUND)
 endif (HDF5)
+
+if (NOT HDF5_FOUND)
+    unset(HDF5_ROOT)
+
+    # Deal with bugs(?) in HDF5 CMake package
+    # by unsetting problematic HDF5 package variables
+    unset(HDF5_C_INCLUDE_DIR)
+    unset(HDF5_C_INCLUDE_DIRS)
+
+    find_package(HDF5 REQUIRED)
+endif (NOT HDF5_FOUND)
 
 # MPI
 if (MPI)
@@ -133,8 +136,8 @@ add_subdirectory(${EXT_PROJECTS_DIR}/samrai)
 # Build targets
 # --------------------------------------------------------------
 
-# TODO
-#add_subdirectory(${PROJECT_SOURCE_DIR}/src/serial)
+# Testing: SAMRAI LinAdv
+#add_subdirectory(${PROJECT_SOURCE_DIR}/src/LinAdv)
 
 # examples
 #add_subdirectory(examples/toolbox EXCLUDE_FROM_ALL)
