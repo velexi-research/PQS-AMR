@@ -49,11 +49,11 @@ set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 # Build directory
 set(BUILD_EXECUTABLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(BUILD_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(BUILD_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/pqs)
+set(BUILD_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/PQS)
 
 # Install directory
-set(INSTALL_LIBRARY_DIR lib/pqs)
-set(INSTALL_INCLUDE_DIR include/pqs)
+set(INSTALL_LIBRARY_DIR lib)
+set(INSTALL_INCLUDE_DIR include/PQS)
 
 # Search path for header files
 include_directories(${BUILD_INCLUDE_DIR})
@@ -160,8 +160,7 @@ else (SINGLE_PRECISION)
 endif (SINGLE_PRECISION)
 
 # Generate configuration header file
-configure_file(config/PQS_config.h.in
-               ${CMAKE_BINARY_DIR}/include/pqs/PQS_config.h)
+configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR}/PQS_config.h)
 
 # ----------------------------------------------------------------------
 # Build targets
