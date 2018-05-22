@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.5)
-project(snap-amr
+project(pqs-amr
         LANGUAGES C CXX Fortran
         VERSION 0.1.0)
 
