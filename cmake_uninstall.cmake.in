@@ -36,7 +36,7 @@ foreach (file ${files})
 endforeach (file)
 
 # Remove package include directory (if found)
-if ("${include_dir}")
+if (include_dir)
     message(STATUS "Uninstalling ${include_dir}")
     exec_program(
         "@CMAKE_COMMAND@" ARGS "-E remove_directory \"${include_dir}\""
@@ -46,4 +46,4 @@ if ("${include_dir}")
     if (NOT "${rm_retval}" STREQUAL 0)
         message(FATAL_ERROR "Problem when removing ${include_dir}")
     endif (NOT "${rm_retval}" STREQUAL 0)
-endif ("${include_dir}")
+endif (include_dir)
