@@ -2,9 +2,21 @@ if (NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
     message(FATAL_ERROR "Cannot find install manifest: @CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
 endif (NOT EXISTS "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt")
 
+# Set package name and configuration file
+set(package_name "PQS")
+set(config_file "${package_name}_config.h")
+
 file(READ "@CMAKE_CURRENT_BINARY_DIR@/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 foreach (file ${files})
+
+    # Save package include directory (if found)
+    if (${file} MATCHES "/include/")
+        if (${file} MATCHES "${package_name}/${config_file}$")
+            get_filename_component(include_dir ${file} DIRECTORY)
+        endif (${file} MATCHES "${package_name}/${config_file}$")
+    endif (${file} MATCHES "/include/")
+
     message(STATUS "Uninstalling $ENV{DESTDIR}${file}")
     if (IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
         exec_program(
@@ -22,3 +34,16 @@ foreach (file ${files})
     endif (IS_SYMLINK "$ENV{DESTDIR}${file}" OR EXISTS "$ENV{DESTDIR}${file}")
 
 endforeach (file)
+
+# Remove package include directory (if found)
+if ("${include_dir}")
+    message(STATUS "Uninstalling ${include_dir}")
+    exec_program(
+        "@CMAKE_COMMAND@" ARGS "-E remove_directory \"${include_dir}\""
+        OUTPUT_VARIABLE rm_out
+        RETURN_VALUE rm_retval
+    )
+    if (NOT "${rm_retval}" STREQUAL 0)
+        message(FATAL_ERROR "Problem when removing ${include_dir}")
+    endif (NOT "${rm_retval}" STREQUAL 0)
+endif ("${include_dir}")
