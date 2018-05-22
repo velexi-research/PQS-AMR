@@ -15,12 +15,12 @@ project(snap-amr
 #option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Floating-point precision
-#option(SINGLE_PRECISION "Build single-precision libraries" OFF)
-#if (SINGLE_PRECISION)
-#    message("-- Setting floating-point precision to 'single'")
-#else (SINGLE_PRECISION)
-#    message("-- Setting floating-point precision to 'double'")
-#endif (SINGLE_PRECISION)
+option(SINGLE_PRECISION "Build single-precision libraries" OFF)
+if (SINGLE_PRECISION)
+    message("-- Setting floating-point precision to 'single'")
+else (SINGLE_PRECISION)
+    message("-- Setting floating-point precision to 'double'")
+endif (SINGLE_PRECISION)
 
 # Boost
 set(BOOST "" CACHE FILEPATH "Location of Boost library")
@@ -41,21 +41,31 @@ set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type")
 # Build parameters
 # ----------------------------------------------------------------------
 
-# Path variables
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
-set(BINARY_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
+# --- Path variables
 
-# Compiler flags
+# Source directory
+set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
+
+# Build directory
+set(BUILD_EXECUTABLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(BUILD_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(BUILD_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/pqs)
+
+# Install directory
+set(INSTALL_LIBRARY_DIR lib/pqs)
+set(INSTALL_INCLUDE_DIR include/pqs)
+
+# Search path for header files
+include_directories(${BUILD_INCLUDE_DIR})
+
+# --- Compiler flags
+
 set(CMAKE_C_FLAGS "${CFLAGS} ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++11)
 set(CMAKE_Fortran_FLAGS "${FFLAGS} ${CMAKE_Fortran_FLAGS}")
 
-# Search path for header files
-include_directories(${BINARY_INCLUDE_DIR})
+# --- CMake options
 
-# CMake options
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # ----------------------------------------------------------------------
@@ -128,19 +138,51 @@ add_subdirectory(${EXT_PROJECTS_DIR}/samrai)
 # Process template files
 # ----------------------------------------------------------------------
 
-## Generate configuration header files
-#configure_file(config/LSMLIB_config.h.in
-#               ${BINARY_INCLUDE_DIR}/LSMLIB_config.h)
+# Floating-point precision
+if (SINGLE_PRECISION)
+
+    set(REAL "float")
+    set(ZERO_TOL 1.e-5)
+    set(REAL_MAX "FLT_MAX")
+    set(REAL_MIN "FLT_MIN")
+    set(REAL_EPSILON "FLT_EPSILON")
+
+else (SINGLE_PRECISION)
+
+    set(PQS_DOUBLE_PRECISION ON)
+
+    set(REAL "double")
+    set(ZERO_TOL 1.e-11)
+    set(REAL_MAX "DBL_MAX")
+    set(REAL_MIN "DBL_MIN")
+    set(REAL_EPSILON "DBL_EPSILON")
+
+endif (SINGLE_PRECISION)
+
+# Generate configuration header file
+configure_file(config/PQS_config.h.in
+               ${CMAKE_BINARY_DIR}/include/pqs/PQS_config.h)
 
 # ----------------------------------------------------------------------
 # Build targets
 # ----------------------------------------------------------------------
+
+# pqs_fortran
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/fortran)
 
 # Testing: SAMRAI LinAdv
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/LinAdv)
 
 # examples
 #add_subdirectory(examples/toolbox EXCLUDE_FROM_ALL)
+
+# ----------------------------------------------------------------------
+# Prepare build directory
+# ----------------------------------------------------------------------
+
+# Create build output directories
+file(MAKE_DIRECTORY ${BUILD_EXECUTABLE_DIR})
+file(MAKE_DIRECTORY ${BUILD_LIBRARY_DIR})
 
 # ----------------------------------------------------------------------
 # Testing
@@ -189,12 +231,14 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/test)
 # Installation
 # ----------------------------------------------------------------------
 
-# Header files
-#file(GLOB HEADER_FILES ${SRCDIR}/*.h)
-#install(FILES ${HEADER_FILES} DESTINATION include)
+# Header files - handled by subdirectory CMakeList.txt files
+# TODO: PQS_config.h
+install(FILES ${BUILD_INCLUDE_DIR}/PQS_config.h
+        DESTINATION ${INSTALL_INCLUDE_DIR})
+#install(DIRECTORY ${CMAKE_BINARY_DIR}/include/pqs DESTINATION include
+#        FILES_MATCHING PATTERN "*.h")
 
-# Library files
-#install(TARGETS lsm_parallel DESTINATION lib)
+# Library files - handled by subdirectory CMakeList.txt files
 
 # Executable files
 # TODO
@@ -256,11 +300,3 @@ fi"
 
     endif (UNIX)
 endif (GIT_FOUND)
-
-# ----------------------------------------------------------------------
-# Build preparations
-# ----------------------------------------------------------------------
-
-# Create build output directories
-file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
-file(MAKE_DIRECTORY ${LIBRARY_OUTPUT_PATH})

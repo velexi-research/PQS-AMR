@@ -1,0 +1,49 @@
+/*
+ * PSQ_config.h
+ *
+ * Configuration header file for PQS library.
+ *
+ * ---------------------------------------------------------------------
+ * COPYRIGHT/LICENSE.  This file is part of the PQS package.  It is
+ * subject to the license terms in the LICENSE file found in the
+ * top-level directory of this distribution.  No part of the PQS
+ * package, including this file, may be copied, modified, propagated,
+ * or distributed except according to the terms contained in the
+ * LICENSE file.
+ * ---------------------------------------------------------------------
+ */
+
+#ifndef included_PQS_config_h
+#define included_PQS_config_h
+
+/* Macro defined if double precision library is being built. */
+#ifndef PQS_DOUBLE_PRECISION
+#cmakedefine PQS_DOUBLE_PRECISION
+#endif
+
+/* Floating-point precision for PQS_REAL */
+#ifndef PQS_REAL
+#define PQS_REAL @REAL@
+#endif
+
+/* Zero tolerance */
+#ifndef PQS_ZERO_TOL
+#define PQS_ZERO_TOL @ZERO_TOL@
+#endif
+
+/* Maximum value for PQS_REAL */
+#ifndef PQS_REAL_MAX
+#define PQS_REAL_MAX @REAL_MAX@
+#endif
+
+/* Minimum value for PQS_REAL */
+#ifndef PQS_REAL_MIN
+#define PQS_REAL_MIN @REAL_MIN@
+#endif
+
+/* Machine epsilon value for PQS_REAL */
+#ifndef PQS_REAL_EPSILON
+#define PQS_REAL_EPSILON @REAL_EPSILON@
+#endif
+
+#endif
