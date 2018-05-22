@@ -1,7 +1,8 @@
 c***********************************************************************
 c
-c  File:        pqs_spatial_derivatives2d.f
-c  Description: F77 routines for computing 2D ENO/WENO spatial derivatives
+c  pqs_spatial_derivatives2d.f
+c
+c  F77 routines for computing 2D ENO/WENO spatial derivatives
 c
 c***********************************************************************
 
@@ -793,7 +794,7 @@ c     variables for WENO calculation
       real phi_x_1,phi_x_2,phi_x_3
       real phi_y_1,phi_y_2,phi_y_3
       real tiny_nonzero_number
-      parameter (tiny_nonzero_number=@tiny_nonzero_number@)
+      parameter (tiny_nonzero_number=@TINY_NONZERO_NUMBER@)
       real eps
       real one_third, seven_sixths, eleven_sixths
       real one_sixth, five_sixths
@@ -1734,7 +1735,7 @@ c     variables for WENO calculation
       real phi_x_1,phi_x_2,phi_x_3
       real phi_y_1,phi_y_2,phi_y_3
       real tiny_nonzero_number
-      parameter (tiny_nonzero_number=@tiny_nonzero_number@)
+      parameter (tiny_nonzero_number=@TINY_NONZERO_NUMBER@)
       real eps
       real one_third, seven_sixths, eleven_sixths
       real one_sixth, five_sixths

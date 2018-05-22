@@ -1,11 +1,6 @@
 c***********************************************************************
 c
-c  File:        lsm_spatial_derivatives3d.f
-c  Copyrights:  (c) 2005 The Trustees of Princeton University and Board of
-c                   Regents of the University of Texas.  All rights reserved.
-c               (c) 2009 Kevin T. Chu.  All rights reserved.
-c  Revision:    $Revision$
-c  Modified:    $Date$
+c  pqs_spatial_derivatives3d.f
 c  Description: F77 routines for computing 3D ENO/WENO spatial derivatives
 c
 c***********************************************************************
@@ -17,7 +12,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dComputeDn() computes the n-th undivided differences in the
+c  pqs3dComputeDn() computes the n-th undivided differences in the
 c  specified direction given the (n-1)-th undivided differences.  The 
 c  undivided differences in cells with insufficient data is set to a 
 c  large number.
@@ -46,7 +41,7 @@ c   - The ghostbox for Dn_minus_one MUST be at least one ghostcell width
 c     larger than the fillbox.
 c
 c***********************************************************************
-      subroutine lsm3dComputeDn(
+      subroutine pqs3dComputeDn(
      &  Dn,
      &  ilo_Dn_gb, ihi_Dn_gb, 
      &  jlo_Dn_gb, jhi_Dn_gb, 
@@ -178,7 +173,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dHJENO1() computes the forward (plus) and backward (minus)
+c  pqs3dHJENO1() computes the forward (plus) and backward (minus)
 c  first-order Hamilton-Jacobi ENO approximations to the gradient of 
 c  phi.
 c
@@ -196,7 +191,7 @@ c   - it is assumed that BOTH the plus AND minus derivatives have
 c     the same fillbox
 c
 c***********************************************************************
-      subroutine lsm3dHJENO1(
+      subroutine pqs3dHJENO1(
      &  phi_x_plus, phi_y_plus, phi_z_plus,
      &  ilo_grad_phi_plus_gb, ihi_grad_phi_plus_gb, 
      &  jlo_grad_phi_plus_gb, jhi_grad_phi_plus_gb,
@@ -278,7 +273,7 @@ c----------------------------------------------------
 c    compute phi_x_plus and phi_x_minus
 c----------------------------------------------------
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -308,7 +303,7 @@ c----------------------------------------------------
 c    compute phi_y_plus and phi_y_minus
 c----------------------------------------------------
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -338,7 +333,7 @@ c----------------------------------------------------
 c    compute phi_z_plus and phi_z_minus
 c----------------------------------------------------
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -371,7 +366,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dHJENO2() computes the forward (plus) and backward (minus)
+c  pqs3dHJENO2() computes the forward (plus) and backward (minus)
 c  second-order Hamilton-Jacobi ENO approximations to the gradient of 
 c  phi.
 c
@@ -390,7 +385,7 @@ c   - it is assumed that BOTH the plus AND minus derivatives have
 c     the same fillbox
 c
 c***********************************************************************
-      subroutine lsm3dHJENO2(
+      subroutine pqs3dHJENO2(
      &  phi_x_plus, phi_y_plus, phi_z_plus,
      &  ilo_grad_phi_plus_gb, ihi_grad_phi_plus_gb, 
      &  jlo_grad_phi_plus_gb, jhi_grad_phi_plus_gb,
@@ -484,7 +479,7 @@ c----------------------------------------------------
 c    compute phi_x_plus and phi_x_minus
 c----------------------------------------------------
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -498,7 +493,7 @@ c     compute first undivided differences in x-direction
      &                    order_1, x_dir) 
 
 c     compute second undivided differences x-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -544,7 +539,7 @@ c----------------------------------------------------
 c    compute phi_y_plus and phi_y_minus
 c----------------------------------------------------
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -558,7 +553,7 @@ c     compute first undivided differences in y-direction
      &                    order_1, y_dir)
 
 c     compute second undivided differences in y-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -604,7 +599,7 @@ c----------------------------------------------------
 c    compute phi_z_plus and phi_z_minus
 c----------------------------------------------------
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -618,7 +613,7 @@ c     compute first undivided differences in z-direction
      &                    order_1, z_dir)
 
 c     compute second undivided differences in z-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -666,7 +661,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dHJENO3() computes the forward (plus) and backward (minus)
+c  pqs3dHJENO3() computes the forward (plus) and backward (minus)
 c  third-order Hamilton-Jacobi ENO approximations to the gradient of 
 c  phi.
 c
@@ -686,7 +681,7 @@ c   - it is assumed that BOTH the plus AND minus derivatives have
 c     the same fillbox
 c
 c***********************************************************************
-      subroutine lsm3dHJENO3(
+      subroutine pqs3dHJENO3(
      &  phi_x_plus, phi_y_plus, phi_z_plus,
      &  ilo_grad_phi_plus_gb, ihi_grad_phi_plus_gb, 
      &  jlo_grad_phi_plus_gb, jhi_grad_phi_plus_gb,
@@ -792,7 +787,7 @@ c    compute phi_x_plus and phi_x_minus
 c----------------------------------------------------
 
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -806,7 +801,7 @@ c     compute first undivided differences in x-direction
      &                    order_1, x_dir)
 
 c     compute second undivided differences in x-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -820,7 +815,7 @@ c     compute second undivided differences in x-direction
      &                    order_2, x_dir)
 
 c     compute third undivided differences in x-direction
-      call lsm3dComputeDn(D3, 
+      call pqs3dComputeDn(D3, 
      &                    ilo_D3_gb, ihi_D3_gb, 
      &                    jlo_D3_gb, jhi_D3_gb,
      &                    klo_D3_gb, khi_D3_gb,
@@ -908,7 +903,7 @@ c    compute phi_y_plus and phi_y_minus
 c----------------------------------------------------
 
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -922,7 +917,7 @@ c     compute first undivided differences in y-direction
      &                    order_1, y_dir)
 
 c     compute second undivided differences in y-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -936,7 +931,7 @@ c     compute second undivided differences in y-direction
      &                    order_2, y_dir)
 
 c     compute third undivided differences in y-direction
-      call lsm3dComputeDn(D3, 
+      call pqs3dComputeDn(D3, 
      &                    ilo_D3_gb, ihi_D3_gb, 
      &                    jlo_D3_gb, jhi_D3_gb,
      &                    klo_D3_gb, khi_D3_gb,
@@ -1023,7 +1018,7 @@ c----------------------------------------------------
 c    compute phi_z_plus and phi_z_minus
 c----------------------------------------------------
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -1037,7 +1032,7 @@ c     compute first undivided differences in z-direction
      &                    order_1, z_dir)
 
 c     compute second undivided differences in z-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -1051,7 +1046,7 @@ c     compute second undivided differences in z-direction
      &                    order_2, z_dir)
 
 c     compute third undivided differences in z-direction
-      call lsm3dComputeDn(D3, 
+      call pqs3dComputeDn(D3, 
      &                    ilo_D3_gb, ihi_D3_gb, 
      &                    jlo_D3_gb, jhi_D3_gb,
      &                    klo_D3_gb, khi_D3_gb,
@@ -1140,7 +1135,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dHJWENO5() computes the forward (plus) and backward (minus)
+c  pqs3dHJWENO5() computes the forward (plus) and backward (minus)
 c  fifth-order Hamilton-Jacobi WENO approximations to the gradient of 
 c  phi.
 c
@@ -1158,7 +1153,7 @@ c   - it is assumed that BOTH the plus AND minus derivatives have
 c     the same fillbox
 c
 c***********************************************************************
-      subroutine lsm3dHJWENO5(
+      subroutine pqs3dHJWENO5(
      &  phi_x_plus, phi_y_plus, phi_z_plus,
      &  ilo_grad_phi_plus_gb, ihi_grad_phi_plus_gb, 
      &  jlo_grad_phi_plus_gb, jhi_grad_phi_plus_gb,
@@ -1233,7 +1228,7 @@ c     variables for WENO calculation
       real phi_y_1,phi_y_2,phi_y_3
       real phi_z_1,phi_z_2,phi_z_3
       real tiny_nonzero_number
-      parameter (tiny_nonzero_number=@tiny_nonzero_number@)
+      parameter (tiny_nonzero_number=@TINY_NONZERO_NUMBER@)
       real eps
       real one_third, seven_sixths, eleven_sixths
       real one_sixth, five_sixths
@@ -1263,7 +1258,7 @@ c    compute phi_x_plus and phi_x_minus
 c----------------------------------------------------
 
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -1379,7 +1374,7 @@ c    compute phi_y_plus and phi_y_minus
 c----------------------------------------------------
 
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -1496,7 +1491,7 @@ c    compute phi_z_plus and phi_z_minus
 c----------------------------------------------------
 
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb,
      &                    klo_D1_gb, khi_D1_gb,
@@ -1614,7 +1609,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dUpwindHJENO1() computes the first-order Hamilton-Jacobi ENO 
+c  pqs3dUpwindHJENO1() computes the first-order Hamilton-Jacobi ENO 
 c  upwind approximation to the gradient of phi.
 c
 c  Arguments:
@@ -1627,7 +1622,7 @@ c    *_gb (in):        index range for ghostbox
 c    *_fb (in):        index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dUpwindHJENO1(
+      subroutine pqs3dUpwindHJENO1(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb, 
      &  jlo_grad_phi_gb, jhi_grad_phi_gb, 
@@ -1713,7 +1708,7 @@ c----------------------------------------------------
 c    compute upwind phi_x
 c----------------------------------------------------
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -1754,7 +1749,7 @@ c    compute upwind phi_y
 c----------------------------------------------------
 
 c     compute first undivided differences y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -1795,7 +1790,7 @@ c    compute upwind phi_z
 c----------------------------------------------------
 
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -1837,7 +1832,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dUpwindHJENO2() computes the second-order Hamilton-Jacobi ENO 
+c  pqs3dUpwindHJENO2() computes the second-order Hamilton-Jacobi ENO 
 c  upwind approximation to the gradient of phi.
 c
 c  Arguments:
@@ -1851,7 +1846,7 @@ c    *_gb (in):        index range for ghostbox
 c    *_fb (in):        index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dUpwindHJENO2(
+      subroutine pqs3dUpwindHJENO2(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb, 
      &  jlo_grad_phi_gb, jhi_grad_phi_gb, 
@@ -1948,7 +1943,7 @@ c    compute upwind phi_x
 c----------------------------------------------------
 
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -1962,7 +1957,7 @@ c     compute first undivided differences in x-direction
      &                    order_1, x_dir)
 
 c     compute second undivided differences in x-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -2017,7 +2012,7 @@ c    compute upwind phi_y
 c----------------------------------------------------
 
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2031,7 +2026,7 @@ c     compute first undivided differences in y-direction
      &                    order_1, y_dir)
 
 c     compute second undivided differences in y-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -2086,7 +2081,7 @@ c    compute upwind phi_z
 c----------------------------------------------------
 
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2100,7 +2095,7 @@ c     compute first undivided differences in z-direction
      &                    order_1, z_dir)
 
 c     compute second undivided differences in z-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -2156,7 +2151,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dUpwindHJENO3() computes the third-order Hamilton-Jacobi ENO 
+c  pqs3dUpwindHJENO3() computes the third-order Hamilton-Jacobi ENO 
 c  upwind approximation to the gradient of phi.
 c
 c  Arguments:
@@ -2171,7 +2166,7 @@ c    *_gb (in):        index range for ghostbox
 c    *_fb (in):        index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dUpwindHJENO3(
+      subroutine pqs3dUpwindHJENO3(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb, 
      &  jlo_grad_phi_gb, jhi_grad_phi_gb, 
@@ -2278,7 +2273,7 @@ c----------------------------------------------------
 c    compute upwind phi_x
 c----------------------------------------------------
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2292,7 +2287,7 @@ c     compute first undivided differences in x-direction
      &                    order_1, x_dir)
 
 c     compute second undivided differences in x-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -2306,7 +2301,7 @@ c     compute second undivided differences in x-direction
      &                    order_2, x_dir)
 
 c     compute third undivided differences in x-direction
-      call lsm3dComputeDn(D3, 
+      call pqs3dComputeDn(D3, 
      &                    ilo_D3_gb, ihi_D3_gb, 
      &                    jlo_D3_gb, jhi_D3_gb,
      &                    klo_D3_gb, khi_D3_gb,
@@ -2389,7 +2384,7 @@ c    compute upwind phi_y
 c----------------------------------------------------
 
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2403,7 +2398,7 @@ c     compute first undivided differences in y-direction
      &                    order_1, y_dir)
 
 c     compute second undivided differences in y-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -2417,7 +2412,7 @@ c     compute second undivided differences in y-direction
      &                    order_2, y_dir)
 
 c     compute third undivided differences in y-direction
-      call lsm3dComputeDn(D3, 
+      call pqs3dComputeDn(D3, 
      &                    ilo_D3_gb, ihi_D3_gb, 
      &                    jlo_D3_gb, jhi_D3_gb,
      &                    klo_D3_gb, khi_D3_gb,
@@ -2500,7 +2495,7 @@ c    compute upwind phi_z
 c----------------------------------------------------
 
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2514,7 +2509,7 @@ c     compute first undivided differences in z-direction
      &                    order_1, z_dir)
 
 c     compute second undivided differences in z-direction
-      call lsm3dComputeDn(D2, 
+      call pqs3dComputeDn(D2, 
      &                    ilo_D2_gb, ihi_D2_gb, 
      &                    jlo_D2_gb, jhi_D2_gb,
      &                    klo_D2_gb, khi_D2_gb,
@@ -2528,7 +2523,7 @@ c     compute second undivided differences in z-direction
      &                    order_2, z_dir)
 
 c     compute third undivided differences in z-direction
-      call lsm3dComputeDn(D3, 
+      call pqs3dComputeDn(D3, 
      &                    ilo_D3_gb, ihi_D3_gb, 
      &                    jlo_D3_gb, jhi_D3_gb,
      &                    klo_D3_gb, khi_D3_gb,
@@ -2612,7 +2607,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dUpwindHJWENO5() computes the fifth-order Hamilton-Jacobi WENO 
+c  pqs3dUpwindHJWENO5() computes the fifth-order Hamilton-Jacobi WENO 
 c  upwind approximation to the gradient of phi.  
 c
 c  Arguments:
@@ -2625,7 +2620,7 @@ c    *_gb (in):        index range for ghostbox
 c    *_fb (in):        index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dUpwindHJWENO5(
+      subroutine pqs3dUpwindHJWENO5(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb, 
      &  jlo_grad_phi_gb, jhi_grad_phi_gb, 
@@ -2700,7 +2695,7 @@ c     variables for WENO calculation
       real phi_y_1,phi_y_2,phi_y_3
       real phi_z_1,phi_z_2,phi_z_3
       real tiny_nonzero_number
-      parameter (tiny_nonzero_number=@tiny_nonzero_number@)
+      parameter (tiny_nonzero_number=@TINY_NONZERO_NUMBER@)
       real eps
       real one_third, seven_sixths, eleven_sixths
       real one_sixth, five_sixths
@@ -2734,7 +2729,7 @@ c    compute upwind phi_x
 c----------------------------------------------------
 
 c     compute first undivided differences in x-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2823,7 +2818,7 @@ c    compute upwind phi_y
 c----------------------------------------------------
 
 c     compute first undivided differences in y-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -2912,7 +2907,7 @@ c    compute upwind phi_z
 c----------------------------------------------------
 
 c     compute first undivided differences in z-direction
-      call lsm3dComputeDn(D1, 
+      call pqs3dComputeDn(D1, 
      &                    ilo_D1_gb, ihi_D1_gb, 
      &                    jlo_D1_gb, jhi_D1_gb, 
      &                    klo_D1_gb, khi_D1_gb, 
@@ -3002,7 +2997,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dCentralGradOrder2() computes the second-order, central,
+c  pqs3dCentralGradOrder2() computes the second-order, central,
 c  finite difference approximation to the gradient of phi.
 c
 c  Arguments:
@@ -3013,7 +3008,7 @@ c    *_gb (in):        index range for ghostbox
 c    *_fb (in):        index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dCentralGradOrder2(
+      subroutine pqs3dCentralGradOrder2(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb, 
      &  jlo_grad_phi_gb, jhi_grad_phi_gb,
@@ -3080,7 +3075,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dCentralGradOrder4() computes the second-order, central, 
+c  pqs3dCentralGradOrder4() computes the second-order, central, 
 c  finite difference approximation to the gradient of phi.
 c
 c  Arguments:
@@ -3091,7 +3086,7 @@ c    *_gb (in):        index range for ghostbox
 c    *_fb (in):        index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dCentralGradOrder4(
+      subroutine pqs3dCentralGradOrder4(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb, 
      &  jlo_grad_phi_gb, jhi_grad_phi_gb,
@@ -3166,7 +3161,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dLaplacianOrder2() computes the second-order, central, 
+c  pqs3dLaplacianOrder2() computes the second-order, central, 
 c  finite difference approximation to the Laplacian of phi.
 c
 c  Arguments:
@@ -3177,7 +3172,7 @@ c    *_gb (in):            index range for ghostbox
 c    *_fb (in):            index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dLaplacianOrder2(
+      subroutine pqs3dLaplacianOrder2(
      &  laplacian_phi,
      &  ilo_laplacian_phi_gb, ihi_laplacian_phi_gb, 
      &  jlo_laplacian_phi_gb, jhi_laplacian_phi_gb, 
@@ -3246,7 +3241,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dPhiUpwindGradF() computes the "phi-upwind" gradient of a 
+c  pqs3dPhiUpwindGradF() computes the "phi-upwind" gradient of a 
 c  function, F, using the following "upwinding" scheme to compute 
 c  the normal:
 c
@@ -3267,7 +3262,7 @@ c   - phi is REQUIRED to have at least one ghost cell in each
 c     coordinate direction for upwinding
 c
 c***********************************************************************
-      subroutine lsm3dPhiUpwindGradF(
+      subroutine pqs3dPhiUpwindGradF(
      &  F_x, F_y, F_z,
      &  ilo_grad_F_gb, ihi_grad_F_gb,
      &  jlo_grad_F_gb, jhi_grad_F_gb,
@@ -3470,7 +3465,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dAverageGradPhi() computes the average of the plus and minus 
+c  pqs3dAverageGradPhi() computes the average of the plus and minus 
 c  derivatives:
 c
 c    phi_* = (phi_*_plus + phi_*_minus) / 2
@@ -3483,7 +3478,7 @@ c    *_gb (in):         index range for ghostbox
 c    *_fb (in):         index range for fillbox
 c
 c***********************************************************************
-      subroutine lsm3dAverageGradPhi(
+      subroutine pqs3dAverageGradPhi(
      &  phi_x, phi_y, phi_z,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb,
      &  jlo_grad_phi_gb, jhi_grad_phi_gb,
@@ -3574,7 +3569,7 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  lsm3dGradientMagnitude() computes magnitude of the gradient of phi.
+c  pqs3dGradientMagnitude() computes magnitude of the gradient of phi.
 c
 c  Arguments:
 c    phi_* (in):           components of grad(phi) 
@@ -3583,7 +3578,7 @@ c    *_gb (in):           index range for ghostbox
 c    *_fb (in):           index range for fillbox
 
 c***********************************************************************
-      subroutine lsm3dGradientMagnitude(
+      subroutine pqs3dGradientMagnitude(
      &  phi_x, phi_y, phi_z, grad_phi_mag,
      &  ilo_grad_phi_gb, ihi_grad_phi_gb,
      &  jlo_grad_phi_gb, jhi_grad_phi_gb,
@@ -3661,7 +3656,7 @@ c } end subroutine
 c***********************************************************************
 
 c***********************************************************************
-      subroutine lsm3dCentralHessian(
+      subroutine pqs3dCentralHessian(
      &  phi_xx, phi_xy, phi_xz, phi_yy, phi_yz, phi_zz,
      &  ilo_hessian_gb, ihi_hessian_gb,
      &  jlo_hessian_gb, jhi_hessian_gb,

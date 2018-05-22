@@ -14,12 +14,12 @@
 if (SINGLE_PRECISION)
 
     set(REAL "real*4")
-    set(tiny_nonzero_number 1.d-35)
+    set(TINY_NONZERO_NUMBER 1.d-35)
 
 else (SINGLE_PRECISION)
 
     set(REAL "real*8")
-    set(tiny_nonzero_number 1.d-99)
+    set(TINY_NONZERO_NUMBER 1.d-99)
 
 endif (SINGLE_PRECISION)
 
