@@ -267,7 +267,7 @@ if (GIT_FOUND)
 
     # Add target to verify source code distribution
     if (UNIX)
-        file(GENERATE OUTPUT check-uninstall.sh
+        file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/check-uninstall.sh
              CONTENT "
 remaining=\"`find \${PWD}/${ARCHIVE_NAME}/build/_inst -type f | wc -l`\"
 if test \"\${remaining}\" -ne 0; then
