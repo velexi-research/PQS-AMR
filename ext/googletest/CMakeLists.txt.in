@@ -19,14 +19,21 @@ include(ExternalProject)
 # ---------------------------------------------------------------------
 
 ExternalProject_Add(googletest
+    # Source code
     URL ${CMAKE_SOURCE_DIR}/ext/googletest/googletest-release-1.8.0.tar.gz
     URL_HASH SHA1=e7e646a6204638fe8e87e165292b8dd9cd4c36ed
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/ext/googletest/googletest-src"
-    BINARY_DIR "${CMAKE_BINARY_DIR}/ext/googletest/googletest-build"
 
-    PREFIX "${CMAKE_CURRENT_BINARY_DIR}"
+    # Build parameters
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/ext/googletest/src"
+    INSTALL_DIR "${CMAKE_BINARY_DIR}/ext"
 
-    # Disable build commands
+    # CMake parameters
+    #
+    # - Set a installation prefix to a local directory to prevent
+    #   installation to system directories.
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/ext"
+
+    # Disable installation during configuration phase
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

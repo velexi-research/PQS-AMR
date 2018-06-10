@@ -49,11 +49,13 @@ set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
 # Build directory
 set(BUILD_EXECUTABLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(BUILD_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(BUILD_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include/PQS)
+set(BUILD_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
+set(BUILD_INCLUDE_DIR_PQS ${BUILD_INCLUDE_DIR}/PQS)
 
 # Install directory
 set(INSTALL_LIBRARY_DIR lib)
-set(INSTALL_INCLUDE_DIR include/PQS)
+set(INSTALL_INCLUDE_DIR include)
+set(INSTALL_INCLUDE_DIR_PQS ${INSTALL_INCLUDE_DIR}/PQS)
 
 # Search path for header files
 include_directories(${BUILD_INCLUDE_DIR})
@@ -160,7 +162,7 @@ else (SINGLE_PRECISION)
 endif (SINGLE_PRECISION)
 
 # Generate configuration header file
-configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR}/PQS_config.h)
+configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 
 # ----------------------------------------------------------------------
 # Build targets
@@ -192,10 +194,10 @@ file(MAKE_DIRECTORY ${BUILD_LIBRARY_DIR})
 configure_file(ext/googletest/CMakeLists.txt.in ext/googletest/CMakeLists.txt)
 execute_process(
     COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/ext/googletest")
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/ext/googletest")
 execute_process(
     COMMAND "${CMAKE_COMMAND}" --build .
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/ext/googletest")
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/ext/googletest")
 
 # Prevent GoogleTest from overriding our compiler/linker options
 # when building with Visual Studio
@@ -203,17 +205,10 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 # Add googletest directly to our build. This adds the following targets:
 # gtest, gtest_main, gmock and gmock_main
-add_subdirectory("${CMAKE_BINARY_DIR}/ext/googletest/googletest-src")
-#add_subdirectory("${CMAKE_BINARY_DIR}/ext/googletest/googletest-src"
-#                 "${CMAKE_BINARY_DIR}/ext/googletest/googletest-build")
-
-# The gtest/gmock targets carry header search path dependencies automatically
-# when using CMake 2.8.11 or later. Otherwise we have to add them here
-# ourselves.
-if(CMAKE_VERSION VERSION_LESS 2.8.11)
-    include_directories("${gtest_SOURCE_DIR}/include"
-                        "${gmock_SOURCE_DIR}/include")
-endif()
+add_subdirectory(
+    "${CMAKE_BINARY_DIR}/ext/googletest/src/googletest"
+    "${CMAKE_BINARY_DIR}/ext/googletest/build"
+    EXCLUDE_FROM_ALL)
 
 # --- Configure tests
 
@@ -231,9 +226,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/test)
 # ----------------------------------------------------------------------
 
 # Header files - handled by subdirectory CMakeList.txt files
-# TODO: PQS_config.h
-install(FILES ${BUILD_INCLUDE_DIR}/PQS_config.h
-        DESTINATION ${INSTALL_INCLUDE_DIR})
+install(FILES ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h
+        DESTINATION ${INSTALL_INCLUDE_DIR_PQS})
 #install(DIRECTORY ${CMAKE_BINARY_DIR}/include/pqs DESTINATION include
 #        FILES_MATCHING PATTERN "*.h")
 
