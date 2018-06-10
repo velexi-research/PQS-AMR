@@ -44,7 +44,7 @@ set(CMAKE_BUILD_TYPE Release CACHE STRING "CMake build type")
 # --- Path variables
 
 # Source directory
-set(EXT_PROJECTS_DIR ${PROJECT_SOURCE_DIR}/ext)
+set(EXTERNAL_PACKAGES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext)
 
 # Build directory
 set(BUILD_EXECUTABLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
@@ -57,7 +57,7 @@ set(INSTALL_LIBRARY_DIR lib)
 set(INSTALL_INCLUDE_DIR include)
 set(INSTALL_INCLUDE_DIR_PQS ${INSTALL_INCLUDE_DIR}/PQS)
 
-# Search path for header files
+# Search paths for header files
 include_directories(${BUILD_INCLUDE_DIR})
 
 # --- Compiler flags
@@ -134,7 +134,7 @@ else (IWYU)
 endif (IWYU)
 
 # SAMRAI
-add_subdirectory(${EXT_PROJECTS_DIR}/samrai)
+add_subdirectory(${EXTERNAL_PACKAGES_SOURCE_DIR}/samrai)
 
 # ----------------------------------------------------------------------
 # Process template files
