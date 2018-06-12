@@ -25,12 +25,12 @@ ExternalProject_Add(googletest
 
     # Build parameters
     SOURCE_DIR "${CMAKE_BINARY_DIR}/ext/googletest/src"
-    INSTALL_DIR "${CMAKE_BINARY_DIR}/ext"
 
     # CMake parameters
     #
     # - Set a installation prefix to a local directory to prevent
     #   installation to system directories.
+    INSTALL_DIR "${CMAKE_BINARY_DIR}/ext"
     CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/ext"
 
     # Disable installation during configuration phase
