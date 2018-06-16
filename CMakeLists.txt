@@ -169,7 +169,7 @@ configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 # ----------------------------------------------------------------------
 
 # pqs_kernels
-#add_subdirectory(${PROJECT_SOURCE_DIR}/src/kernels)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/kernels)
 
 # PQS simulation program
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/simulation)

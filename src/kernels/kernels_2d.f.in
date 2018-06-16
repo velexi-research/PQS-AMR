@@ -1,0 +1,134 @@
+c***********************************************************************
+c
+c  kernels_2d.f
+c
+c  F77 routines for TODO
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c  pqs2dComputeDn() computes the n-th undivided differences in the
+c  specified direction given the (n-1)-th undivided differences.  The 
+c  undivided differences in cells with insufficient data is set to a 
+c  large number.
+c
+c  Arguments:
+c    Dn (out):           n-th undivided differences 
+c    Dn_minus_one (in):  (n-1)-th undivided differences 
+c    n (in):             order of undivided differences to compute
+c    *_gb (in):          index range for ghostbox
+c    *_fb (in):          index range for fillbox
+c
+c  NOTES:
+c   - The index ranges for all ghostboxes and the fillbox should 
+c     correspond to the index range for cell-centered data.
+c   - The undivided differences for odd n are face-centered (i.e.
+c     indices are of the form (i+1/2)).  In this situation, the array
+c     index corresponding to the (i+1/2)-th undivided difference is
+c     i (i.e. the index shifted down to the nearest integer index). 
+c   - When n is odd, Dn is computed on the faces of the grid cells
+c     specified by the fillbox indices.  The index range for the 
+c     undivided differences to be computed is ilo_fb to (ihi_fb+1); 
+c     that is, the number of undivided difference computed is equal
+c     to the number of faces associated with the fillbox grid cells
+c     (ihi_fb - ilo_fb + 2).
+c   - The ghostbox for Dn_minus_one MUST be at least one ghostcell width
+c     larger than the fillbox.
+c
+c***********************************************************************
+      subroutine pqs2dComputeDn(
+     &  Dn,
+     &  ilo_Dn_gb, ihi_Dn_gb, 
+     &  jlo_Dn_gb, jhi_Dn_gb,
+     &  Dn_minus_one,
+     &  ilo_Dn_minus_one_gb, ihi_Dn_minus_one_gb, 
+     &  jlo_Dn_minus_one_gb, jhi_Dn_minus_one_gb,
+     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  n,
+     &  dir)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+c     _gb refers to ghostbox 
+c     _fb refers to fillbox 
+      integer ilo_Dn_gb, ihi_Dn_gb, jlo_Dn_gb, jhi_Dn_gb
+      integer ilo_Dn_minus_one_gb, ihi_Dn_minus_one_gb
+      integer jlo_Dn_minus_one_gb, jhi_Dn_minus_one_gb
+      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
+      @REAL@ Dn(ilo_Dn_gb:ihi_Dn_gb,jlo_Dn_gb:jhi_Dn_gb)
+      @REAL@ Dn_minus_one(ilo_Dn_minus_one_gb:ihi_Dn_minus_one_gb,
+     &                    jlo_Dn_minus_one_gb:jhi_Dn_minus_one_gb)
+      integer n
+      integer dir 
+      integer i,j
+      integer offset(1:2)
+      integer fillbox_shift(1:2)
+      real sign_multiplier
+      real big
+      parameter (big=1.d10)
+
+c     calculate offsets, fillbox shifts, and sign_multiplier used 
+c     when computing undivided differences.
+c     NOTE:  even and odd undivided differences are taken in
+c            opposite order because of the discrepancy between
+c            face- and cell-centered data.  the sign discrepancy 
+c            is taken into account by sign_multiplier
+      do i=1,2
+        offset(i) = 0
+        fillbox_shift(i) = 0
+      enddo
+      if (mod(n,2).eq.1) then
+        offset(dir) = 1
+        sign_multiplier = 1.0
+        fillbox_shift(dir) = 1
+      else
+        offset(dir) = -1
+        sign_multiplier = -1.0
+        fillbox_shift(dir) = 0
+      endif
+
+c     loop over cells with sufficient data {
+      do j=jlo_fb,jhi_fb+fillbox_shift(2)
+        do i=ilo_fb,ihi_fb+fillbox_shift(1)
+
+          Dn(i,j) = sign_multiplier
+     &            * ( Dn_minus_one(i,j)
+     &              - Dn_minus_one(i-offset(1),j-offset(2)))
+
+        enddo
+      enddo
+c     } end loop over grid 
+
+c     set undivided differences for cells with insufficient data to big {
+      do j=jlo_Dn_gb,jhi_Dn_gb
+        do i=ilo_Dn_gb,ilo_fb-1
+          Dn(i,j) = big
+        enddo
+      enddo
+
+      do j=jlo_Dn_gb,jhi_Dn_gb
+        do i=ihi_fb+fillbox_shift(1)+1,ihi_Dn_gb
+          Dn(i,j) = big
+        enddo
+      enddo
+
+      do j=jlo_Dn_gb,jlo_fb-1
+        do i=ilo_Dn_gb,ihi_Dn_gb
+          Dn(i,j) = big
+        enddo
+      enddo
+
+      do j=jhi_fb+fillbox_shift(2)+1,jhi_Dn_gb
+        do i=ilo_Dn_gb,ihi_Dn_gb
+          Dn(i,j) = big
+        enddo
+      enddo
+
+c     } end setting big value for cells near boundary of ghostcell box
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
