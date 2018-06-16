@@ -168,11 +168,11 @@ configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 # Build targets
 # ----------------------------------------------------------------------
 
-# pqs_fortran
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/fortran)
+# pqs_kernels
+#add_subdirectory(${PROJECT_SOURCE_DIR}/src/kernels)
 
-# Testing: SAMRAI LinAdv
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/LinAdv)
+# PQS simulation program
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/simulation)
 
 # examples
 #add_subdirectory(examples/toolbox EXCLUDE_FROM_ALL)
