@@ -175,6 +175,9 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS/kernels)
 # PQS programs
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/programs)
 
+# Sample input files
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/sample-input-files)
+
 # ----------------------------------------------------------------------
 # Prepare build directory
 # ----------------------------------------------------------------------
@@ -226,13 +229,10 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/test)
 # Header files - handled by subdirectory CMakeList.txt files
 install(FILES ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h
         DESTINATION ${INSTALL_INCLUDE_DIR_PQS})
-#install(DIRECTORY ${CMAKE_BINARY_DIR}/include/pqs DESTINATION include
-#        FILES_MATCHING PATTERN "*.h")
 
 # Library files - handled by subdirectory CMakeList.txt files
 
-# Executable files
-# TODO
+# Executable files - handled by subdirectory CMakeList.txt files
 
 # --- Add `uninstall` target
 
