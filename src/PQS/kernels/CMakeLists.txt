@@ -55,7 +55,7 @@ file(MAKE_DIRECTORY ${BUILD_LIBRARY_DIR})
 # ----------------------------------------------------------------------
 
 # Header files
-install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR}
+install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}
         FILES_MATCHING PATTERN "*.h")
 
 # Library
