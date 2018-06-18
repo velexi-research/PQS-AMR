@@ -12,10 +12,6 @@
 # Set output directory for executables
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_EXECUTABLE_DIR})
 
-# Set output directory for sample input files
-set (SAMPLE_INPUT_FILE_DIRECTORY
-     ${CMAKE_BINARY_DIR}/sample-input-files)
-
 # --------------------------------------------------------------
 # Build targets
 # --------------------------------------------------------------
