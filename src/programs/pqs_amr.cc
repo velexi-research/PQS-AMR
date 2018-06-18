@@ -42,6 +42,10 @@
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/tbox/SAMRAIManager.h"
 
+// PQS headers
+#include "PQS/PQS_config.h"
+#include "PQS/Solver.h"
+
 // Type declarations
 
 // Namespaces
@@ -225,10 +229,12 @@ int main(int argc, char *argv[])
     }
 
     // Write VisIt data for initial time step
+    /* TODO: activate
     if ( use_visit && (!is_from_restart) ) {
         visit_data_writer->writePlotData(patch_hierarchy, cur_integrator_step,
                                          current_time);
     }
+    */
 
     // --- Main time loop
     // TODO

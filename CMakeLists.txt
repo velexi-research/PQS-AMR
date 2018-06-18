@@ -168,14 +168,12 @@ configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 # Build targets
 # ----------------------------------------------------------------------
 
-# pqs_kernels
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/kernels)
+# PQS
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS/kernels)
 
-# PQS simulation program
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/simulation)
-
-# examples
-#add_subdirectory(examples/toolbox EXCLUDE_FROM_ALL)
+# PQS programs
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/programs)
 
 # ----------------------------------------------------------------------
 # Prepare build directory

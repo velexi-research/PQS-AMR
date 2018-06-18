@@ -1,5 +1,5 @@
 # --------------------------------------------------------------
-# Customizations for PQS simulation program
+# Customizations for pqs-amr program
 # --------------------------------------------------------------
 
 # CMake initialization: No customizations
@@ -26,17 +26,17 @@ file(GLOB SOURCE_FILES
      ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
 
 # Add executable and dependencies
-add_executable(pqs ${SOURCE_FILES})
-add_dependencies(pqs pqs_kernels samrai)
+add_executable(pqs-amr ${SOURCE_FILES})
+add_dependencies(pqs-amr pqs_kernels samrai)
 
 # Set search path for header files
-target_include_directories(pqs
+target_include_directories(pqs-amr
     PUBLIC ${Boost_INCLUDE_DIR}
     PUBLIC ${MPI_CXX_INCLUDE_PATH}
     PUBLIC ${SAMRAI_INCLUDE_DIR})
 
 # Set link libraries
-target_link_libraries(pqs
+target_link_libraries(pqs-amr
     ${SAMRAI_LIBS}
     ${HDF5_C_LIBRARIES}
     ${MPI_LIBRARY})
