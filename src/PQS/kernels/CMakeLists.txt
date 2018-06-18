@@ -24,7 +24,7 @@ else (SINGLE_PRECISION)
 endif (SINGLE_PRECISION)
 
 # Generate fortran files
-configure_file(kernels_2d.f.in kernels_2d.f)
+configure_file(pqs_kernels_2d.f.in pqs_kernels_2d.f)
 #configure_file(spatial_derivatives3d.f.in spatial_derivatives3d.f)
 
 # --------------------------------------------------------------

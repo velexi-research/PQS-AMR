@@ -15,8 +15,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_KERNELS_2D_H
-#define INCLUDED_PQS_KERNELS_2D_H
+#ifndef INCLUDED_PQS_pqs_kernels_2d_h
+#define INCLUDED_PQS_pqs_kernels_2d_h
 
 #ifdef __cplusplus
 extern "C" {
