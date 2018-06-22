@@ -15,10 +15,10 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_Solver_h
-#define INCLUDED_PQS_Solver_h
+#ifndef INCLUDED_PQS_pqs_Solver_h
+#define INCLUDED_PQS_pqs_Solver_h
 
-/*! \class PQS::Solver
+/*! \class PQS::pqs::Solver
  *
  * \brief
  * TODO: add description
@@ -127,9 +127,10 @@ using namespace SAMRAI;
 // Class/type declarations
 
 
-// --- PQS::Solver Class
+// --- PQS::pqs::Solver Class
 
 namespace PQS {
+namespace pqs {
 
 class Solver {
 
@@ -232,8 +233,9 @@ private:
         return *this;
     }
 
-};  // PQS::Solver
+};  // PQS::pqs::Solver class
 
+}  // PQS::pqs namespace
 }  // PQS namespace
 
 #endif

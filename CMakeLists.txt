@@ -172,6 +172,10 @@ configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS/kernels)
 
+# LSM
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/LSM)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/LSM/kernels)
+
 # PQS programs
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/programs)
 

@@ -24,7 +24,7 @@ else (SINGLE_PRECISION)
 endif (SINGLE_PRECISION)
 
 # Generate fortran files
-configure_file(pqs_kernels_2d.f.in pqs_kernels_2d.f)
+configure_file(kernels_2d.f.in kernels_2d.f)
 #configure_file(spatial_derivatives3d.f.in spatial_derivatives3d.f)
 
 # --------------------------------------------------------------
@@ -39,9 +39,14 @@ file(GLOB SOURCE_FILES
      ${CMAKE_CURRENT_BINARY_DIR}/*.f)
 add_library(pqs_kernels ${SOURCE_FILES})
 
-# Copy header files to build directory
+# Copy header files to build directory (whenever header files change)
 file(GLOB HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-file(COPY ${HEADER_FILES} DESTINATION ${CMAKE_BINARY_DIR}/include/pqs)
+foreach(HEADER_FILE ${HEADER_FILES})
+    get_filename_component(FILENAME ${HEADER_FILE} NAME)
+    configure_file(${HEADER_FILE}
+                   ${BUILD_INCLUDE_DIR_PQS}/pqs/${FILENAME}
+                   COPYONLY)
+endforeach(HEADER_FILE)
 
 # --------------------------------------------------------------
 # Prepare build directory
@@ -55,7 +60,7 @@ file(MAKE_DIRECTORY ${BUILD_LIBRARY_DIR})
 # ----------------------------------------------------------------------
 
 # Header files
-install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}
+install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}/pqs
         FILES_MATCHING PATTERN "*.h")
 
 # Library

@@ -26,15 +26,16 @@
 
 // PQS headers
 #include "PQS/PQS_config.h"                // IWYU pragma: keep
-#include "PQS/Solver.h"                    // for Solver
+#include "PQS/pqs/Solver.h"                // for Solver
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
 
 
-// --- Implementation for PQS::Solver methods
+// --- Implementation for PQS::pqs::Solver methods
 
 namespace PQS {
+namespace pqs {
 
 // Constructor
 Solver::Solver(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy) {
@@ -61,4 +62,5 @@ void Solver::printClassData(ostream& os) const
     os << "===================================" << endl << endl;
 }
 
+} // PQS::pqs namespace
 } // PQS namespace
