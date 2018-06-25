@@ -144,7 +144,8 @@ public:
     /*!
      * This constructor for GridManager creates a TODO
      */
-    GridManager(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
+    GridManager(boost::shared_ptr<tbox::Database> config_db,
+                boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
 
     /*!
      * The destructor for GridManager does nothing.
@@ -403,15 +404,13 @@ public:
      *
      * Parameters
      * ----------
-     * cycle: [unused] current cycle number
-     *
-     * time: [unused] current simulation time
+     * None
      *
      * Return value
      * ------------
      * false
      */
-    virtual bool everUsesTimeIntegration(int cycle, double time) const {
+    virtual bool everUsesTimeIntegration() const {
         return false;
     }
 
@@ -522,7 +521,7 @@ private:
     /*
      * Load configuration parameters from specified database.
      */
-    void loadConfiguration(const boost::shared_ptr<tbox::Database>& db);
+    void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
 
     /*
      * Private copy constructor to prevent use.

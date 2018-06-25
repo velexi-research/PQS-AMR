@@ -144,7 +144,8 @@ public:
     /*!
      * This constructor for Solver creates a TODO
      */
-    Solver(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+    Solver(boost::shared_ptr<tbox::Database> config_db,
+           boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
            boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy);
 
     /*!
@@ -211,7 +212,7 @@ private:
     /*
      * Load configuration parameters from specified database.
      */
-    void loadConfiguration(const boost::shared_ptr<tbox::Database>& db);
+    void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
 
     /*
      * Private copy constructor to prevent use.

@@ -16,22 +16,25 @@
  */
 
 // Standard library headers
-#include <cstddef>                         // for NULL
-#include <sstream>                         // for operator<<, basic_ostream
+#include <cstddef>
+#include <sstream>
 
 // Boost headers
-#include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr, operator==
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 // SAMRAI headers
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 
 // PQS headers
-#include "PQS/PQS_config.h"                // IWYU pragma: keep
-#include "PQS/pqs/GridManager.h"           // for GridManager
+#include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/pqs/GridManager.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
+namespace SAMRAI { namespace tbox { class Database; } }
 
+
+// --- Implementation for PQS::pqs::GridManager methods
 
 namespace PQS {
 namespace pqs {
@@ -40,6 +43,7 @@ namespace pqs {
 
 // Constructor
 GridManager::GridManager(
+    boost::shared_ptr<tbox::Database> config_db,
     boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy):
     mesh::TagAndInitializeStrategy(d_object_name)
 {
