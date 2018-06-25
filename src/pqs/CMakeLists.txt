@@ -3,14 +3,8 @@
 # --------------------------------------------------------------
 
 # CMake initialization: No customizations
+# Build parameters: No customizations
 # Build requirements: No customizations
-
-# --------------------------------------------------------------
-# Build parameters
-# --------------------------------------------------------------
-
-# Set output directory for executables
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_EXECUTABLE_DIR})
 
 # --------------------------------------------------------------
 # Build targets

@@ -48,13 +48,6 @@ foreach(HEADER_FILE ${HEADER_FILES})
                    COPYONLY)
 endforeach(HEADER_FILE)
 
-# --------------------------------------------------------------
-# Prepare build directory
-# --------------------------------------------------------------
-
-# Create build output directories
-file(MAKE_DIRECTORY ${BUILD_LIBRARY_DIR})
-
 # ----------------------------------------------------------------------
 # Installation
 # ----------------------------------------------------------------------
