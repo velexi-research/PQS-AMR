@@ -1,7 +1,7 @@
-/*! \file Solver.h
+/*! \file DataInitStrategy.h
  *
  * \brief
- * Header file for Solver class.
+ * Header file for DataInitStrategy class.
  */
 
 /*
@@ -15,10 +15,10 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_Solver_h
-#define INCLUDED_PQS_pqs_Solver_h
+#ifndef INCLUDED_PQS_pqs_DataInitStrategy_h
+#define INCLUDED_PQS_pqs_DataInitStrategy_h
 
-/*! \class PQS::pqs::Solver
+/*! \class PQS::pqs::DataInitStrategy
  *
  * \brief
  * TODO: add description
@@ -115,13 +115,9 @@
 // SAMRAI headers
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/PatchHierarchy.h"
-#include "SAMRAI/mesh/GriddingAlgorithm.h"
-#include "SAMRAI/tbox/Database.h"
 
 // PQS headers
 #include "PQS/PQS_config.h"
-#include "PQS/pqs/GridManager.h"
-#include "PQS/pqs/DataInitStrategy.h"
 
 // Namespaces
 using namespace std;
@@ -130,27 +126,26 @@ using namespace SAMRAI;
 // Class/type declarations
 
 
-// --- PQS::pqs::Solver Class
+// --- PQS::pqs::DataInitStrategy Class
 
 namespace PQS {
 namespace pqs {
 
-class Solver {
+class DataInitStrategy {
 
 public:
 
     //! @{
 
     /*!
-     * This constructor for Solver creates a TODO
+     * This constructor for DataInitStrategy creates a TODO
      */
-    Solver(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
-           boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy);
+    DataInitStrategy(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
 
     /*!
-     * The destructor for Solver does nothing.
+     * The destructor for DataInitStrategy does nothing.
      */
-    virtual ~Solver(){};
+    virtual ~DataInitStrategy(){};
 
     //! @{
     /*!
@@ -196,12 +191,10 @@ protected:
      ****************************************************************/
 
     // object name
-    const string d_object_name = "PQS::Solver";
+    const string d_object_name = "PQS::DataInitStrategy";
 
     // Grid management
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
-    boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_alg;
-    boost::shared_ptr<pqs::GridManager> d_grid_manager;
 
     // TODO
     // Data management
@@ -209,37 +202,32 @@ protected:
 private:
 
     /*
-     * Load configuration parameters from specified database.
-     */
-    void loadConfiguration(const boost::shared_ptr<tbox::Database>& db);
-
-    /*
      * Private copy constructor to prevent use.
      *
      * Parameters
      * ----------
-     * rhs: Solver object to copy
+     * rhs: DataInitStrategy object to copy
      *
      */
-    Solver(const Solver& rhs){}
+    DataInitStrategy(const DataInitStrategy& rhs){}
 
     /*
      * Private assignment operator to prevent use.
      *
      * Parameters
      * ----------
-     * rhs: Solver object to copy
+     * rhs: DataInitStrategy object to copy
      *
      * Return value
      * ------------
-     * return Solver object
+     * return DataInitStrategy object
      *
      */
-    const Solver& operator=(const Solver& rhs) {
+    const DataInitStrategy& operator=(const DataInitStrategy& rhs) {
         return *this;
     }
 
-};  // PQS::pqs::Solver class
+};  // PQS::pqs::DataInitStrategy class
 
 }  // PQS::pqs namespace
 }  // PQS namespace

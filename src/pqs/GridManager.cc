@@ -1,7 +1,7 @@
-/*! \file Solver.cc
+/*! \file GridManager.cc
  *
  * \brief
- * Implementation file for Solver class.
+ * Implementation file for GridManager class.
  */
 
 /*
@@ -23,50 +23,54 @@
 #include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr, operator==
 
 // SAMRAI headers
+#include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 
 // PQS headers
 #include "PQS/PQS_config.h"                // IWYU pragma: keep
-#include "PQS/pqs/Solver.h"                // for Solver
+#include "PQS/pqs/GridManager.h"           // for GridManager
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
-namespace PQS { namespace pqs { class DataInitStrategy; } }
 
-
-// --- Implementation for PQS::pqs::Solver methods
 
 namespace PQS {
 namespace pqs {
 
+// --- Implementation of public PQS::pqs::GridManager methods
+
 // Constructor
-Solver::Solver(
-        boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
-        boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy) {
+GridManager::GridManager(
+    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy):
+    mesh::TagAndInitializeStrategy(d_object_name)
+{
     // Check parameters
     if (patch_hierarchy == NULL) {
-        // TODO
-    }
-    if (data_init_strategy == NULL) {
         // TODO
     }
 
     d_patch_hierarchy = patch_hierarchy;
 }
 
-// printClassData()
-void Solver::printClassData(ostream& os) const
+void GridManager::printClassData(ostream& os) const
 {
     os << endl
        << "===================================" << endl;
-    os << "PQS::Solver" << endl;
+    os << "PQS::GridManager" << endl;
 
     os << "Object Pointers" << endl;
     os << "---------------" << endl;
-    os << "(Solver*) this = " << (Solver*) this << endl;
+    os << "(GridManager*) this = " << (GridManager*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
 
     os << "===================================" << endl << endl;
 }
+
+// --- Implementation of private PQS::pqs::GridManager methods
+
+// Copy constructor
+GridManager::GridManager(const GridManager& rhs):
+    mesh::TagAndInitializeStrategy(d_object_name)
+{}
 
 } // PQS::pqs namespace
 } // PQS namespace

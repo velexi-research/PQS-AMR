@@ -1,7 +1,7 @@
-/*! \file Solver.cc
+/*! \file DataInitStrategy.cc
  *
  * \brief
- * Implementation file for Solver class.
+ * Implementation file for DataInitStrategy class.
  */
 
 /*
@@ -26,27 +26,21 @@
 
 // PQS headers
 #include "PQS/PQS_config.h"                // IWYU pragma: keep
-#include "PQS/pqs/Solver.h"                // for Solver
+#include "PQS/pqs/DataInitStrategy.h"                // for DataInitStrategy
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
-namespace PQS { namespace pqs { class DataInitStrategy; } }
 
 
-// --- Implementation for PQS::pqs::Solver methods
+// --- Implementation for PQS::pqs::DataInitStrategy methods
 
 namespace PQS {
 namespace pqs {
 
 // Constructor
-Solver::Solver(
-        boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
-        boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy) {
+DataInitStrategy::DataInitStrategy(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy) {
     // Check parameters
     if (patch_hierarchy == NULL) {
-        // TODO
-    }
-    if (data_init_strategy == NULL) {
         // TODO
     }
 
@@ -54,15 +48,15 @@ Solver::Solver(
 }
 
 // printClassData()
-void Solver::printClassData(ostream& os) const
+void DataInitStrategy::printClassData(ostream& os) const
 {
     os << endl
        << "===================================" << endl;
-    os << "PQS::Solver" << endl;
+    os << "PQS::DataInitStrategy" << endl;
 
     os << "Object Pointers" << endl;
     os << "---------------" << endl;
-    os << "(Solver*) this = " << (Solver*) this << endl;
+    os << "(DataInitStrategy*) this = " << (DataInitStrategy*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
 
     os << "===================================" << endl << endl;
