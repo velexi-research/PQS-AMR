@@ -58,6 +58,40 @@ GridManager::GridManager(
     d_patch_hierarchy = patch_hierarchy;
 }
 
+void GridManager::initializeLevelData(
+    const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+    const int patch_level_number,
+    const double init_data_time,
+    const bool can_be_refined,
+    const bool initial_time,
+    const boost::shared_ptr<hier::PatchLevel>& old_patch_level,
+    const bool allocate_data)
+{
+    // TODO
+}
+
+void GridManager::resetHierarchyConfiguration(
+    const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+    const int coarsest_patch_level_number,
+    const int finest_patch_level_number)
+{
+    // TODO
+}
+
+void GridManager::tagCellsForRefinement(
+    const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+    const int patch_level_number,
+    const int regrid_cycle,
+    const double regrid_time,
+    const int tag_id,
+    const bool initial_time,
+    const bool coarsest_sync_patch_level,
+    const bool can_be_refined,
+    const double regrid_start_time)
+{
+    // TODO
+}
+
 void GridManager::printClassData(ostream& os) const
 {
     os << endl;
@@ -68,6 +102,28 @@ void GridManager::printClassData(ostream& os) const
 
     os << endl;
     d_data_init_strategy->printClassData(os);
+}
+
+bool GridManager::refineUserBoxInputOnly(int cycle, double time)
+{
+    // TODO
+    return false;
+}
+
+bool GridManager::getUserSuppliedRefineBoxes(
+    hier::BoxContainer& refine_boxes,
+    const int patch_level_number,
+    const int cycle,
+    const double time)
+{
+    // TODO
+    return false;
+}
+
+void GridManager::resetRefineBoxes(
+    const hier::BoxContainer& refine_boxes,
+    const int patch_level_number)
+{
 }
 
 // --- Implementation of private PQS::pqs::GridManager methods
