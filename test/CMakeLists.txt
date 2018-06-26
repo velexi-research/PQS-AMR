@@ -20,11 +20,14 @@ set(PQS_AMR_TESTS ${CMAKE_PROJECT_NAME}-tests)
 
 # Source files containing tests
 file(GLOB TEST_SOURCE_FILES
-     ${PROJECT_SOURCE_DIR}/test/*.cc)
+     ${PROJECT_SOURCE_DIR}/test/*/*.cc)
 
 add_executable(${PQS_AMR_TESTS} EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
 target_link_libraries(${PQS_AMR_TESTS}
                       pqs
+                      ${SAMRAI_LIBS}
+                      ${HDF5_C_LIBRARY_hdf5}
+                      ${MPI_LIBRARY}
                       gtest
                       gtest_main
                       ${CMAKE_THREAD_LIBS_INIT})
