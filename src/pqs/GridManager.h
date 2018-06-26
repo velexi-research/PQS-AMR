@@ -106,19 +106,19 @@
 
 // --- Headers, namespaces, and type declarations
 
-// Standard headers
+// Standard
 #include <ostream>
 
-// Boost headers
+// Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-// SAMRAI headers
+// SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 #include "SAMRAI/tbox/Database.h"
 
-// PQS headers
+// PQS
 #include "PQS/PQS_config.h"
 #include "PQS/pqs/DataInitStrategy.h"
 
@@ -148,9 +148,9 @@ public:
                 boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
 
     /*!
-     * The destructor for GridManager does nothing.
+     * Empty default destructor.
      */
-    virtual ~GridManager(){};
+    virtual ~GridManager() {};
 
     //! @{
     /*!
@@ -483,12 +483,11 @@ public:
      ************************************************************************/
 
     /*!
-     * printClassData() prints the values of the data members for
-     * an instance of the LevelSetMethodAlgorithm class.
+     * Print the values of the data members the object.
      *
      * Parameters
      * ----------
-     * os: output stream to write object information
+     * os: output stream to write object information to
      *
      * Return value
      * ------------
@@ -506,8 +505,10 @@ protected:
      *
      ****************************************************************/
 
-    // object name
-    const string d_object_name = "PQS::GridManager";
+    // Object name
+    //
+    // Note: used only to initialize TagAndInitializeStrategy base class
+    const string d_object_name = "PQS::pqs::GridManager";
 
     // Grid management
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;

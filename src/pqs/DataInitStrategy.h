@@ -106,17 +106,16 @@
 
 // --- Headers, namespaces, and type declarations
 
-// Standard headers
+// Standard
 #include <ostream>
 
-// Boost headers
+// Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-// SAMRAI headers
+// SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/hier/PatchHierarchy.h"
 
-// PQS headers
+// PQS
 #include "PQS/PQS_config.h"
 
 // Namespaces
@@ -138,14 +137,14 @@ public:
     //! @{
 
     /*!
-     * This constructor for DataInitStrategy creates a TODO
+     * Empty default constructor.
      */
-    DataInitStrategy(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
+    DataInitStrategy() {};
 
     /*!
-     * The destructor for DataInitStrategy does nothing.
+     * Empty default destructor.
      */
-    virtual ~DataInitStrategy(){};
+    virtual ~DataInitStrategy() {};
 
     //! @{
     /*!
@@ -156,12 +155,11 @@ public:
      ************************************************************************/
 
     /*!
-     * printClassData() prints the values of the data members for
-     * an instance of the LevelSetMethodAlgorithm class.
+     * Print the values of the data members for object.
      *
      * Parameters
      * ----------
-     * os: output stream to write object information
+     * os: output stream to write object information to
      *
      * Return value
      * ------------
@@ -170,34 +168,6 @@ public:
     virtual void printClassData(ostream& os) const;
 
     //! @}
-
-    //! @{
-    /*!
-     ****************************************************************
-     *
-     * @ Accessor methods for solver parameters
-     *
-     ****************************************************************/
-
-    // TODO
-    //! @}
-
-protected:
-
-    /****************************************************************
-     *
-     * Data Members
-     *
-     ****************************************************************/
-
-    // object name
-    const string d_object_name = "PQS::DataInitStrategy";
-
-    // Grid management
-    boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
-
-    // TODO
-    // Data management
 
 private:
 

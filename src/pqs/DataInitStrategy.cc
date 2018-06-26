@@ -15,21 +15,16 @@
  * ---------------------------------------------------------------------
  */
 
-// Standard library headers
-#include <cstddef>                         // for NULL
-#include <sstream>                         // for operator<<, basic_ostream
+// --- Headers, namespaces, and type declarations
 
-// Boost headers
-#include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr, operator==
+// Standard library
+#include <sstream>
 
-// SAMRAI headers
-
-// PQS headers
-#include "PQS/PQS_config.h"                // IWYU pragma: keep
-#include "PQS/pqs/DataInitStrategy.h"                // for DataInitStrategy
+// PQS
+#include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/pqs/DataInitStrategy.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class PatchHierarchy; } }
 
 
 // --- Implementation for PQS::pqs::DataInitStrategy methods
@@ -37,29 +32,11 @@ namespace SAMRAI { namespace hier { class PatchHierarchy; } }
 namespace PQS {
 namespace pqs {
 
-// Constructor
-DataInitStrategy::DataInitStrategy(boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy) {
-    // Check parameters
-    if (patch_hierarchy == NULL) {
-        // TODO
-    }
-
-    d_patch_hierarchy = patch_hierarchy;
-}
-
-// printClassData()
 void DataInitStrategy::printClassData(ostream& os) const
 {
-    os << endl
-       << "===================================" << endl;
-    os << "PQS::DataInitStrategy" << endl;
-
-    os << "Object Pointers" << endl;
-    os << "---------------" << endl;
+    os << endl;
+    os << "PQS::pqs::DataInitStrategy::printClassData..." << endl;
     os << "(DataInitStrategy*) this = " << (DataInitStrategy*) this << endl;
-    os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
-
-    os << "===================================" << endl << endl;
 }
 
 } // PQS::pqs namespace

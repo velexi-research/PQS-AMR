@@ -106,19 +106,19 @@
 
 // --- Headers, namespaces, and type declarations
 
-// Standard headers
+// Standard library
 #include <ostream>
 
-// Boost headers
+// Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-// SAMRAI headers
+// SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
 #include "SAMRAI/tbox/Database.h"
 
-// PQS headers
+// PQS
 #include "PQS/PQS_config.h"
 #include "PQS/pqs/GridManager.h"
 #include "PQS/pqs/DataInitStrategy.h"
@@ -149,9 +149,9 @@ public:
            boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy);
 
     /*!
-     * The destructor for Solver does nothing.
+     * Empty default destructor.
      */
-    virtual ~Solver(){};
+    virtual ~Solver() {};
 
     //! @{
     /*!
@@ -162,28 +162,17 @@ public:
      ************************************************************************/
 
     /*!
-     * printClassData() prints the values of the data members for
-     * an instance of the LevelSetMethodAlgorithm class.
+     * Print the values of the data members the object.
      *
      * Parameters
      * ----------
-     * os: output stream to write object information
+     * os: output stream to write object information to
      *
      * Return value
      * ------------
      * None
      */
     virtual void printClassData(ostream& os) const;
-
-    //! @}
-
-    //! @{
-    /*!
-     ****************************************************************
-     *
-     * @ Accessor methods for solver parameters
-     *
-     ****************************************************************/
 
     // TODO
     //! @}
@@ -195,9 +184,6 @@ protected:
      * Data Members
      *
      ****************************************************************/
-
-    // object name
-    const string d_object_name = "PQS::Solver";
 
     // Grid management
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;

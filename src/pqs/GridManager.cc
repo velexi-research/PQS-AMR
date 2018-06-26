@@ -15,19 +15,22 @@
  * ---------------------------------------------------------------------
  */
 
-// Standard library headers
+// --- Headers, namespaces, and type declarations
+
+// Standard library
 #include <cstddef>
 #include <sstream>
 
-// Boost headers
+// Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-// SAMRAI headers
+// SAMRAI
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 
-// PQS headers
+// PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/pqs/GridManager.h"
+#include "PQS/pqs/DataInitStrategy.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
@@ -57,16 +60,14 @@ GridManager::GridManager(
 
 void GridManager::printClassData(ostream& os) const
 {
-    os << endl
-       << "===================================" << endl;
-    os << "PQS::GridManager" << endl;
-
-    os << "Object Pointers" << endl;
-    os << "---------------" << endl;
+    os << endl;
+    os << "PQS::pqs::GridManager::printClassData..." << endl;
     os << "(GridManager*) this = " << (GridManager*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
+    os << "d_data_init_strategy = " << d_data_init_strategy.get() << endl;
 
-    os << "===================================" << endl << endl;
+    os << endl;
+    d_data_init_strategy->printClassData(os);
 }
 
 // --- Implementation of private PQS::pqs::GridManager methods

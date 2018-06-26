@@ -15,22 +15,24 @@
  * ---------------------------------------------------------------------
  */
 
-// Standard library headers
+// --- Headers, namespaces, and type declarations
+
+// Standard library
 #include <cstddef>
 #include <sstream>
 #include <stdexcept>
 
-// Boost headers
+// Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-// SAMRAI headers
+// SAMRAI
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/mesh/ChopAndPackLoadBalancer.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
 #include "SAMRAI/tbox/Database.h"
 
-// PQS headers
+// PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/pqs/GridManager.h"
 #include "PQS/pqs/Solver.h"
@@ -38,7 +40,6 @@
 // Class/type declarations
 namespace SAMRAI { namespace mesh { class TagAndInitializeStrategy; } }
 namespace PQS { namespace pqs { class DataInitStrategy; } }
-
 
 
 // --- Implementation for PQS::pqs::Solver methods
@@ -124,16 +125,18 @@ void Solver::loadConfiguration(
 
 void Solver::printClassData(ostream& os) const
 {
-    os << endl
-       << "===================================" << endl;
-    os << "PQS::Solver" << endl;
-
-    os << "Object Pointers" << endl;
-    os << "---------------" << endl;
+    os << endl;
+    os << "PQS::pqs::Solver::printClassData..." << endl;
     os << "(Solver*) this = " << (Solver*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
+    os << "d_gridding_alg = " << d_gridding_alg.get() << endl;
+    os << "d_grid_manager = " << d_grid_manager.get() << endl;
 
-    os << "===================================" << endl << endl;
+    os << endl;
+    d_gridding_alg->printClassData(os);
+
+    os << endl;
+    d_grid_manager->printClassData(os);
 }
 
 } // PQS::pqs namespace
