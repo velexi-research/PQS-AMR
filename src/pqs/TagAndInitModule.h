@@ -1,7 +1,7 @@
-/*! \file GridManager.h
+/*! \file TagAndInitModule.h
  *
  * \brief
- * Header file for GridManager class.
+ * Header file for TagAndInitModule class.
  */
 
 /*
@@ -15,10 +15,10 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_GridManager_h
-#define INCLUDED_PQS_pqs_GridManager_h
+#ifndef INCLUDED_PQS_pqs_TagAndInitModule_h
+#define INCLUDED_PQS_pqs_TagAndInitModule_h
 
-/*! \class PQS::pqs::GridManager
+/*! \class PQS::pqs::TagAndInitModule
  *
  * \brief
  * TODO: add description
@@ -129,12 +129,12 @@ using namespace SAMRAI;
 // Class/type declarations
 
 
-// --- PQS::pqs::GridManager Class
+// --- PQS::pqs::TagAndInitModule Class
 
 namespace PQS {
 namespace pqs {
 
-class GridManager:
+class TagAndInitModule:
     public mesh::TagAndInitializeStrategy
 {
 public:
@@ -142,15 +142,24 @@ public:
     //! @{
 
     /*!
-     * This constructor for GridManager creates a TODO
+     ************************************************************************
+     *
+     * @name Constructor and destructor
+     *
+     ************************************************************************/
+
+    /*!
+     * This constructor for TagAndInitModule creates a TODO
      */
-    GridManager(boost::shared_ptr<tbox::Database> config_db,
+    TagAndInitModule(boost::shared_ptr<tbox::Database> config_db,
                 boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
 
     /*!
      * Empty default destructor.
      */
-    virtual ~GridManager() {};
+    virtual ~TagAndInitModule() {};
+
+    //! @}
 
     //! @{
     /*!
@@ -508,7 +517,7 @@ protected:
     // Object name
     //
     // Note: used only to initialize TagAndInitializeStrategy base class
-    const string d_object_name = "PQS::pqs::GridManager";
+    const string d_object_name = "PQS::pqs::TagAndInitModule";
 
     // Grid management
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
@@ -529,26 +538,26 @@ private:
      *
      * Parameters
      * ----------
-     * rhs: GridManager object to copy
+     * rhs: TagAndInitModule object to copy
      */
-    GridManager(const GridManager& rhs);
+    TagAndInitModule(const TagAndInitModule& rhs);
 
     /*
      * Private assignment operator to prevent use.
      *
      * Parameters
      * ----------
-     * rhs: GridManager object to copy
+     * rhs: TagAndInitModule object to copy
      *
      * Return value
      * ------------
-     * GridManager object
+     * TagAndInitModule object
      */
-    const GridManager& operator=(const GridManager& rhs) {
+    const TagAndInitModule& operator=(const TagAndInitModule& rhs) {
         return *this;
     }
 
-};  // PQS::pqs::GridManager class
+};  // PQS::pqs::TagAndInitModule class
 
 }  // PQS::pqs namespace
 }  // PQS namespace

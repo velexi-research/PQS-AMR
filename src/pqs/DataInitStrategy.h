@@ -137,6 +137,13 @@ public:
     //! @{
 
     /*!
+     ************************************************************************
+     *
+     * @name Constructor and destructor
+     *
+     ************************************************************************/
+
+    /*!
      * Empty default constructor.
      */
     DataInitStrategy() {};
@@ -145,6 +152,8 @@ public:
      * Empty default destructor.
      */
     virtual ~DataInitStrategy() {};
+
+    //! @}
 
     //! @{
     /*!

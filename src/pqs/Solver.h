@@ -120,8 +120,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"
-#include "PQS/pqs/GridManager.h"
 #include "PQS/pqs/DataInitStrategy.h"
+#include "PQS/pqs/TagAndInitModule.h"
 
 // Namespaces
 using namespace std;
@@ -142,6 +142,13 @@ public:
     //! @{
 
     /*!
+     ************************************************************************
+     *
+     * @name Constructor and destructor
+     *
+     ************************************************************************/
+
+    /*!
      * This constructor for Solver creates a TODO
      */
     Solver(boost::shared_ptr<tbox::Database> config_db,
@@ -152,6 +159,37 @@ public:
      * Empty default destructor.
      */
     virtual ~Solver() {};
+
+    //! @}
+
+    //! @{
+    /*!
+     ************************************************************************
+     *
+     * @name Methods for managing grid configuration
+     *
+     ************************************************************************/
+
+    /*!
+     * initializePatchHierarchy() constructs the PatchHierarchy and
+     * initializes the level set functions and variables involved in
+     * the computation of the velocity field.
+     *
+     * Arguments:
+     *  - time (in):   simulation time that PatchHierarchy is being
+     *                 initialized
+     *
+     * Return value:   none
+     *
+     * NOTES:
+     *  - all LevelSetMethodVelocityFieldStrategy objects required to
+     *    calculate the velocity field MUST be registered using
+     *    registerVelocityFieldStrategy() before invoking
+     *    initializePatchHierarchy().
+     */
+    virtual void initializePatchHierarchy(const LSMLIB_REAL time);
+
+    //! @}
 
     //! @{
     /*!
@@ -188,7 +226,7 @@ protected:
     // Grid management
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
     boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_alg;
-    boost::shared_ptr<pqs::GridManager> d_grid_manager;
+    boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module;
 
     // TODO
     // Data management

@@ -34,8 +34,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/GridManager.h"
 #include "PQS/pqs/Solver.h"
+#include "PQS/pqs/TagAndInitModule.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace mesh { class TagAndInitializeStrategy; } }
@@ -93,17 +93,19 @@ Solver::Solver(
             new mesh::ChopAndPackLoadBalancer(d_patch_hierarchy->getDim(),
                 "LoadBalancer", load_balancer_config_db));
 
-    // Construct PQS::pqs::GridManager
-    boost::shared_ptr<tbox::Database> grid_manager_config_db;
-    if (config_db->isDatabase("GridManager")) {
-        grid_manager_config_db = config_db->getDatabase("GridManager");
+    // Construct PQS::pqs::TagAndInitModule
+    boost::shared_ptr<tbox::Database> tag_and_init_module_config_db;
+    if (config_db->isDatabase("TagAndInitModule")) {
+        tag_and_init_module_config_db =
+            config_db->getDatabase("TagAndInitModule");
     } else {
         throw runtime_error(
-            "'GridManager' section not found in configuration database");
+            "'TagAndInitModule' section not found in configuration database");
     }
-    boost::shared_ptr<pqs::GridManager> grid_manager =
-        boost::shared_ptr<pqs::GridManager>(
-            new pqs::GridManager(grid_manager_config_db, d_patch_hierarchy));
+    boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module =
+        boost::shared_ptr<pqs::TagAndInitModule>(
+            new pqs::TagAndInitModule(tag_and_init_module_config_db,
+                                      d_patch_hierarchy));
 
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
@@ -111,8 +113,9 @@ Solver::Solver(
         new mesh::GriddingAlgorithm(
             d_patch_hierarchy,
             "GriddingAlgorithm",
-            grid_manager_config_db,
-            boost::shared_ptr<mesh::TagAndInitializeStrategy>(grid_manager),
+            tag_and_init_module_config_db, // TODO
+            boost::shared_ptr<mesh::TagAndInitializeStrategy>(
+                d_tag_and_init_module),
             box_generator,
             load_balancer));
 }
@@ -130,13 +133,13 @@ void Solver::printClassData(ostream& os) const
     os << "(Solver*) this = " << (Solver*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
     os << "d_gridding_alg = " << d_gridding_alg.get() << endl;
-    os << "d_grid_manager = " << d_grid_manager.get() << endl;
+    os << "d_tag_and_init_module = " << d_tag_and_init_module.get() << endl;
 
     os << endl;
     d_gridding_alg->printClassData(os);
 
     os << endl;
-    d_grid_manager->printClassData(os);
+    d_tag_and_init_module->printClassData(os);
 }
 
 } // PQS::pqs namespace

@@ -1,7 +1,7 @@
-/*! \file GridManager.cc
+/*! \file TagAndInitModule.cc
  *
  * \brief
- * Implementation file for GridManager class.
+ * Implementation file for TagAndInitModule class.
  */
 
 /*
@@ -29,7 +29,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/GridManager.h"
+#include "PQS/pqs/TagAndInitModule.h"
 #include "PQS/pqs/DataInitStrategy.h"
 
 // Class/type declarations
@@ -37,15 +37,15 @@ namespace SAMRAI { namespace hier { class PatchHierarchy; } }
 namespace SAMRAI { namespace tbox { class Database; } }
 
 
-// --- Implementation for PQS::pqs::GridManager methods
+// --- Implementation for PQS::pqs::TagAndInitModule methods
 
 namespace PQS {
 namespace pqs {
 
-// --- Implementation of public PQS::pqs::GridManager methods
+// --- Implementation of public PQS::pqs::TagAndInitModule methods
 
 // Constructor
-GridManager::GridManager(
+TagAndInitModule::TagAndInitModule(
     boost::shared_ptr<tbox::Database> config_db,
     boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy):
     mesh::TagAndInitializeStrategy(d_object_name)
@@ -58,7 +58,7 @@ GridManager::GridManager(
     d_patch_hierarchy = patch_hierarchy;
 }
 
-void GridManager::initializeLevelData(
+void TagAndInitModule::initializeLevelData(
     const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
     const int patch_level_number,
     const double init_data_time,
@@ -70,7 +70,7 @@ void GridManager::initializeLevelData(
     // TODO
 }
 
-void GridManager::resetHierarchyConfiguration(
+void TagAndInitModule::resetHierarchyConfiguration(
     const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
     const int coarsest_patch_level_number,
     const int finest_patch_level_number)
@@ -78,7 +78,7 @@ void GridManager::resetHierarchyConfiguration(
     // TODO
 }
 
-void GridManager::tagCellsForRefinement(
+void TagAndInitModule::tagCellsForRefinement(
     const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
     const int patch_level_number,
     const int regrid_cycle,
@@ -92,25 +92,13 @@ void GridManager::tagCellsForRefinement(
     // TODO
 }
 
-void GridManager::printClassData(ostream& os) const
-{
-    os << endl;
-    os << "PQS::pqs::GridManager::printClassData..." << endl;
-    os << "(GridManager*) this = " << (GridManager*) this << endl;
-    os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
-    os << "d_data_init_strategy = " << d_data_init_strategy.get() << endl;
-
-    os << endl;
-    d_data_init_strategy->printClassData(os);
-}
-
-bool GridManager::refineUserBoxInputOnly(int cycle, double time)
+bool TagAndInitModule::refineUserBoxInputOnly(int cycle, double time)
 {
     // TODO
     return false;
 }
 
-bool GridManager::getUserSuppliedRefineBoxes(
+bool TagAndInitModule::getUserSuppliedRefineBoxes(
     hier::BoxContainer& refine_boxes,
     const int patch_level_number,
     const int cycle,
@@ -120,16 +108,28 @@ bool GridManager::getUserSuppliedRefineBoxes(
     return false;
 }
 
-void GridManager::resetRefineBoxes(
+void TagAndInitModule::resetRefineBoxes(
     const hier::BoxContainer& refine_boxes,
     const int patch_level_number)
 {
 }
 
-// --- Implementation of private PQS::pqs::GridManager methods
+void TagAndInitModule::printClassData(ostream& os) const
+{
+    os << endl;
+    os << "PQS::pqs::TagAndInitModule::printClassData..." << endl;
+    os << "(TagAndInitModule*) this = " << (TagAndInitModule*) this << endl;
+    os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
+    os << "d_data_init_strategy = " << d_data_init_strategy.get() << endl;
+
+    os << endl;
+    d_data_init_strategy->printClassData(os);
+}
+
+// --- Implementation of private PQS::pqs::TagAndInitModule methods
 
 // Copy constructor
-GridManager::GridManager(const GridManager& rhs):
+TagAndInitModule::TagAndInitModule(const TagAndInitModule& rhs):
     mesh::TagAndInitializeStrategy(d_object_name)
 {}
 
