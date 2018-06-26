@@ -49,6 +49,7 @@ set(EXTERNAL_PACKAGES_SOURCE_DIR ${PROJECT_SOURCE_DIR}/ext)
 # Build directory
 set(BUILD_EXECUTABLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(BUILD_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(LIBRARY_OUTPUT_PATH ${BUILD_LIBRARY_DIR})
 set(BUILD_INCLUDE_DIR ${CMAKE_BINARY_DIR}/include)
 set(BUILD_INCLUDE_DIR_PQS ${BUILD_INCLUDE_DIR}/PQS)
 
@@ -168,13 +169,13 @@ configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 # Build targets
 # ----------------------------------------------------------------------
 
-# PQS
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/PQS/kernels)
+# pqs
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/pqs)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/pqs/kernels)
 
-# LSM
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/LSM)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/LSM/kernels)
+# lsm
+#add_subdirectory(${PROJECT_SOURCE_DIR}/src/lsm)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/src/lsm/kernels)
 
 # PQS programs
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/programs)
