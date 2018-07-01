@@ -266,7 +266,6 @@ public:
      */
     virtual void printClassData(ostream& os) const;
 
-    // TODO
     //! @}
 
 protected:
@@ -283,6 +282,11 @@ protected:
     // TODO
 
     // --- PatchData IDs
+
+    // PatchData component selectors to organize variables by
+    // data management cycle requirements
+    hier::ComponentSelector d_permanent_variables;
+    hier::ComponentSelector d_intermediate_variables;
 
     // steady state fluid-fluid interface level set function before and
     // after increments of the interface curvature (which is related to

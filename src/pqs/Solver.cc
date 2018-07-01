@@ -27,6 +27,7 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 // SAMRAI
+#include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/VariableDatabase.h"
@@ -81,9 +82,11 @@ Solver::Solver(
     // Load configuration from config_db
     loadConfiguration(config_db);
 
-    /*
-     * Create PatchData for simulation variables
-     */
+    // Initialize PatchData component selectors
+    d_permanent_variables.clrAllFlags();
+    d_intermediate_variables.clrAllFlags();
+
+    // --- Create PatchData for simulation variables
 
     // get dimensionality of problem
     tbox::Dimension dim = d_patch_hierarchy->getDim();
@@ -118,14 +121,17 @@ Solver::Solver(
     boost::shared_ptr<hier::VariableContext> lsm_next_context =
         var_db->getContext("lsm_next");
 
-    d_phi_lsm_current_id =
+    d_phi_pqs_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            pqs_current_context,
                                            zero_ghostcell_width);
-    d_phi_lsm_next_id =
+    d_phi_pqs_next_id =
         var_db->registerVariableAndContext(phi_variable,
                                            pqs_next_context,
                                            zero_ghostcell_width);
+    d_permanent_variables.setFlag(d_phi_pqs_current_id);
+    d_intermediate_variables.setFlag(d_phi_pqs_next_id);
+
     d_phi_lsm_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_current_context,
@@ -134,6 +140,8 @@ Solver::Solver(
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_next_context,
                                            zero_ghostcell_width);
+    d_permanent_variables.setFlag(d_phi_lsm_current_id);
+    d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
     // psi (solid-pore interface)
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > psi_variable;
@@ -150,6 +158,7 @@ Solver::Solver(
         var_db->registerVariableAndContext(psi_variable,
                                            default_context,
                                            zero_ghostcell_width);
+    d_permanent_variables.setFlag(d_psi_id);
 
     // grad psi (solid-pore interface)
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > grad_psi_variable;
@@ -167,6 +176,7 @@ Solver::Solver(
         var_db->registerVariableAndContext(grad_psi_variable,
                                            default_context,
                                            zero_ghostcell_width);
+    d_intermediate_variables.setFlag(d_grad_psi_id);
 
     // normal velocity
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > normal_velocity_variable;
@@ -185,6 +195,7 @@ Solver::Solver(
         var_db->registerVariableAndContext(normal_velocity_variable,
                                            default_context,
                                            zero_ghostcell_width);
+    d_intermediate_variables.setFlag(d_normal_velocity_id);
 
     // external velocity
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> >
@@ -204,6 +215,7 @@ Solver::Solver(
         var_db->registerVariableAndContext(external_velocity_variable,
                                            default_context,
                                            zero_ghostcell_width);
+    d_intermediate_variables.setFlag(d_external_velocity_id);
 
     // curvature
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > curvature_variable;
@@ -221,6 +233,7 @@ Solver::Solver(
         var_db->registerVariableAndContext(curvature_variable,
                                            default_context,
                                            zero_ghostcell_width);
+    d_intermediate_variables.setFlag(d_curvature_id);
 
     // control volume
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > control_volume_variable;
@@ -238,6 +251,7 @@ Solver::Solver(
         var_db->registerVariableAndContext(control_volume_variable,
                                            default_context,
                                            zero_ghostcell_width);
+    d_intermediate_variables.setFlag(d_control_volume_id);
 
     /*
      * Construct grid management objects
@@ -275,7 +289,8 @@ Solver::Solver(
     boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module =
         boost::shared_ptr<pqs::TagAndInitModule>(
             new pqs::TagAndInitModule(tag_and_init_module_config_db,
-                                      d_patch_hierarchy));
+                                      data_init_strategy,
+                                      d_phi_pqs_current_id, d_psi_id));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
     d_gridding_alg = boost::shared_ptr<mesh::GriddingAlgorithm> (
