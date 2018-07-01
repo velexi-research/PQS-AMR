@@ -150,6 +150,10 @@ public:
 
     /*!
      * This constructor for Solver creates a TODO
+     *
+     * - Create simulation variables.
+     * - Register PatchData
+     * - Create SAMRAI::mesh::GriddingAlgorithm
      */
     Solver(boost::shared_ptr<tbox::Database> config_db,
            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
@@ -166,28 +170,46 @@ public:
     /*!
      ************************************************************************
      *
-     * @name Methods for managing grid configuration
+     * @name Interface dyanmics methods
      *
      ************************************************************************/
 
     /*!
-     * initializePatchHierarchy() constructs the PatchHierarchy and
-     * initializes the level set functions and variables involved in
-     * the computation of the velocity field.
+     * Equilibrate fluid-fluid interface.
      *
-     * Arguments:
-     *  - time (in):   simulation time that PatchHierarchy is being
-     *                 initialized
+     * Parameters
+     * ----------
+     * curvature: target curvature for steady-state interface
      *
-     * Return value:   none
+     * Return value
+     * ------------
+     * None
      *
-     * NOTES:
-     *  - all LevelSetMethodVelocityFieldStrategy objects required to
-     *    calculate the velocity field MUST be registered using
-     *    registerVelocityFieldStrategy() before invoking
-     *    initializePatchHierarchy().
+     * Notes
+     * -----
+     * - The steady-state interface is computed using the Slightly Compressible
+     *   Model (Prodanovic and Bryant, 2006).
      */
-    virtual void initializePatchHierarchy(const LSMLIB_REAL time);
+    virtual void equilibrateInterface(const double curvature);
+
+    /*!
+     * Advance fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * delta_curvature: curvature increment to apply to current fluid-fluid
+     *     interface
+     *
+     * Return value
+     * ------------
+     * None
+     *
+     * Notes
+     * -----
+     * - The new interface is computed using the Prescribed Curvature Model
+     *   (Prodanovic and Bryant, 2006).
+     */
+    virtual void advanceInterface(const double delta_curvature);
 
     //! @}
 
@@ -198,6 +220,38 @@ public:
      * @name Accessor methods for object parameters and state
      *
      ************************************************************************/
+
+    /*!
+     * Get current curvature of fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * current value of curvature
+     *
+     * Notes
+     * -----
+     * - The returned curvature value is only valid after either
+     *   equilibrateInteface() of advanceInteface() has been called.
+     */
+    virtual double getCurvature() const;
+
+    /*!
+     * Get number of curvature increments taken since the beginning of the
+     * simulation.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * curvature
+     */
+    virtual int getStep() const;
 
     /*!
      * Print the values of the data members the object.
@@ -223,13 +277,69 @@ protected:
      *
      ****************************************************************/
 
-    // Grid management
+    // --- Parameters
+
+    // PQS
+    // TODO
+
+    // --- PatchData IDs
+
+    // steady state fluid-fluid interface level set function before and
+    // after increments of the interface curvature (which is related to
+    // changes in the pressure difference across the fluid-fluid interface)
+    int d_phi_pqs_current_id;  // depth = 1
+    int d_phi_pqs_next_id;  // depth = 1
+
+    // fluid-fluid interface level set function during evolution of the
+    // interface towards steady-state
+    int d_phi_lsm_current_id;  // depth = 1
+    int d_phi_lsm_next_id;  // depth = 1
+
+    // solid-pore interface level set function
+    //
+    // Note: the solid phase is defined by the region where psi < 0
+    int d_psi_id;   // depth = 1
+    int d_grad_psi_id;  // depth = number of spatial dimensions
+
+    // velocities
+    int d_normal_velocity_id;  // depth = 1
+    int d_external_velocity_id;  // depth = number of spatial dimensions
+
+    // geometry
+    int d_curvature_id;  // depth = 1
+
+    // AMR data
+    int d_control_volume_id;  // depth = 1
+
+    // TODO
+    // int d_connectivity_label_id;  // depth = 1
+    // int d_phi_binary;  // depth = 1
+
+    // --- State
+
+    // PQS
+    double d_curvature;  // current value of prescribed curvature
+    int d_num_steps;  // number of prescribed curvature steps taken
+
+    // AMR
+    int d_regrid_count;
+
+    // --- Components
+
+    // SAMR grid
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
     boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_alg;
     boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module;
 
+    // Boundary conditions
+    //boost::shared_ptr<BoundaryConditionModule> d_bc_module;
+    //tbox::Array<hier::IntVector> d_lower_bc_phi;
+    //tbox::Array<hier::IntVector> d_upper_bc_phi;
+    //tbox::Array<hier::IntVector> d_lower_bc_psi;
+    //tbox::Array<hier::IntVector> d_upper_bc_psi;
+
+    // SAMRAI communication schedules
     // TODO
-    // Data management
 
 private:
 
@@ -243,21 +353,21 @@ private:
      *
      * Parameters
      * ----------
-     * rhs: Solver object to copy
+     * rhs: object to copy
      *
      */
-    Solver(const Solver& rhs){}
+    Solver(const Solver& rhs) {};
 
     /*
      * Private assignment operator to prevent use.
      *
      * Parameters
      * ----------
-     * rhs: Solver object to copy
+     * rhs: object on right-hand side of assignment operator
      *
      * Return value
      * ------------
-     * return Solver object
+     * return object
      *
      */
     const Solver& operator=(const Solver& rhs) {
