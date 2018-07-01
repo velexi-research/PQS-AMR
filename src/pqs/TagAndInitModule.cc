@@ -37,12 +37,12 @@ namespace SAMRAI { namespace hier { class PatchHierarchy; } }
 namespace SAMRAI { namespace tbox { class Database; } }
 
 
-// --- Implementation for PQS::pqs::TagAndInitModule methods
+// --- Class implementation
 
 namespace PQS {
 namespace pqs {
 
-// --- Implementation of public PQS::pqs::TagAndInitModule methods
+// --- Implementation of public methods
 
 // Constructor
 TagAndInitModule::TagAndInitModule(
@@ -56,7 +56,7 @@ TagAndInitModule::TagAndInitModule(
     }
 
     d_patch_hierarchy = patch_hierarchy;
-}
+} // TagAndInitModule::TagAndInitModule()
 
 void TagAndInitModule::initializeLevelData(
     const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
@@ -68,7 +68,7 @@ void TagAndInitModule::initializeLevelData(
     const bool allocate_data)
 {
     // TODO
-}
+} // TagAndInitModule::initializeLevelData()
 
 void TagAndInitModule::resetHierarchyConfiguration(
     const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
@@ -76,7 +76,7 @@ void TagAndInitModule::resetHierarchyConfiguration(
     const int finest_patch_level_number)
 {
     // TODO
-}
+} // TagAndInitModule::resetHierarchyConfiguration()
 
 void TagAndInitModule::tagCellsForRefinement(
     const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
@@ -90,13 +90,13 @@ void TagAndInitModule::tagCellsForRefinement(
     const double regrid_start_time)
 {
     // TODO
-}
+} // TagAndInitModule::tagCellsForRefinement()
 
 bool TagAndInitModule::refineUserBoxInputOnly(int cycle, double time)
 {
     // TODO
     return false;
-}
+} // TagAndInitModule::refineUserBoxInputOnly()
 
 bool TagAndInitModule::getUserSuppliedRefineBoxes(
     hier::BoxContainer& refine_boxes,
@@ -106,13 +106,13 @@ bool TagAndInitModule::getUserSuppliedRefineBoxes(
 {
     // TODO
     return false;
-}
+} // TagAndInitModule::getUserSuppliedRefineBoxes()
 
 void TagAndInitModule::resetRefineBoxes(
     const hier::BoxContainer& refine_boxes,
     const int patch_level_number)
 {
-}
+} // TagAndInitModule::resetRefineBoxes()
 
 void TagAndInitModule::printClassData(ostream& os) const
 {
@@ -124,14 +124,15 @@ void TagAndInitModule::printClassData(ostream& os) const
 
     os << endl;
     d_data_init_strategy->printClassData(os);
-}
+} // TagAndInitModule::printClassData()
 
-// --- Implementation of private PQS::pqs::TagAndInitModule methods
+// --- Implementation of private methods
 
 // Copy constructor
 TagAndInitModule::TagAndInitModule(const TagAndInitModule& rhs):
     mesh::TagAndInitializeStrategy(d_object_name)
-{}
+{
+} // TagAndInitModule::TagAndInitModule()
 
 } // PQS::pqs namespace
 } // PQS namespace

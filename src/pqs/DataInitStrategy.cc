@@ -27,10 +27,12 @@
 // Class/type declarations
 
 
-// --- Implementation for PQS::pqs::DataInitStrategy methods
+// --- Class implementation
 
 namespace PQS {
 namespace pqs {
+
+// --- Implementation of public methods
 
 void DataInitStrategy::printClassData(ostream& os) const
 {

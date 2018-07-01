@@ -538,7 +538,7 @@ private:
      *
      * Parameters
      * ----------
-     * rhs: TagAndInitModule object to copy
+     * rhs: object to copy
      */
     TagAndInitModule(const TagAndInitModule& rhs);
 
@@ -547,11 +547,11 @@ private:
      *
      * Parameters
      * ----------
-     * rhs: TagAndInitModule object to copy
+     * rhs: object on right-hand side of assignment operator
      *
      * Return value
      * ------------
-     * TagAndInitModule object
+     * return object
      */
     const TagAndInitModule& operator=(const TagAndInitModule& rhs) {
         return *this;

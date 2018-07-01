@@ -185,7 +185,7 @@ private:
      *
      * Parameters
      * ----------
-     * rhs: DataInitStrategy object to copy
+     * rhs: object to copy
      *
      */
     DataInitStrategy(const DataInitStrategy& rhs){}
@@ -195,11 +195,11 @@ private:
      *
      * Parameters
      * ----------
-     * rhs: DataInitStrategy object to copy
+     * rhs: object on right-hand side of assignment operator
      *
      * Return value
      * ------------
-     * return DataInitStrategy object
+     * return object
      *
      */
     const DataInitStrategy& operator=(const DataInitStrategy& rhs) {
