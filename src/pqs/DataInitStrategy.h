@@ -109,9 +109,6 @@
 // Standard
 #include <ostream>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 
