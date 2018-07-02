@@ -117,6 +117,7 @@
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 #include "SAMRAI/tbox/Database.h"
+#include "SAMRAI/xfer/RefineAlgorithm.h"
 
 // PQS
 #include "PQS/PQS_config.h"
@@ -127,6 +128,7 @@ using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations
+namespace SAMRAI { namespace hier { class BaseGridGeometry; } }
 
 
 // --- PQS::pqs::TagAndInitModule Class
@@ -150,9 +152,21 @@ public:
 
     /*!
      * This constructor for TagAndInitModule creates a TODO
+     *
+     * Parameters
+     * ----------
+     * config_db: TODO
+     *
+     * phi_id: PatchData ID for fluid-fluid interface level set function
+     *
+     * psi_id: PatchData ID for solid-pore interface level set function
+     *
      */
-    TagAndInitModule(boost::shared_ptr<tbox::Database> config_db,
-                boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy);
+    TagAndInitModule(
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy,
+        const int phi_id, const int psi_id);
 
     /*!
      * Empty default destructor.
@@ -514,17 +528,33 @@ protected:
      *
      ****************************************************************/
 
-    // Object name
+    // --- Parameters
+
+    // PQS
+    // TODO
+
+    // --- PatchData IDs
+
+    // fluid-fluid interface level set function
+    int d_phi_id;
+
+    // solid-pore interface level set function
+    //
+    // Note: the solid phase is defined by the region where psi < 0
+    int d_psi_id;
+
+    // --- Components
+
+    // Data initialization
+    boost::shared_ptr<pqs::DataInitStrategy> d_data_init_strategy;
+
+    // Data transfer
+    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
+
+    // --- Object name
     //
     // Note: used only to initialize TagAndInitializeStrategy base class
     const string d_object_name = "PQS::pqs::TagAndInitModule";
-
-    // Grid management
-    boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
-    boost::shared_ptr<pqs::DataInitStrategy> d_data_init_strategy;
-
-    // TODO
-    // Data management
 
 private:
 
@@ -532,6 +562,12 @@ private:
      * Load configuration parameters from specified database.
      */
     void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
+
+    /*
+     * Initialize PatchLevel data transfer objects.
+     */
+    void initializeCommunicationObjects(
+        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry);
 
     /*
      * Private copy constructor to prevent use.
