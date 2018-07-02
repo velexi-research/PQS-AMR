@@ -155,9 +155,9 @@ public:
      * - Register PatchData
      * - Create SAMRAI::mesh::GriddingAlgorithm
      */
-    Solver(boost::shared_ptr<tbox::Database> config_db,
-           boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
-           boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy);
+    Solver(const boost::shared_ptr<tbox::Database>& config_db,
+           const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+           const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy);
 
     /*!
      * Empty default destructor.
@@ -351,6 +351,23 @@ private:
      * Load configuration parameters from specified database.
      */
     void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
+
+    /*
+     * Set up simulation variables.
+     */
+    void setupSimulationVariables();
+
+    /*
+     * Set up grid management.
+     */
+    void setupGridManagement(
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy);
+
+    /*
+     * Initialize simulation data.
+     */
+    void initializeData();
 
     /*
      * Private copy constructor to prevent use.

@@ -61,19 +61,19 @@ namespace pqs {
 // --- Implementation of public methods
 
 Solver::Solver(
-    boost::shared_ptr<tbox::Database> config_db,
-    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
-    boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy)
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy)
 {
     // Check parameters
     if (config_db == NULL) {
-        PQS_ERROR(this, "'config_db' may not be NULL");
+        PQS_ERROR(this, "Solver", "'config_db' must not be NULL");
     }
     if (patch_hierarchy == NULL) {
-        PQS_ERROR(this, "'patch_hierarchy' may not be NULL");
+        PQS_ERROR(this, "Solver", "'patch_hierarchy' must not be NULL");
     }
     if (data_init_strategy == NULL) {
-        PQS_ERROR(this, "'data_init_strategy' may not be NULL");
+        PQS_ERROR(this, "Solver", "'data_init_strategy' must not be NULL");
     }
 
     // Set data members
@@ -82,22 +82,80 @@ Solver::Solver(
     // Load configuration from config_db
     loadConfiguration(config_db);
 
+    // Set up simulation variables
+    setupSimulationVariables();
+
+    // Set up grid management objects
+    setupGridManagement(config_db, data_init_strategy);
+
+    // Initialize simulation data
+    initializeData();
+
+} // Solver::Solver()
+
+void Solver::equilibrateInterface(const double curvature)
+{
+    // TODO
+} // Solver::equilibrateInterface()
+
+void Solver::advanceInterface(const double delta_curvature)
+{
+    // TODO
+} // Solver::advanceInterface()
+
+double Solver::getCurvature() const
+{
+    return d_curvature;
+} // Solver::getCurvature()
+
+int Solver::getStep() const
+{
+    return d_num_steps;
+} // Solver::getStep()
+
+void Solver::printClassData(ostream& os) const
+{
+    os << endl;
+    os << "PQS::pqs::Solver::printClassData..." << endl;
+    os << "(Solver*) this = " << (Solver*) this << endl;
+    os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
+    os << "d_gridding_alg = " << d_gridding_alg.get() << endl;
+    os << "d_tag_and_init_module = " << d_tag_and_init_module.get() << endl;
+
+    os << endl;
+    d_gridding_alg->printClassData(os);
+
+    os << endl;
+    d_tag_and_init_module->printClassData(os);
+
+} // Solver::printClassData()
+
+// --- Implementation of private methods
+
+void Solver::loadConfiguration(
+        const boost::shared_ptr<tbox::Database>& config_db)
+{
+    // Check parameters
+} // Solver::loadConfiguration()
+
+void Solver::setupSimulationVariables()
+{
     // Initialize PatchData component selectors
     d_permanent_variables.clrAllFlags();
     d_intermediate_variables.clrAllFlags();
 
     // --- Create PatchData for simulation variables
 
-    // get dimensionality of problem
+    // Get dimensionality of problem
     tbox::Dimension dim = d_patch_hierarchy->getDim();
 
-    // get pointer to VariableDatabase
+    // Get pointer to VariableDatabase
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
-    // create zero ghostcell width IntVector
+    // Create zero ghostcell width IntVector
     hier::IntVector zero_ghostcell_width(dim, 0);
 
-    // default variable context
+    // Get default variable context
     boost::shared_ptr<hier::VariableContext> default_context =
         var_db->getContext("default");
 
@@ -253,10 +311,12 @@ Solver::Solver(
                                            zero_ghostcell_width);
     d_intermediate_variables.setFlag(d_control_volume_id);
 
-    /*
-     * Construct grid management objects
-     */
+} // Solver::setupSimulationVariables()
 
+void Solver::setupGridManagement(
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy)
+{
     // Construct box generator and load balancer objects
     boost::shared_ptr<tbox::Database> box_generator_config_db(0);
     if (config_db->isDatabase("BergerRigoutsos")) {
@@ -289,6 +349,7 @@ Solver::Solver(
     boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module =
         boost::shared_ptr<pqs::TagAndInitModule>(
             new pqs::TagAndInitModule(tag_and_init_module_config_db,
+                                      d_patch_hierarchy,
                                       data_init_strategy,
                                       d_phi_pqs_current_id, d_psi_id));
 
@@ -303,54 +364,12 @@ Solver::Solver(
             box_generator,
             load_balancer));
 
-    /*
-     * Initialize simulation data
-     */
+} // Solver::setupGridManagement()
 
-    // TODO
-
-} // Solver::Solver()
-
-void Solver::equilibrateInterface(const double curvature) {
-    // TODO
-} // Solver::equilibrateInterface()
-
-void Solver::advanceInterface(const double delta_curvature) {
-    // TODO
-} // Solver::advanceInterface()
-
-double Solver::getCurvature() const {
-    return d_curvature;
-} // Solver::getCurvature()
-
-int Solver::getStep() const {
-    return d_num_steps;
-} // Solver::getStep()
-
-void Solver::printClassData(ostream& os) const
+void Solver::initializeData()
 {
-    os << endl;
-    os << "PQS::pqs::Solver::printClassData..." << endl;
-    os << "(Solver*) this = " << (Solver*) this << endl;
-    os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
-    os << "d_gridding_alg = " << d_gridding_alg.get() << endl;
-    os << "d_tag_and_init_module = " << d_tag_and_init_module.get() << endl;
-
-    os << endl;
-    d_gridding_alg->printClassData(os);
-
-    os << endl;
-    d_tag_and_init_module->printClassData(os);
-
-} // Solver::printClassData()
-
-// --- Implementation of private methods
-
-void Solver::loadConfiguration(
-    const boost::shared_ptr<tbox::Database>& config_db)
-{
-    // Check parameters
-} // Solver::loadConfiguration()
+    // TODO
+} // Solver::initializeData()
 
 } // PQS::pqs namespace
 } // PQS namespace
