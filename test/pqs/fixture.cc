@@ -24,6 +24,7 @@
 #include "SAMRAI/geom/CartesianGridGeometry.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/tbox/Dimension.h"
+#include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/DatabaseBox.h"
 #include "SAMRAI/tbox/MemoryDatabase.h"
 #include "SAMRAI/tbox/SAMRAIManager.h"
@@ -34,6 +35,7 @@
 
 // PQS test
 #include "fixture.h"
+#include "TestDataInitModule.h"
 
 
 // --- Fixtures
@@ -53,15 +55,18 @@ pqsTests::pqsTests() {
     tbox::SAMRAIManager::startup();
     const tbox::SAMRAI_MPI& mpi(tbox::SAMRAI_MPI::getSAMRAIWorld());
 
-    // --- Simulation parameters
+    // --- Construct configuration database
+
+    // Construct configuration parameter database
+    config_db = boost::shared_ptr<tbox::MemoryDatabase>(
+        new tbox::MemoryDatabase("Solver"));
 
     // Problem dimension
     const tbox::Dimension dim(3);
 
     // Geometry
-    boost::shared_ptr<tbox::MemoryDatabase> geometry_input_db =
-        boost::shared_ptr<tbox::MemoryDatabase>(
-            new tbox::MemoryDatabase("CartesianGridGeometry"));
+    boost::shared_ptr<tbox::Database> geometry_input_db =
+        config_db->putDatabase("CartesianGridGeometry");
 
     double x_lo[3] = {-1.0, -1.0, -1.0};
     double x_up[3] = {1.0, 1.0, 1.0};
@@ -73,6 +78,9 @@ pqsTests::pqsTests() {
     tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
     geometry_input_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
 
+    // TagAndInitModule
+    config_db->putDatabase("TagAndInitModule");
+
     // --- Initialize Geometry and PatchHierarchy
 
     // Geometry
@@ -83,6 +91,10 @@ pqsTests::pqsTests() {
     // PatchHierarchy
     patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
         new hier::PatchHierarchy("PatchHierarchy", grid_geometry));
+
+    // TestDataInitModule (implements DataInitStrategy)
+    data_init_strategy = boost::shared_ptr<pqs::DataInitStrategy>(
+        new TestDataInitModule());
 }
 
 pqsTests::~pqsTests() {

@@ -35,7 +35,6 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/DataInitStrategy.h"
 #include "PQS/pqs/Solver.h"
 
 // PQS test
@@ -58,17 +57,6 @@ TEST_F(pqsTests, Solver_Constructor)
 {
     // --- Preparations
 
-    // Construct configuration parameter database
-    boost::shared_ptr<tbox::MemoryDatabase> config_db =
-        boost::shared_ptr<tbox::MemoryDatabase>(
-            new tbox::MemoryDatabase("Solver"));
-
-    config_db->putDatabase("GridManager");
-
-    // Construct DataInitStrategy object
-    boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy =
-        boost::shared_ptr<pqs::DataInitStrategy>(
-            new pqs::DataInitStrategy());
 
     // --- Exercise functionality
 

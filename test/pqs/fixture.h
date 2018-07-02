@@ -28,14 +28,17 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/pqs/DataInitStrategy.h"  // IWYU pragma: keep
 
 // Namespaces
 using namespace std;
 using namespace SAMRAI;
+using namespace PQS;
 
 // Class/type declarations
 namespace SAMRAI { namespace geom { class CartesianGridGeometry; } }
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
+namespace SAMRAI { namespace tbox { class MemoryDatabase; } }
 
 
 // --- Fixtures
@@ -47,11 +50,17 @@ class pqsTests: public ::testing::Test
 protected:
     // --- Fixture data
 
-    // Geometry
+    // Configuration database
+    boost::shared_ptr<tbox::MemoryDatabase> config_db;
+
+    // SAMRAI::geom::Geometry
     boost::shared_ptr<geom::CartesianGridGeometry> grid_geometry;
 
-    // PatchHierarchy
+    // SAMRAI::hier::PatchHierarchy
     boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy;
+
+    // PQS::pqs::DataInitStrategy
+    boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy;
 
     // --- Fixture set up and tear down
 
