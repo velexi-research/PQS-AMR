@@ -38,7 +38,8 @@
  *
  * message: error message
  */
-#define PQS_ERROR(obj, message) \
-    throw "PQS_ERROR::" + string(typeid(obj).name()) + "::" + string(message)
+#define PQS_ERROR(obj, method, message) \
+    throw "PQS_ERROR::" + string(typeid(obj).name()) + "::" + \
+          string(method) + "::" + string(message)
 
 #endif
