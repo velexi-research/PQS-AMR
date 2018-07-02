@@ -111,6 +111,7 @@
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/hier/Patch.h"
 
 // PQS
 #include "PQS/PQS_config.h"
@@ -149,6 +150,79 @@ public:
      * Empty default destructor.
      */
     virtual ~DataInitStrategy() {};
+
+    //! @}
+
+    //! @{
+
+    /*!
+     ************************************************************************
+     *
+     * @name Methods for setting initial and boundary conditions
+     *
+     ************************************************************************/
+
+    /*!
+     * Initialize psi, the level set function that defines the solid-pore
+     * interface.
+     *
+     * Parameters
+     * ----------
+     * patch: Patch on which to initialize psi
+     *
+     * psi_id: PatchData ID for psi
+     *
+     * Return value
+     * ------------
+     * None
+     *
+     * Notes
+     * -----
+     * - This is a pure abstract method that the user MUST override in
+     *   order to build a PQS simulation.
+     */
+    virtual void initializePoreSpace(hier::Patch& patch, int psi_id) = 0;
+
+    /*!
+     * Initialize phi, the level set function that defines the fluid-fluid
+     * interface.
+     *
+     * Parameters
+     * ----------
+     * patch: Patch on which to initialize phi
+     *
+     * phi_id: PatchData ID for phi
+     *
+     * Return value
+     * ------------
+     * None
+     *
+     * Notes
+     * -----
+     * - This is a pure abstract method that the user MUST override in
+     *   order to build a PQS simulation.
+     */
+    virtual void initializeInterface(hier::Patch& patch, int phi_id) = 0;
+
+    /*!
+     * Set physical boundary conditions for phi, the level set function
+     * that defines the fluid-fluid interace.
+     *
+     * Parameters
+     * ----------
+     * patch: Patch on which to set boundary conditions
+     *
+     * phi_id: PatchData ID for phi
+     *
+     * Return value
+     * ------------
+     * None
+     *
+     * Notes
+     * -----
+     * - No-op by default.
+     */
+    virtual void setBoundaryConditions(hier::Patch& patch, int phi_id) {};
 
     //! @}
 
