@@ -248,8 +248,9 @@ void TagAndInitModule::initializeCommunicationObjects(
     }
 
     // Lookup refine operations
+    // TODO: review choice of refinement operator
     boost::shared_ptr<hier::RefineOperator> refine_op =
-        grid_geometry->lookupRefineOperator(phi_variable, "LINEAR_REFINE");
+        grid_geometry->lookupRefineOperator(phi_variable, "CONSTANT_REFINE");
 
     // --- Set up communications objects for filling a new level
     //     (used during initialization of a PatchLevel)
