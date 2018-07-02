@@ -176,8 +176,37 @@ void TagAndInitModule::resetHierarchyConfiguration(
         const int coarsest_patch_level_number,
         const int finest_patch_level_number)
 {
+    // Check parameters
+    if (patch_hierarchy == NULL) {
+        PQS_ERROR(this, "resetHierarchyConfiguration",
+                  "'patch_hierarchy' may not be NULL");
+    }
+    if (coarsest_patch_level_number < 0) {
+        PQS_ERROR(this, "resetHierarchyConfiguration",
+                  "'coarsest_patch_level_number' must be non-negative");
+    }
+    if (coarsest_patch_level_number > finest_patch_level_number) {
+        PQS_ERROR(this, "resetHierarchyConfiguration",
+                  std::string("'coarsest_patch_level_number' must be less ") +
+                  std::string("than or equal to 'finest_patch_level_number'"));
+    }
+    for (int ln = 0; ln <= finest_patch_level_number; ln++) {
+        if (patch_hierarchy->getPatchLevel(ln) == NULL) {
+            PQS_ERROR(this, "resetHierarchyConfiguration",
+                      std::string("PatchLevel ") +
+                      std::to_string(ln) +
+                      std::string(" is NULL in PatchHierarchy"));
+        }
+    }
+
     // TODO: reset communication schedules
-    // TODO: recompute control volumes
+    // - reset communications schedules used to fill boundary data
+    //   during time advance
+
+    // recompute control volumes
+    // LevelSetMethodToolbox::computeControlVolumes(
+    // patch_hierarchy, d_control_volume_handle);
+
 } // TagAndInitModule::resetHierarchyConfiguration()
 
 void TagAndInitModule::tagCellsForRefinement(
