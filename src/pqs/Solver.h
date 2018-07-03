@@ -234,8 +234,14 @@ public:
      *
      * Notes
      * -----
-     * - The returned curvature value is only valid after either
-     *   equilibrateInteface() of advanceInteface() has been called.
+     * - After either equilibrateInterface() or advanceInterface() has been
+     *   called, the returned curvature value is equal to the value of the
+     *   fluid-fluid interface.
+     *
+     * - At the beginning of the simulation (i.e., before either
+     *   equilibrateInterface() or advanceInterface() has been called), the
+     *   returned curvature value is equal to the initial target value for
+     *   the fluid-fluid interface.
      */
     virtual double getCurvature() const;
 

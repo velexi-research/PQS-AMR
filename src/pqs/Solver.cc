@@ -78,6 +78,7 @@ Solver::Solver(
 
     // Set data members
     d_patch_hierarchy = patch_hierarchy;
+    d_num_steps = 0;
 
     // Load configuration from config_db
     loadConfiguration(config_db);
@@ -136,6 +137,19 @@ void Solver::loadConfiguration(
         const boost::shared_ptr<tbox::Database>& config_db)
 {
     // Check parameters
+    if (config_db == NULL) {
+        PQS_ERROR(this, "loadConfiguration", "'config_db' must not be NULL");
+    }
+    if (!config_db->isDatabase("PQS")) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'PQS' database missing from 'config_db'");
+    }
+
+    // Load configuration parameters
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+    d_curvature = pqs_config_db->getDouble("initial_curvature");
+
 } // Solver::loadConfiguration()
 
 void Solver::setupSimulationVariables()
@@ -317,38 +331,39 @@ void Solver::setupGridManagement(
         const boost::shared_ptr<tbox::Database>& config_db,
         const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy)
 {
+    // --- Check parameters
+    // TODO: check database structure
+    // PQS{ }
+    // SAMRAI{ BoxGenerator, LoadBalancer, GriddingAlgorithm }
+    //
+    // throw runtime_error(
+    // "'TagAndInitModule' section not found in configuration database");
+
+    // --- Preparations
+
+    // Get SAMRAI configuration database
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
+
+    // --- Construct SAMRAI objects
+
     // Construct box generator and load balancer objects
-    boost::shared_ptr<tbox::Database> box_generator_config_db(0);
-    if (config_db->isDatabase("BergerRigoutsos")) {
-        box_generator_config_db = config_db->getDatabase("BergerRigoutsos");
-    }
     boost::shared_ptr<mesh::BergerRigoutsos> box_generator =
         boost::shared_ptr<mesh::BergerRigoutsos>(
-            new mesh::BergerRigoutsos(d_patch_hierarchy->getDim(),
-                box_generator_config_db));
+            new mesh::BergerRigoutsos(
+                d_patch_hierarchy->getDim(),
+                samrai_config_db->getDatabase("BoxGenerator")));
 
-    boost::shared_ptr<tbox::Database> load_balancer_config_db(0);
-    if (config_db->isDatabase("ChopAndPackLoadBalancer")) {
-        load_balancer_config_db =
-            config_db->getDatabase("ChopAndPackLoadBalancer");
-    }
     boost::shared_ptr<mesh::ChopAndPackLoadBalancer> load_balancer =
         boost::shared_ptr<mesh::ChopAndPackLoadBalancer> (
             new mesh::ChopAndPackLoadBalancer(d_patch_hierarchy->getDim(),
-                "LoadBalancer", load_balancer_config_db));
+                "LoadBalancer",
+                samrai_config_db->getDatabase("LoadBalancer")));
 
     // Construct PQS::pqs::TagAndInitModule
-    boost::shared_ptr<tbox::Database> tag_and_init_module_config_db;
-    if (config_db->isDatabase("TagAndInitModule")) {
-        tag_and_init_module_config_db =
-            config_db->getDatabase("TagAndInitModule");
-    } else {
-        throw runtime_error(
-            "'TagAndInitModule' section not found in configuration database");
-    }
     boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module =
         boost::shared_ptr<pqs::TagAndInitModule>(
-            new pqs::TagAndInitModule(tag_and_init_module_config_db,
+            new pqs::TagAndInitModule(config_db->getDatabase("PQS"),
                                       d_patch_hierarchy,
                                       data_init_strategy,
                                       d_phi_pqs_current_id, d_psi_id));
@@ -358,7 +373,7 @@ void Solver::setupGridManagement(
         new mesh::GriddingAlgorithm(
             d_patch_hierarchy,
             "GriddingAlgorithm",
-            tag_and_init_module_config_db, // TODO change to ??
+            samrai_config_db->getDatabase("GriddingAlgorithm"),
             boost::shared_ptr<mesh::TagAndInitializeStrategy>(
                 d_tag_and_init_module),
             box_generator,
