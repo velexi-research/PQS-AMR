@@ -31,6 +31,7 @@
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/MemoryDatabase.h"
 
 // PQS
@@ -52,8 +53,38 @@ using namespace PQS;
 
 namespace pqsTests {
 
+// Test case: validate structure of configuration database
+TEST_F(pqsTests, config_db_structure)
+{
+    // --- Validate structure of configuration database
+
+    // Sub-databases
+    EXPECT_TRUE(config_db->isDatabase("PQS"));
+    EXPECT_TRUE(config_db->isDatabase("Geometry"));
+    EXPECT_TRUE(config_db->isDatabase("SAMRAI"));
+
+    // PQS database
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+    EXPECT_TRUE(pqs_config_db->isDouble("initial_curvature"));
+
+    // Geometry database
+    boost::shared_ptr<tbox::Database> geometry_config_db =
+        config_db->getDatabase("Geometry");
+    EXPECT_TRUE(geometry_config_db->keyExists("x_lo"));
+    EXPECT_TRUE(geometry_config_db->keyExists("x_up"));
+    EXPECT_TRUE(geometry_config_db->keyExists("domain_boxes"));
+
+    // SAMRAI database
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
+    EXPECT_TRUE(samrai_config_db->isDatabase("BoxGenerator"));
+    EXPECT_TRUE(samrai_config_db->isDatabase("LoadBalancer"));
+    EXPECT_TRUE(samrai_config_db->isDatabase("GriddingAlgorithm"));
+}
+
 // Test case: construct PQS::pqs::Solver object
-TEST_F(pqsTests, Solver_Constructor)
+TEST_F(pqsTests, Solver_Solver)
 {
     // --- Preparations
 
@@ -68,6 +99,13 @@ TEST_F(pqsTests, Solver_Constructor)
 
     // Status code
     EXPECT_NE(solver, (pqs::Solver*) NULL);
+
+    // Solver parameters
+    //EXPECT_EQ(solver->getCurvature(), 0);
+    //EXPECT_EQ(solver->getStep(), 0);
+
+    // PatchHierarchy configuration
+    // TODO
 }
 
 } // pqsTests namespace
