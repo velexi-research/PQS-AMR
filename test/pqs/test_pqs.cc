@@ -101,8 +101,11 @@ TEST_F(pqsTests, Solver_Solver)
     EXPECT_NE(solver, (pqs::Solver*) NULL);
 
     // Solver parameters
-    //EXPECT_EQ(solver->getCurvature(), 0);
-    //EXPECT_EQ(solver->getStep(), 0);
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+    EXPECT_EQ(solver->getCurvature(),
+              pqs_config_db->getDouble("initial_curvature"));
+    EXPECT_EQ(solver->getStep(), 0);
 
     // PatchHierarchy configuration
     // TODO
