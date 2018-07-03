@@ -47,46 +47,74 @@ pqsTests::pqsTests() {
 
     // --- Initialize SAMRAI
 
-    int argc = 0;
-    char **argv = 0;
-    tbox::SAMRAI_MPI::init(&argc, &argv);
+    if (!tbox::SAMRAIManager::isInitialized()) {
+        int argc = 0;
+        char **argv = 0;
+        tbox::SAMRAI_MPI::init(&argc, &argv);
 
-    tbox::SAMRAIManager::initialize();
-    tbox::SAMRAIManager::startup();
-    const tbox::SAMRAI_MPI& mpi(tbox::SAMRAI_MPI::getSAMRAIWorld());
+        tbox::SAMRAIManager::initialize();
+        tbox::SAMRAIManager::startup();
+        const tbox::SAMRAI_MPI& mpi(tbox::SAMRAI_MPI::getSAMRAIWorld());
+    }
 
     // --- Construct configuration database
 
-    // Construct configuration parameter database
     config_db = boost::shared_ptr<tbox::MemoryDatabase>(
-        new tbox::MemoryDatabase("Solver"));
+        new tbox::MemoryDatabase("Configuration Parameters"));
+
+    // ------ PQS configuration
+
+    // PQS database
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->putDatabase("PQS");
+
+    pqs_config_db->putDouble("initial_curvature", 0.5);
+
+    // ------ Geometry configuration
+
+    // Geometry database
+    boost::shared_ptr<tbox::Database> geometry_config_db =
+        config_db->putDatabase("Geometry");
 
     // Problem dimension
     const tbox::Dimension dim(3);
 
-    // Geometry
-    boost::shared_ptr<tbox::Database> geometry_input_db =
-        config_db->putDatabase("CartesianGridGeometry");
-
+    // Physical bounds
     double x_lo[3] = {-1.0, -1.0, -1.0};
     double x_up[3] = {1.0, 1.0, 1.0};
-    geometry_input_db->putDoubleArray("x_lo", x_lo, 3);
-    geometry_input_db->putDoubleArray("x_up", x_up, 3);
+    geometry_config_db->putDoubleArray("x_lo", x_lo, 3);
+    geometry_config_db->putDoubleArray("x_up", x_up, 3);
 
+    // Box
     int box_lower[3] = {0, 0, 0};
     int box_upper[3] = {49, 49, 49};
     tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
-    geometry_input_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
+    geometry_config_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
 
-    // TagAndInitModule
-    config_db->putDatabase("TagAndInitModule");
+    // ------ SAMRAI configuration
+
+    // SAMRAI database
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->putDatabase("SAMRAI");
+
+    // BoxGenerator database
+    boost::shared_ptr<tbox::Database> box_generator_config_db =
+        samrai_config_db->putDatabase("BoxGenerator");
+
+    // LoadBalancer database
+    boost::shared_ptr<tbox::Database> load_balancer_config_db =
+        samrai_config_db->putDatabase("LoadBalancer");
+
+    // GriddingAlgorithm database
+    boost::shared_ptr<tbox::Database> gridding_algorithm_config_db =
+        samrai_config_db->putDatabase("GriddingAlgorithm");
 
     // --- Initialize Geometry and PatchHierarchy
 
     // Geometry
     grid_geometry = boost::shared_ptr<geom::CartesianGridGeometry>(
         new geom::CartesianGridGeometry(
-            dim, "CartesianGeometry", geometry_input_db));
+            dim, "CartesianGeometry", geometry_config_db));
 
     // PatchHierarchy
     patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
@@ -99,9 +127,13 @@ pqsTests::pqsTests() {
 
 pqsTests::~pqsTests() {
     // Shutdown SAMRAI
-    tbox::SAMRAIManager::shutdown();
-    tbox::SAMRAIManager::finalize();
-    tbox::SAMRAI_MPI::finalize();
+    if (s_num_tests_remaining > 0) {
+        s_num_tests_remaining--;
+    } else {
+        tbox::SAMRAIManager::shutdown();
+        tbox::SAMRAIManager::finalize();
+        tbox::SAMRAI_MPI::finalize();
+    }
 }
 
 } // pqsTests namespace

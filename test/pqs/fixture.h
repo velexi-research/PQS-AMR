@@ -69,6 +69,13 @@ protected:
 
     // Destructor (tear down)
     virtual ~pqsTests();
+
+    // --- Test management
+    //
+    // NOTE: used to ensure that per-process initialization and cleanup
+    // are not called multiple times.
+    int s_num_tests = 2;
+    int s_num_tests_remaining = s_num_tests;
 };
 
 } // pqsTests namespace
