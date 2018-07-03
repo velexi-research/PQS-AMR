@@ -28,7 +28,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/DataInitStrategy.h"  // IWYU pragma: keep
+#include "PQS/pqs/InterfaceInitStrategy.h"  // IWYU pragma: keep
+#include "PQS/pqs/PoreInitStrategy.h"  // IWYU pragma: keep
 
 // Namespaces
 using namespace std;
@@ -59,8 +60,11 @@ protected:
     // SAMRAI::hier::PatchHierarchy
     boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy;
 
-    // PQS::pqs::DataInitStrategy
-    boost::shared_ptr<pqs::DataInitStrategy> data_init_strategy;
+    // PQS::pqs::PoreInitStrategy
+    boost::shared_ptr<pqs::PoreInitStrategy> pore_init_strategy;
+
+    // PQS::pqs::InterfaceInitStrategy
+    boost::shared_ptr<pqs::InterfaceInitStrategy> interface_init_strategy;
 
     // --- Fixture set up and tear down
 

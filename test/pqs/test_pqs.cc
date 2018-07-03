@@ -93,7 +93,8 @@ TEST_F(pqsTests, Solver_Solver)
 
     // Construct PQS::pqs::Solver object
     pqs::Solver *solver =
-        new pqs::Solver(config_db, patch_hierarchy, data_init_strategy);
+        new pqs::Solver(config_db, patch_hierarchy,
+                        pore_init_strategy, interface_init_strategy);
 
     // --- Check results
 

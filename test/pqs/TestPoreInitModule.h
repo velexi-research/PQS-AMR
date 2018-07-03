@@ -1,7 +1,7 @@
-/*! \file TestDataInitModule.h
+/*! \file TestPoreInitModule.h
  *
  * \brief
- * Concrete implementation of pqs::DataInitStrategy to use for testing.
+ * Concrete implementation of pqs::PoreInitStrategy to use for testing.
  */
 
 /*
@@ -25,7 +25,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/DataInitStrategy.h"
+#include "PQS/pqs/PoreInitStrategy.h"
 
 // Namespaces
 using namespace std;
@@ -39,18 +39,13 @@ using namespace PQS;
 
 namespace pqsTests {
 
-class TestDataInitModule: public pqs::DataInitStrategy
+class TestPoreInitModule: public pqs::PoreInitStrategy
 {
 public:
     /*
      * No-op. Only used for testing.
      */
     virtual void initializePoreSpace(hier::Patch& patch, int psi_id) {};
-
-    /*
-     * No-op. Only used for testing.
-     */
-    virtual void initializeInterface(hier::Patch& patch, int phi_id) {};
 };
 
 } // pqsTests namespace

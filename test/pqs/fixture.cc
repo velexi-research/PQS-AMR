@@ -35,7 +35,8 @@
 
 // PQS test
 #include "fixture.h"
-#include "TestDataInitModule.h"
+#include "TestInterfaceInitModule.h"
+#include "TestPoreInitModule.h"
 
 
 // --- Fixtures
@@ -120,9 +121,13 @@ pqsTests::pqsTests() {
     patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
         new hier::PatchHierarchy("PatchHierarchy", grid_geometry));
 
-    // TestDataInitModule (implements DataInitStrategy)
-    data_init_strategy = boost::shared_ptr<pqs::DataInitStrategy>(
-        new TestDataInitModule());
+    // TestPoreInitModule (implements PoreInitStrategy)
+    pore_init_strategy = boost::shared_ptr<pqs::PoreInitStrategy>(
+        new TestPoreInitModule());
+
+    // TestInterfaceInitModule (implements InterfaceInitStrategy)
+    interface_init_strategy = boost::shared_ptr<pqs::InterfaceInitStrategy>(
+        new TestInterfaceInitModule());
 }
 
 pqsTests::~pqsTests() {
