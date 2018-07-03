@@ -120,7 +120,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"
-#include "PQS/pqs/DataInitStrategy.h"
+#include "PQS/pqs/InterfaceInitStrategy.h"
+#include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/TagAndInitModule.h"
 
 // Namespaces
@@ -157,7 +158,9 @@ public:
      */
     Solver(const boost::shared_ptr<tbox::Database>& config_db,
            const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-           const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy);
+           const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+           const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+               initerface_init_strategy);
 
     /*!
      * Empty default destructor.
@@ -365,15 +368,31 @@ private:
 
     /*
      * Set up grid management.
+     *
+     * Parameters
+     * ----------
+     * config_db: Database containing configuration parameters
+     *
+     * pore_init_strategy: PoreInitStrategy object to use for initialization
+     *     of level set function defining solid-pore interface
+     *
+     * interface_init_strategy: InterfaceInitStrategy object to use for
+     *     initialization of level set function defining fluid-fluid interface
+     *
+     * Return value
+     * ------------
+     * None
      */
     void setupGridManagement(
         const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy);
+        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+            interface_init_strategy);
 
     /*
-     * Initialize simulation data.
+     * Initialize simulation.
      */
-    void initializeData();
+    void initializeSimulation();
 
     /*
      * Private copy constructor to prevent use.

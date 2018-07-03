@@ -1,7 +1,7 @@
-/*! \file DataInitStrategy.cc
+/*! \file InterfaceInitStrategy.cc
  *
  * \brief
- * Implementation file for DataInitStrategy class.
+ * Implementation file for InterfaceInitStrategy class.
  */
 
 /*
@@ -22,7 +22,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/DataInitStrategy.h"
+#include "PQS/pqs/InterfaceInitStrategy.h"
 
 // Class/type declarations
 
@@ -34,11 +34,12 @@ namespace pqs {
 
 // --- Implementation of public methods
 
-void DataInitStrategy::printClassData(ostream& os) const
+void InterfaceInitStrategy::printClassData(ostream& os) const
 {
     os << endl;
-    os << "PQS::pqs::DataInitStrategy::printClassData..." << endl;
-    os << "(DataInitStrategy*) this = " << (DataInitStrategy*) this << endl;
+    os << "PQS::pqs::InterfaceInitStrategy::printClassData..." << endl;
+    os << "(InterfaceInitStrategy*) this = " << (InterfaceInitStrategy*) this
+       << endl;
 }
 
 } // PQS::pqs namespace

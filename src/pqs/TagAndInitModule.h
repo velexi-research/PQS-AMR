@@ -121,7 +121,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"
-#include "PQS/pqs/DataInitStrategy.h"
+#include "PQS/pqs/InterfaceInitStrategy.h"
+#include "PQS/pqs/PoreInitStrategy.h"
 
 // Namespaces
 using namespace std;
@@ -165,7 +166,9 @@ public:
     TagAndInitModule(
         const boost::shared_ptr<tbox::Database>& config_db,
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy,
+        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+            interface_init_strategy,
         const int phi_id, const int psi_id);
 
     /*!
@@ -222,9 +225,13 @@ public:
      *
      * Notes
      * -----
-     * - Application-specific data initialization must be provided via a
-     *   concrete implementation of the pure abstract 'initializeLevelData()'
-     *   method declared in the 'PQS::pqs::DataInitStrategy' class.
+     * - Application-specific pore initialization must be provided via a
+     *   concrete implementation of the pure abstract 'initializePoreSpace()'
+     *   method declared in the 'PQS::pqs::PoreInitStrategy' class.
+     *
+     * - Application-specific interface initialization must be provided via a
+     *   concrete implementation of the pure abstract 'initializeInterface()'
+     *   method declared in the 'PQS::pqs::InterfaceInitStrategy' class.
      *
      * - This method is invoked by GriddingAlgorithm objects when they insert
      *   new PatchLevels into PatchHierarchy objects.
@@ -545,8 +552,11 @@ protected:
 
     // --- Components
 
-    // Data initialization
-    boost::shared_ptr<pqs::DataInitStrategy> d_data_init_strategy;
+    // Pore initialization
+    boost::shared_ptr<pqs::PoreInitStrategy> d_pore_init_strategy;
+
+    // Interface initialization
+    boost::shared_ptr<pqs::InterfaceInitStrategy> d_interface_init_strategy;
 
     // Data transfer
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;

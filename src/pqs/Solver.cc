@@ -63,7 +63,9 @@ namespace pqs {
 Solver::Solver(
         const boost::shared_ptr<tbox::Database>& config_db,
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy)
+        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+            interface_init_strategy)
 {
     // Check parameters
     if (config_db == NULL) {
@@ -72,8 +74,11 @@ Solver::Solver(
     if (patch_hierarchy == NULL) {
         PQS_ERROR(this, "Solver", "'patch_hierarchy' must not be NULL");
     }
-    if (data_init_strategy == NULL) {
-        PQS_ERROR(this, "Solver", "'data_init_strategy' must not be NULL");
+    if (pore_init_strategy == NULL) {
+        PQS_ERROR(this, "Solver", "'pore_init_strategy' must not be NULL");
+    }
+    if (interface_init_strategy == NULL) {
+        PQS_ERROR(this, "Solver", "'interface_init_strategy' must not be NULL");
     }
 
     // Set data members
@@ -87,10 +92,10 @@ Solver::Solver(
     setupSimulationVariables();
 
     // Set up grid management objects
-    setupGridManagement(config_db, data_init_strategy);
+    setupGridManagement(config_db, pore_init_strategy, interface_init_strategy);
 
-    // Initialize simulation data
-    initializeData();
+    // Initialize simulation
+    initializeSimulation();
 
 } // Solver::Solver()
 
@@ -329,7 +334,9 @@ void Solver::setupSimulationVariables()
 
 void Solver::setupGridManagement(
         const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy)
+        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+            interface_init_strategy)
 {
     // --- Check parameters
     // TODO: check database structure
@@ -365,7 +372,8 @@ void Solver::setupGridManagement(
         boost::shared_ptr<pqs::TagAndInitModule>(
             new pqs::TagAndInitModule(config_db->getDatabase("PQS"),
                                       d_patch_hierarchy,
-                                      data_init_strategy,
+                                      pore_init_strategy,
+                                      interface_init_strategy,
                                       d_phi_pqs_current_id, d_psi_id));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
@@ -381,10 +389,10 @@ void Solver::setupGridManagement(
 
 } // Solver::setupGridManagement()
 
-void Solver::initializeData()
+void Solver::initializeSimulation()
 {
     // TODO
-} // Solver::initializeData()
+} // Solver::initializeSimulation()
 
 } // PQS::pqs namespace
 } // PQS namespace

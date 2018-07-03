@@ -36,7 +36,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/DataInitStrategy.h"
+#include "PQS/pqs/InterfaceInitStrategy.h"
+#include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/TagAndInitModule.h"
 #include "PQS/pqs/utilities.h"
 
@@ -59,7 +60,9 @@ namespace pqs {
 TagAndInitModule::TagAndInitModule(
         const boost::shared_ptr<tbox::Database>& config_db,
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const boost::shared_ptr<pqs::DataInitStrategy>& data_init_strategy,
+        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+            interface_init_strategy,
         const int phi_id, const int psi_id):
     mesh::TagAndInitializeStrategy(d_object_name)
 {
@@ -67,9 +70,13 @@ TagAndInitModule::TagAndInitModule(
     if (config_db == NULL) {
         PQS_ERROR(this, "TagAndInitModule", "'config_db' must not be NULL");
     }
-    if (data_init_strategy == NULL) {
+    if (pore_init_strategy == NULL) {
         PQS_ERROR(this, "TagAndInitModule",
-                  "'data_init_strategy' must not be NULL");
+                  "'pore_init_strategy' must not be NULL");
+    }
+    if (interface_init_strategy == NULL) {
+        PQS_ERROR(this, "TagAndInitModule",
+                  "'interface_init_strategy' must not be NULL");
     }
     if (phi_id < 0) {
         PQS_ERROR(this, "TagAndInitModule", "Invalid value for 'phi_id'");
@@ -81,7 +88,8 @@ TagAndInitModule::TagAndInitModule(
     // Set data members
     d_phi_id = phi_id;
     d_psi_id = psi_id;
-    d_data_init_strategy = data_init_strategy;
+    d_pore_init_strategy = pore_init_strategy;
+    d_interface_init_strategy = interface_init_strategy;
 
     // Initialize communication objects
     initializeCommunicationObjects(patch_hierarchy->getGridGeometry());
@@ -149,8 +157,8 @@ void TagAndInitModule::initializeLevelData(
 
             // Initialize level set functions for solid-pore and fluid-fluid
             // interfaces.
-            d_data_init_strategy->initializePoreSpace(*patch, d_psi_id);
-            d_data_init_strategy->initializeInterface(*patch, d_phi_id);
+            d_pore_init_strategy->initializePoreSpace(*patch, d_psi_id);
+            d_interface_init_strategy->initializeInterface(*patch, d_phi_id);
         }
     } else {
         // If appropriate, fill new PatchLevel with data from the old PatchLevel
@@ -250,10 +258,13 @@ void TagAndInitModule::printClassData(ostream& os) const
     os << endl;
     os << "PQS::pqs::TagAndInitModule::printClassData..." << endl;
     os << "(TagAndInitModule*) this = " << (TagAndInitModule*) this << endl;
-    os << "d_data_init_strategy = " << d_data_init_strategy.get() << endl;
+    os << "d_pore_init_strategy = " << d_pore_init_strategy.get() << endl;
+    os << "d_interface_init_strategy = " << d_interface_init_strategy.get()
+       << endl;
 
     os << endl;
-    d_data_init_strategy->printClassData(os);
+    d_pore_init_strategy->printClassData(os);
+    d_interface_init_strategy->printClassData(os);
 } // TagAndInitModule::printClassData()
 
 // --- Implementation of private methods
