@@ -18,6 +18,8 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
+#include <iosfwd>
+#include <string>
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
@@ -92,6 +94,22 @@ pqsTests::pqsTests() {
     tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
     geometry_config_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
 
+    // ------ PatchHierarchy configuration
+
+    // PatchHierarchy database
+    boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
+        config_db->putDatabase("PatchHierarchy");
+
+    int max_levels = 3;
+    patch_hierarchy_config_db->putInteger("max_levels", max_levels);
+    patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
+    for (int ln=1; ln <= max_levels; ln++) {
+        int ratio_to_coarser[3] = {2, 2, 2};
+        std::string level_name = std::string("level_") + std::to_string(ln);
+        patch_hierarchy_config_db->putIntegerArray(level_name,
+                                                   ratio_to_coarser, 3);
+    }
+
     // ------ SAMRAI configuration
 
     // SAMRAI database
@@ -119,7 +137,8 @@ pqsTests::pqsTests() {
 
     // PatchHierarchy
     patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
-        new hier::PatchHierarchy("PatchHierarchy", grid_geometry));
+        new hier::PatchHierarchy("PatchHierarchy", grid_geometry,
+                                 patch_hierarchy_config_db));
 
     // TestPoreInitModule (implements PoreInitStrategy)
     pore_init_strategy = boost::shared_ptr<pqs::PoreInitStrategy>(

@@ -31,6 +31,7 @@
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/MemoryDatabase.h"
 
@@ -54,7 +55,7 @@ using namespace PQS;
 namespace pqsTests {
 
 // Test case: validate structure of configuration database
-TEST_F(pqsTests, config_db_structure)
+TEST_F(pqsTests, test_config_db_structure)
 {
     // --- Validate structure of configuration database
 
@@ -83,8 +84,8 @@ TEST_F(pqsTests, config_db_structure)
     EXPECT_TRUE(samrai_config_db->isDatabase("GriddingAlgorithm"));
 }
 
-// Test case: construct PQS::pqs::Solver object
-TEST_F(pqsTests, Solver_Solver)
+// Test case: test constructor for PQS::pqs::Solver class
+TEST_F(pqsTests, test_Solver_Solver)
 {
     // --- Preparations
 
@@ -106,10 +107,20 @@ TEST_F(pqsTests, Solver_Solver)
         config_db->getDatabase("PQS");
     EXPECT_EQ(solver->getCurvature(),
               pqs_config_db->getDouble("initial_curvature"));
-    EXPECT_EQ(solver->getStep(), 0);
+    EXPECT_EQ(solver->getCycle(), 0);
+
+    // Solver state
+    EXPECT_GE(solver->getPoreSpacePatchDataId(), 0);
+    EXPECT_GE(solver->getInterfacePatchDataId(), 0);
 
     // PatchHierarchy configuration
-    // TODO
+    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy =
+        solver->getPatchHierarchy();
+    EXPECT_TRUE(patch_hierarchy);  // check that pointer is not NULL
+
+    int expected_num_patch_levels =
+        config_db->getDatabase("PatchHierarchy")->getInteger("max_levels");
+    EXPECT_EQ(patch_hierarchy->getNumberOfLevels(), expected_num_patch_levels);
 }
 
 } // pqsTests namespace
