@@ -27,10 +27,13 @@
 
 // SAMRAI
 #include "SAMRAI/hier/BaseGridGeometry.h"
+#include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
+#include "SAMRAI/pdat/CellData.h"
+#include "SAMRAI/tbox/Utilities.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 #include "SAMRAI/xfer/RefineSchedule.h"
 
@@ -43,7 +46,7 @@
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class BoxContainer; } }
-namespace SAMRAI { namespace hier { class Patch; } }
+namespace SAMRAI { namespace hier { class PatchData; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace tbox { class Database; } }
@@ -228,7 +231,45 @@ void TagAndInitModule::tagCellsForRefinement(
         const bool can_be_refined,
         const double regrid_start_time)
 {
-    // TODO
+    // Check parameters
+    if (patch_hierarchy == NULL) {
+        PQS_ERROR(this, "initializeLevelData",
+                  "'patch_hierarchy' may not be NULL");
+    }
+    if (patch_level_number < 0) {
+        PQS_ERROR(this, "initializeLevelData",
+                  "'patch_level_number' must non-negative");
+    }
+    if (patch_level_number > patch_hierarchy->getFinestLevelNumber()) {
+        PQS_ERROR(this, "initializeLevelData",
+                  "'patch_level_number' exceeds finest PatchLevel number");
+    }
+    if (patch_hierarchy->getPatchLevel(patch_level_number) == NULL) {
+        PQS_ERROR(this, "initializeLevelData",
+                  "PatchLevel at 'patch_level_number' must not be NULL");
+    }
+
+    // Get PatchLevel
+    boost::shared_ptr<hier::PatchLevel> patch_level =
+        patch_hierarchy->getPatchLevel(patch_level_number);
+
+    // Initialize data on Patches on the PatchLevel.
+    for (hier::PatchLevel::Iterator pi(patch_level->begin());
+            pi!=patch_level->end(); pi++) {
+
+        boost::shared_ptr<hier::Patch> patch = *pi;
+        if (patch == NULL) {
+        PQS_ERROR(this, "initializeLevelData",
+                  "Null Patch pointer found when iterating over "
+                  "PatchLevel.");
+        }
+
+        boost::shared_ptr< pdat::CellData<int> > tag_data =
+            BOOST_CAST<pdat::CellData<int>, hier::PatchData>(
+                patch->getPatchData(tag_id));
+
+        tag_data->fill(1);
+    }
 } // TagAndInitModule::tagCellsForRefinement()
 
 bool TagAndInitModule::refineUserBoxInputOnly(int cycle, double time)
