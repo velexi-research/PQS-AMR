@@ -258,9 +258,50 @@ public:
      *
      * Return value
      * ------------
-     * curvature
+     * simulation cycle count
      */
-    virtual int getStep() const;
+    virtual int getCycle() const;
+
+    /*!
+     * Get pointer to PatchHierarchy.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * pointer to PatchHierarchy
+     */
+    virtual boost::shared_ptr<hier::PatchHierarchy> getPatchHierarchy() const;
+
+    /*!
+     * Get PatchData ID for level set function that defines solid-pore
+     * interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * PatchData ID for level set function that defines solid-pore interface
+     */
+    virtual int getPoreSpacePatchDataId() const;
+
+    /*!
+     * Get PatchData ID for level set function that defines fluid-fluid
+     * interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * PatchData ID for level set function that defines fluid-fluid interface
+     */
+    virtual int getInterfacePatchDataId() const;
 
     /*!
      * Print the values of the data members the object.
@@ -332,7 +373,7 @@ protected:
 
     // PQS
     double d_curvature;  // current value of prescribed curvature
-    int d_num_steps;  // number of prescribed curvature steps taken
+    int d_cycle;  // number of prescribed curvature steps taken
 
     // AMR
     int d_regrid_count;

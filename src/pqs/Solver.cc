@@ -20,7 +20,6 @@
 // Standard library
 #include <cstddef>
 #include <sstream>
-#include <stdexcept>
 
 // Boost
 #include <boost/smart_ptr/make_shared_object.hpp>
@@ -38,6 +37,7 @@
 #include "SAMRAI/pdat/CellVariable.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/Dimension.h"
+#include "SAMRAI/tbox/RestartManager.h"
 #include "SAMRAI/tbox/Utilities.h"
 
 // PQS
@@ -50,8 +50,8 @@
 namespace SAMRAI { namespace mesh { class TagAndInitializeStrategy; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
-namespace PQS { namespace pqs { class DataInitStrategy; } }
-
+namespace PQS { namespace pqs { class InterfaceInitStrategy; } }
+namespace PQS { namespace pqs { class PoreInitStrategy; } }
 
 // --- Class implementation
 
@@ -83,7 +83,7 @@ Solver::Solver(
 
     // Set data members
     d_patch_hierarchy = patch_hierarchy;
-    d_num_steps = 0;
+    d_cycle = 0;
 
     // Load configuration from config_db
     loadConfiguration(config_db);
@@ -114,10 +114,26 @@ double Solver::getCurvature() const
     return d_curvature;
 } // Solver::getCurvature()
 
-int Solver::getStep() const
+int Solver::getCycle() const
 {
-    return d_num_steps;
-} // Solver::getStep()
+    return d_cycle;
+} // Solver::getCycle()
+
+boost::shared_ptr<hier::PatchHierarchy> Solver::getPatchHierarchy() const
+{
+    return d_patch_hierarchy;
+} // Solver::getPatchHierarchy()
+
+int Solver::getPoreSpacePatchDataId() const
+{
+    return d_psi_id;
+} // Solver::getPoreSpacePatchDataId()
+
+int Solver::getInterfacePatchDataId() const
+{
+    return d_phi_pqs_current_id;
+} // Solver::getInterfacePatchDataId()
+
 
 void Solver::printClassData(ostream& os) const
 {
@@ -391,7 +407,27 @@ void Solver::setupGridManagement(
 
 void Solver::initializeSimulation()
 {
-    // TODO
+    // Construct and initialize the levels of PatchHierarchy.
+    if (tbox::RestartManager::getManager()->isFromRestart()) {
+        // TODO
+    } else {
+        double time = 0.0;  // 0.0 is an arbitrary simulation time
+
+        d_gridding_alg->makeCoarsestLevel(time);
+
+        for (int level_num = 0;
+                d_patch_hierarchy->levelCanBeRefined(level_num);
+                level_num++) {
+
+            d_gridding_alg->makeFinerLevel(0, // TODO: do we need tag buffer?
+                                           true, // initial_cycle=true
+                                           d_cycle,
+                                           time);
+        }
+
+        // TODO: synchronize coarser levels with finer levels that didn't
+        // exist when the finer coarser level data was initialized.
+    }
 } // Solver::initializeSimulation()
 
 } // PQS::pqs namespace
