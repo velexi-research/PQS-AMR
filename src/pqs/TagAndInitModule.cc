@@ -69,7 +69,7 @@ TagAndInitModule::TagAndInitModule(
         const int phi_id, const int psi_id):
     mesh::TagAndInitializeStrategy(d_object_name)
 {
-    // Check parameters
+    // Check arguments
     if (config_db == NULL) {
         PQS_ERROR(this, "TagAndInitModule", "'config_db' must not be NULL");
     }
@@ -108,7 +108,7 @@ void TagAndInitModule::initializeLevelData(
         const boost::shared_ptr<hier::PatchLevel>& old_patch_level,
         const bool allocate_data)
 {
-    // Check parameters
+    // Check arguments
     if (patch_hierarchy == NULL) {
         PQS_ERROR(this, "initializeLevelData",
                   "'patch_hierarchy' may not be NULL");
@@ -187,7 +187,7 @@ void TagAndInitModule::resetHierarchyConfiguration(
         const int coarsest_patch_level_number,
         const int finest_patch_level_number)
 {
-    // Check parameters
+    // Check arguments
     if (patch_hierarchy == NULL) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
                   "'patch_hierarchy' may not be NULL");
@@ -231,7 +231,7 @@ void TagAndInitModule::tagCellsForRefinement(
         const bool can_be_refined,
         const double regrid_start_time)
 {
-    // Check parameters
+    // Check arguments
     if (patch_hierarchy == NULL) {
         PQS_ERROR(this, "initializeLevelData",
                   "'patch_hierarchy' may not be NULL");
@@ -264,6 +264,7 @@ void TagAndInitModule::tagCellsForRefinement(
                   "PatchLevel.");
         }
 
+        // TODO: implement actual cell tagging algorithm
         boost::shared_ptr< pdat::CellData<int> > tag_data =
             BOOST_CAST<pdat::CellData<int>, hier::PatchData>(
                 patch->getPatchData(tag_id));
