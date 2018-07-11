@@ -61,7 +61,6 @@ TEST_F(pqsTests, test_config_db_structure)
 
     // Sub-databases
     EXPECT_TRUE(config_db->isDatabase("PQS"));
-    EXPECT_TRUE(config_db->isDatabase("Geometry"));
     EXPECT_TRUE(config_db->isDatabase("SAMRAI"));
 
     // PQS database
@@ -69,19 +68,22 @@ TEST_F(pqsTests, test_config_db_structure)
         config_db->getDatabase("PQS");
     EXPECT_TRUE(pqs_config_db->isDouble("initial_curvature"));
 
+    // SAMRAI database
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
+    EXPECT_TRUE(samrai_config_db->isDatabase("Geometry"));
+    EXPECT_TRUE(samrai_config_db->isDatabase("PatchHierarchy"));
+    EXPECT_TRUE(samrai_config_db->isDatabase("BoxGenerator"));
+    EXPECT_TRUE(samrai_config_db->isDatabase("LoadBalancer"));
+    EXPECT_TRUE(samrai_config_db->isDatabase("GriddingAlgorithm"));
+
     // Geometry database
     boost::shared_ptr<tbox::Database> geometry_config_db =
-        config_db->getDatabase("Geometry");
+        samrai_config_db->getDatabase("Geometry");
     EXPECT_TRUE(geometry_config_db->keyExists("x_lo"));
     EXPECT_TRUE(geometry_config_db->keyExists("x_up"));
     EXPECT_TRUE(geometry_config_db->keyExists("domain_boxes"));
 
-    // SAMRAI database
-    boost::shared_ptr<tbox::Database> samrai_config_db =
-        config_db->getDatabase("SAMRAI");
-    EXPECT_TRUE(samrai_config_db->isDatabase("BoxGenerator"));
-    EXPECT_TRUE(samrai_config_db->isDatabase("LoadBalancer"));
-    EXPECT_TRUE(samrai_config_db->isDatabase("GriddingAlgorithm"));
 }
 
 // Test case: test constructor for PQS::pqs::Solver class
@@ -89,6 +91,12 @@ TEST_F(pqsTests, test_Solver_Solver)
 {
     // --- Preparations
 
+    // Configuration databases
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
 
     // --- Exercise functionality
 
@@ -103,8 +111,6 @@ TEST_F(pqsTests, test_Solver_Solver)
     EXPECT_NE(solver, (pqs::Solver*) NULL);
 
     // Solver parameters
-    boost::shared_ptr<tbox::Database> pqs_config_db =
-        config_db->getDatabase("PQS");
     EXPECT_EQ(solver->getCurvature(),
               pqs_config_db->getDouble("initial_curvature"));
     EXPECT_EQ(solver->getCycle(), 0);
@@ -118,8 +124,8 @@ TEST_F(pqsTests, test_Solver_Solver)
         solver->getPatchHierarchy();
     EXPECT_TRUE(patch_hierarchy);  // check that pointer is not NULL
 
-    int expected_num_patch_levels =
-        config_db->getDatabase("PatchHierarchy")->getInteger("max_levels");
+    int expected_num_patch_levels = samrai_config_db->
+        getDatabase("PatchHierarchy")->getInteger("max_levels");
     EXPECT_EQ(patch_hierarchy->getNumberOfLevels(), expected_num_patch_levels);
 }
 

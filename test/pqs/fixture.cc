@@ -73,43 +73,6 @@ pqsTests::pqsTests() {
 
     pqs_config_db->putDouble("initial_curvature", 0.5);
 
-    // ------ Geometry configuration
-
-    // Geometry database
-    boost::shared_ptr<tbox::Database> geometry_config_db =
-        config_db->putDatabase("Geometry");
-
-    // Problem dimension
-    const tbox::Dimension dim(3);
-
-    // Physical bounds
-    double x_lo[3] = {-1.0, -1.0, -1.0};
-    double x_up[3] = {1.0, 1.0, 1.0};
-    geometry_config_db->putDoubleArray("x_lo", x_lo, 3);
-    geometry_config_db->putDoubleArray("x_up", x_up, 3);
-
-    // Box
-    int box_lower[3] = {0, 0, 0};
-    int box_upper[3] = {49, 49, 49};
-    tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
-    geometry_config_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
-
-    // ------ PatchHierarchy configuration
-
-    // PatchHierarchy database
-    boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
-        config_db->putDatabase("PatchHierarchy");
-
-    int max_levels = 3;
-    patch_hierarchy_config_db->putInteger("max_levels", max_levels);
-    patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
-    for (int ln=1; ln <= max_levels; ln++) {
-        int ratio_to_coarser[3] = {2, 2, 2};
-        std::string level_name = std::string("level_") + std::to_string(ln);
-        patch_hierarchy_config_db->putIntegerArray(level_name,
-                                                   ratio_to_coarser, 3);
-    }
-
     // ------ SAMRAI configuration
 
     // SAMRAI database
@@ -127,6 +90,43 @@ pqsTests::pqsTests() {
     // GriddingAlgorithm database
     boost::shared_ptr<tbox::Database> gridding_algorithm_config_db =
         samrai_config_db->putDatabase("GriddingAlgorithm");
+
+    // --------- Geometry configuration
+
+    // Geometry database
+    boost::shared_ptr<tbox::Database> geometry_config_db =
+        samrai_config_db->putDatabase("Geometry");
+
+    // Problem dimension
+    const tbox::Dimension dim(3);
+
+    // Physical bounds
+    double x_lo[3] = {-1.0, -1.0, -1.0};
+    double x_up[3] = {1.0, 1.0, 1.0};
+    geometry_config_db->putDoubleArray("x_lo", x_lo, 3);
+    geometry_config_db->putDoubleArray("x_up", x_up, 3);
+
+    // Box
+    int box_lower[3] = {0, 0, 0};
+    int box_upper[3] = {49, 49, 49};
+    tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
+    geometry_config_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
+
+    // --------- PatchHierarchy configuration
+
+    // PatchHierarchy database
+    boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
+        samrai_config_db->putDatabase("PatchHierarchy");
+
+    int max_levels = 3;
+    patch_hierarchy_config_db->putInteger("max_levels", max_levels);
+    patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
+    for (int ln=1; ln <= max_levels; ln++) {
+        int ratio_to_coarser[3] = {2, 2, 2};
+        std::string level_name = std::string("level_") + std::to_string(ln);
+        patch_hierarchy_config_db->putIntegerArray(level_name,
+                                                   ratio_to_coarser, 3);
+    }
 
     // --- Initialize Geometry and PatchHierarchy
 
