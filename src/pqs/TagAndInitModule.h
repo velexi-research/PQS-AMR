@@ -156,7 +156,7 @@ public:
      *
      * Parameters
      * ----------
-     * config_db: TODO
+     * config_db: database containing configuration parameters
      *
      * phi_id: PatchData ID for fluid-fluid interface level set function
      *
@@ -564,7 +564,7 @@ protected:
     // --- Object name
     //
     // Note: used only to initialize TagAndInitializeStrategy base class
-    const string d_object_name = "PQS::pqs::TagAndInitModule";
+    const static string s_object_name;
 
 private:
 

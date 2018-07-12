@@ -57,6 +57,10 @@ namespace SAMRAI { namespace tbox { class Database; } }
 namespace PQS {
 namespace pqs {
 
+// --- Static data members
+
+const string TagAndInitModule::s_object_name = "PQS::pqs::TagAndInitModule";
+
 // --- Implementation of public methods
 
 // Constructor
@@ -67,7 +71,7 @@ TagAndInitModule::TagAndInitModule(
         const boost::shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
         const int phi_id, const int psi_id):
-    mesh::TagAndInitializeStrategy(d_object_name)
+    mesh::TagAndInitializeStrategy(s_object_name)
 {
     // Check arguments
     if (config_db == NULL) {
@@ -269,7 +273,7 @@ void TagAndInitModule::tagCellsForRefinement(
             BOOST_CAST<pdat::CellData<int>, hier::PatchData>(
                 patch->getPatchData(tag_id));
 
-        tag_data->fill(1);
+        tag_data->getPointer()[0] = 1;
     }
 } // TagAndInitModule::tagCellsForRefinement()
 
@@ -349,7 +353,7 @@ void TagAndInitModule::initializeCommunicationObjects(
 // Copy constructor
 TagAndInitModule::TagAndInitModule(
         const TagAndInitModule& rhs):
-    mesh::TagAndInitializeStrategy(d_object_name)
+    mesh::TagAndInitializeStrategy(s_object_name)
 {
 } // TagAndInitModule::TagAndInitModule()
 
