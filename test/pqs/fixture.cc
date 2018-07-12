@@ -125,8 +125,7 @@ pqsTests::pqsTests() {
     boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
         samrai_config_db->putDatabase("PatchHierarchy");
 
-    //int max_levels = 3;
-    int max_levels = 2;
+    int max_levels = 3;
     patch_hierarchy_config_db->putInteger("max_levels", max_levels);
     patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
     for (int ln=1; ln <= max_levels; ln++) {
