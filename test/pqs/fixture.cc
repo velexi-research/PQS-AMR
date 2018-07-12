@@ -19,6 +19,7 @@
 
 // Standard library
 #include <iosfwd>
+#include <stddef.h>
 #include <string>
 
 // SAMRAI
@@ -34,6 +35,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/pqs/Solver.h"
 
 // PQS test
 #include "fixture.h"
@@ -44,6 +46,10 @@
 // --- Fixtures
 
 namespace pqsTests {
+
+// Static data members
+int pqsTests::s_num_tests = 3;
+int pqsTests::s_num_tests_remaining = pqsTests::s_num_tests;
 
 // Constructor (set up)
 pqsTests::pqsTests() {
@@ -56,13 +62,13 @@ pqsTests::pqsTests() {
         tbox::SAMRAI_MPI::init(&argc, &argv);
 
         tbox::SAMRAIManager::initialize();
-        tbox::SAMRAIManager::startup();
         const tbox::SAMRAI_MPI& mpi(tbox::SAMRAI_MPI::getSAMRAIWorld());
     }
+    tbox::SAMRAIManager::startup();
 
     // --- Construct configuration database
 
-    config_db = boost::shared_ptr<tbox::MemoryDatabase>(
+    config_db = boost::shared_ptr<tbox::Database>(
         new tbox::MemoryDatabase("Configuration Parameters"));
 
     // ------ PQS configuration
@@ -98,7 +104,8 @@ pqsTests::pqsTests() {
         samrai_config_db->putDatabase("Geometry");
 
     // Problem dimension
-    const tbox::Dimension dim(3);
+    geometry_config_db->putInteger("dim", 3);
+    const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
 
     // Physical bounds
     double x_lo[3] = {-1.0, -1.0, -1.0};
@@ -108,7 +115,7 @@ pqsTests::pqsTests() {
 
     // Box
     int box_lower[3] = {0, 0, 0};
-    int box_upper[3] = {49, 49, 49};
+    int box_upper[3] = {19, 19, 19};
     tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
     geometry_config_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
 
@@ -118,7 +125,8 @@ pqsTests::pqsTests() {
     boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
         samrai_config_db->putDatabase("PatchHierarchy");
 
-    int max_levels = 3;
+    //int max_levels = 3;
+    int max_levels = 2;
     patch_hierarchy_config_db->putInteger("max_levels", max_levels);
     patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
     for (int ln=1; ln <= max_levels; ln++) {
@@ -132,13 +140,18 @@ pqsTests::pqsTests() {
 
     // Geometry
     grid_geometry = boost::shared_ptr<geom::CartesianGridGeometry>(
-        new geom::CartesianGridGeometry(
-            dim, "CartesianGeometry", geometry_config_db));
+        new geom::CartesianGridGeometry(dim, "TestCartesianGeometry",
+                                        geometry_config_db));
 
     // PatchHierarchy
     patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
-        new hier::PatchHierarchy("PatchHierarchy", grid_geometry,
+        new hier::PatchHierarchy("TestPatchHierarchy", grid_geometry,
                                  patch_hierarchy_config_db));
+
+    // --- Initialize PQS objects
+
+    // Solver
+    solver = NULL;
 
     // TestPoreInitModule (implements PoreInitStrategy)
     pore_init_strategy = boost::shared_ptr<pqs::PoreInitStrategy>(
@@ -150,11 +163,24 @@ pqsTests::pqsTests() {
 }
 
 pqsTests::~pqsTests() {
+    // Clean up SAMRAI objects
+    patch_hierarchy.reset();
+    grid_geometry.reset();
+
+    // Clean up PQS objects
+    if (solver) {
+        delete solver;
+        solver = NULL;
+    }
+    pore_init_strategy.reset();
+    interface_init_strategy.reset();
+    config_db.reset();
+
     // Shutdown SAMRAI
+    tbox::SAMRAIManager::shutdown();
     if (s_num_tests_remaining > 0) {
         s_num_tests_remaining--;
     } else {
-        tbox::SAMRAIManager::shutdown();
         tbox::SAMRAIManager::finalize();
         tbox::SAMRAI_MPI::finalize();
     }

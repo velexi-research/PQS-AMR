@@ -39,7 +39,8 @@ using namespace PQS;
 // Class/type declarations
 namespace SAMRAI { namespace geom { class CartesianGridGeometry; } }
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
-namespace SAMRAI { namespace tbox { class MemoryDatabase; } }
+namespace SAMRAI { namespace tbox { class Database; } }
+namespace PQS { namespace pqs { class Solver; } }
 
 
 // --- Fixtures
@@ -52,7 +53,7 @@ protected:
     // --- Fixture data
 
     // Configuration database
-    boost::shared_ptr<tbox::MemoryDatabase> config_db;
+    boost::shared_ptr<tbox::Database> config_db;
 
     // SAMRAI::geom::Geometry
     boost::shared_ptr<geom::CartesianGridGeometry> grid_geometry;
@@ -66,6 +67,9 @@ protected:
     // PQS::pqs::InterfaceInitStrategy
     boost::shared_ptr<pqs::InterfaceInitStrategy> interface_init_strategy;
 
+    // PQS::pqs::Solver
+    pqs::Solver *solver;
+
     // --- Fixture set up and tear down
 
     // Constructor (set up)
@@ -78,8 +82,8 @@ protected:
     //
     // NOTE: used to ensure that per-process initialization and cleanup
     // are not called multiple times.
-    int s_num_tests = 2;
-    int s_num_tests_remaining = s_num_tests;
+    static int s_num_tests;
+    static int s_num_tests_remaining;
 };
 
 } // pqsTests namespace
