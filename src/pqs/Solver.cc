@@ -26,9 +26,11 @@
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 // SAMRAI
+#include "SAMRAI/geom/CartesianGridGeometry.h"
 #include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
+#include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/mesh/ChopAndPackLoadBalancer.h"
@@ -62,18 +64,17 @@ namespace pqs {
 
 Solver::Solver(
         const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
         const boost::shared_ptr<pqs::InterfaceInitStrategy>&
-            interface_init_strategy)
+            interface_init_strategy,
+        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy)
 {
-    // Check parameters
+    // Check arguments
     if (config_db == NULL) {
         PQS_ERROR(this, "Solver", "'config_db' must not be NULL");
     }
-    if (patch_hierarchy == NULL) {
-        PQS_ERROR(this, "Solver", "'patch_hierarchy' must not be NULL");
-    }
+    verifyConfigurationDatabase(config_db);
+
     if (pore_init_strategy == NULL) {
         PQS_ERROR(this, "Solver", "'pore_init_strategy' must not be NULL");
     }
@@ -82,7 +83,11 @@ Solver::Solver(
     }
 
     // Set data members
-    d_patch_hierarchy = patch_hierarchy;
+    if (patch_hierarchy != NULL) {
+        d_patch_hierarchy = patch_hierarchy;
+    } else {
+        createPatchHierarchy(config_db);
+    }
     d_cycle = 0;
 
     // Load configuration from config_db
@@ -98,6 +103,18 @@ Solver::Solver(
     initializeSimulation();
 
 } // Solver::Solver()
+
+Solver::~Solver()
+{
+    // Free memory allocated for simulation data
+    for (int level_num=0;
+            level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
+        boost::shared_ptr<hier::PatchLevel> patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num);
+        patch_level->deallocatePatchData(d_permanent_variables);
+        patch_level->deallocatePatchData(d_intermediate_variables);
+    }
+} // Solver::~Solver()
 
 void Solver::equilibrateInterface(const double curvature)
 {
@@ -154,24 +171,85 @@ void Solver::printClassData(ostream& os) const
 
 // --- Implementation of private methods
 
-void Solver::loadConfiguration(
-        const boost::shared_ptr<tbox::Database>& config_db)
+void Solver::verifyConfigurationDatabase(
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const bool verify_patch_hierarchy) const
 {
-    // Check parameters
     if (config_db == NULL) {
-        PQS_ERROR(this, "loadConfiguration", "'config_db' must not be NULL");
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'config_db' must not be NULL");
     }
+
+    // Verify PQS database
     if (!config_db->isDatabase("PQS")) {
-        PQS_ERROR(this, "loadConfiguration",
+        PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'PQS' database missing from 'config_db'");
     }
 
+    // Verify SAMRAI database
+    if (!config_db->isDatabase("SAMRAI")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'SAMRAI' database missing from 'config_db'");
+    }
+
+    // Verify Geometry and PatchHierarchy databases
+    if (verify_patch_hierarchy) {
+        boost::shared_ptr<tbox::Database> samrai_config_db =
+            config_db->getDatabase("SAMRAI");
+        if (!samrai_config_db->isDatabase("Geometry")) {
+            PQS_ERROR(this, "verifyConfigurationDatabase",
+                      "'Geometry' database missing from 'SAMRAI' database");
+        }
+        if (!samrai_config_db->isDatabase("PatchHierarchy")) {
+            PQS_ERROR(this, "verifyConfigurationDatabase",
+                      "'PatchHierarchy' database missing from 'SAMRAI' "
+                      "database");
+        }
+
+        // Verify SAMRAI::Geometry database
+        boost::shared_ptr<tbox::Database> geometry_config_db =
+            samrai_config_db->getDatabase("Geometry");
+        if (!geometry_config_db->isInteger("dim")) {
+            PQS_ERROR(this, "verifyConfigurationDatabase",
+                      "'dim' database missing from 'SAMRAI::Geometry' "
+                      "database");
+        }
+    }
+}
+
+void Solver::loadConfiguration(
+        const boost::shared_ptr<tbox::Database>& config_db)
+{
     // Load configuration parameters
     boost::shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
     d_curvature = pqs_config_db->getDouble("initial_curvature");
 
 } // Solver::loadConfiguration()
+
+void Solver::createPatchHierarchy(
+        const boost::shared_ptr<tbox::Database>& config_db)
+{
+    // Preparations
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
+    boost::shared_ptr<tbox::Database> geometry_config_db =
+        samrai_config_db->getDatabase("Geometry");
+
+    // Create CartesianGridGeometry
+    const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
+    boost::shared_ptr<geom::CartesianGridGeometry> grid_geometry =
+        boost::shared_ptr<geom::CartesianGridGeometry>(
+            new geom::CartesianGridGeometry(
+                dim, "CartesianGeometry",
+                samrai_config_db->getDatabase("Geometry")));
+
+    // Create PatchHierarchy
+    d_patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
+        new hier::PatchHierarchy("PatchHierarchy", grid_geometry,
+            samrai_config_db->getDatabase("PatchHierarchy")));
+
+} // Solver::createPatchHierarchy()
 
 void Solver::setupSimulationVariables()
 {
@@ -290,25 +368,24 @@ void Solver::setupSimulationVariables()
                                            zero_ghostcell_width);
     d_intermediate_variables.setFlag(d_normal_velocity_id);
 
-    // external velocity
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> >
-        external_velocity_variable;
-    if (var_db->checkVariableExists("external velocity")) {
-        external_velocity_variable =
+    // vector velocity
+    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > vector_velocity_variable;
+    if (var_db->checkVariableExists("vector velocity")) {
+        vector_velocity_variable =
             BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
-                var_db->getVariable("external velocity"));
+                var_db->getVariable("vector velocity"));
     } else {
         const int depth = dim.getValue();
-        external_velocity_variable =
+        vector_velocity_variable =
             boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
-                new pdat::CellVariable<PQS_REAL>(dim, "external velocity",
-                                                    depth));
+                new pdat::CellVariable<PQS_REAL>(dim, "vector velocity",
+                                                 depth));
     }
-    d_external_velocity_id =
-        var_db->registerVariableAndContext(external_velocity_variable,
+    d_vector_velocity_id =
+        var_db->registerVariableAndContext(vector_velocity_variable,
                                            default_context,
                                            zero_ghostcell_width);
-    d_intermediate_variables.setFlag(d_external_velocity_id);
+    d_intermediate_variables.setFlag(d_vector_velocity_id);
 
     // curvature
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > curvature_variable;
@@ -354,7 +431,8 @@ void Solver::setupGridManagement(
         const boost::shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy)
 {
-    // --- Check parameters
+    // --- Check arguments
+
     // TODO: check database structure
     // PQS{ }
     // SAMRAI{ BoxGenerator, LoadBalancer, GriddingAlgorithm }

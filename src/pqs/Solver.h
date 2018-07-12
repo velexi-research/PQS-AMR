@@ -155,17 +155,29 @@ public:
      * - Create simulation variables.
      * - Register PatchData
      * - Create SAMRAI::mesh::GriddingAlgorithm
+     *
+     * Parameters
+     * ----------
+     * config_db: database containing configuration parameters
+     *
+     * pore_init_strategy: user implementation of PoreInitStrategy strategy
+     *      interface
+     *
+     * interface_init_strategy: user implementation of
+     *      InterfaceInitStrategy strategy interface
+     *
+     * patch_hierarchy: PatchHierarchy to use for simulation
      */
     Solver(const boost::shared_ptr<tbox::Database>& config_db,
-           const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-           const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-           const boost::shared_ptr<pqs::InterfaceInitStrategy>&
-               initerface_init_strategy);
+        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+            interface_init_strategy,
+        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL);
 
     /*!
-     * Empty default destructor.
+     * Default destructor frees memory allocated for simulation.
      */
-    virtual ~Solver() {};
+    virtual ~Solver();
 
     //! @}
 
@@ -182,7 +194,7 @@ public:
      *
      * Parameters
      * ----------
-     * curvature: target curvature for steady-state interface
+     * curvature: target mean curvature for steady-state interface
      *
      * Return value
      * ------------
@@ -200,8 +212,8 @@ public:
      *
      * Parameters
      * ----------
-     * delta_curvature: curvature increment to apply to current fluid-fluid
-     *     interface
+     * delta_curvature: mean curvature increment to apply to current
+     *      fluid-fluid interface
      *
      * Return value
      * ------------
@@ -225,7 +237,7 @@ public:
      ************************************************************************/
 
     /*!
-     * Get current curvature of fluid-fluid interface.
+     * Get current mean curvature of fluid-fluid interface.
      *
      * Parameters
      * ----------
@@ -233,18 +245,18 @@ public:
      *
      * Return value
      * ------------
-     * current value of curvature
+     * current value of mean curvature
      *
      * Notes
      * -----
      * - After either equilibrateInterface() or advanceInterface() has been
-     *   called, the returned curvature value is equal to the value of the
-     *   fluid-fluid interface.
+     *   called, the returned mean curvature value is equal to the value of
+     *   the fluid-fluid interface.
      *
      * - At the beginning of the simulation (i.e., before either
      *   equilibrateInterface() or advanceInterface() has been called), the
-     *   returned curvature value is equal to the initial target value for
-     *   the fluid-fluid interface.
+     *   returned mean curvature value is equal to the initial target value
+     *   for the fluid-fluid interface.
      */
     virtual double getCurvature() const;
 
@@ -357,7 +369,7 @@ protected:
 
     // velocities
     int d_normal_velocity_id;  // depth = 1
-    int d_external_velocity_id;  // depth = number of spatial dimensions
+    int d_vector_velocity_id;  // depth = number of spatial dimensions
 
     // geometry
     int d_curvature_id;  // depth = 1
@@ -372,7 +384,7 @@ protected:
     // --- State
 
     // PQS
-    double d_curvature;  // current value of prescribed curvature
+    double d_curvature;  // current value of prescribed mean curvature
     int d_cycle;  // number of prescribed curvature steps taken
 
     // AMR
@@ -398,9 +410,42 @@ protected:
 private:
 
     /*
+     * Verify that configuration database from specified database.
+     *
+     * Parameters
+     * ----------
+     * config_db: database containing configuration parameters
+     *
+     * verify_patch_hierarchy: flag indicating whether or not to check
+     *      PatchHierarchy and Geometry parameters
+     *
+     * Return value
+     * ------------
+     * true
+     *
+     * Notes
+     * -----
+     * - If 'config_db' is not valid, this method throws an exception
+     *   containing error information.
+     */
+    void verifyConfigurationDatabase(
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const bool verify_patch_hierarchy=false) const;
+
+    /*
      * Load configuration parameters from specified database.
+     *
+     * Parameters
+     * ----------
+     * config_db: database containing configuration parameters
      */
     void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
+
+    /*
+     * Create PatchHierarchy.
+     */
+    void createPatchHierarchy(
+        const boost::shared_ptr<tbox::Database>& config_db);
 
     /*
      * Set up simulation variables.
