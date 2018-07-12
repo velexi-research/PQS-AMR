@@ -33,7 +33,6 @@
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/tbox/Database.h"
-#include "SAMRAI/tbox/MemoryDatabase.h"
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
@@ -57,8 +56,6 @@ namespace pqsTests {
 // Test case: validate structure of configuration database
 TEST_F(pqsTests, test_config_db_structure)
 {
-    // --- Validate structure of configuration database
-
     // Sub-databases
     EXPECT_TRUE(config_db->isDatabase("PQS"));
     EXPECT_TRUE(config_db->isDatabase("SAMRAI"));
@@ -80,14 +77,15 @@ TEST_F(pqsTests, test_config_db_structure)
     // Geometry database
     boost::shared_ptr<tbox::Database> geometry_config_db =
         samrai_config_db->getDatabase("Geometry");
+    EXPECT_TRUE(geometry_config_db->keyExists("dim"));
     EXPECT_TRUE(geometry_config_db->keyExists("x_lo"));
     EXPECT_TRUE(geometry_config_db->keyExists("x_up"));
     EXPECT_TRUE(geometry_config_db->keyExists("domain_boxes"));
 
 }
 
-// Test case: test constructor for PQS::pqs::Solver class
-TEST_F(pqsTests, test_Solver_Solver)
+// Test case: test constructor for PQS::pqs::Solver class with PatchHierarchy
+TEST_F(pqsTests, test_Solver_Solver_with_patch_hierarchy)
 {
     // --- Preparations
 
@@ -101,9 +99,52 @@ TEST_F(pqsTests, test_Solver_Solver)
     // --- Exercise functionality
 
     // Construct PQS::pqs::Solver object
-    pqs::Solver *solver =
-        new pqs::Solver(config_db, patch_hierarchy,
-                        pore_init_strategy, interface_init_strategy);
+    solver = new pqs::Solver(config_db,
+                             pore_init_strategy,
+                             interface_init_strategy,
+                             patch_hierarchy);
+
+    // --- Check results
+
+    // Status code
+    EXPECT_NE(solver, (pqs::Solver*) NULL);
+
+    // Solver parameters
+    EXPECT_EQ(solver->getCurvature(),
+              pqs_config_db->getDouble("initial_curvature"));
+    EXPECT_EQ(solver->getCycle(), 0);
+
+    // Solver state
+    EXPECT_GE(solver->getPoreSpacePatchDataId(), 0);
+    EXPECT_GE(solver->getInterfacePatchDataId(), 0);
+
+    // PatchHierarchy configuration
+    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy =
+        solver->getPatchHierarchy();
+    EXPECT_TRUE(patch_hierarchy);  // check that pointer is not NULL
+
+    int expected_num_patch_levels = samrai_config_db->
+        getDatabase("PatchHierarchy")->getInteger("max_levels");
+    EXPECT_EQ(patch_hierarchy->getNumberOfLevels(), expected_num_patch_levels);
+}
+
+// Test case: test constructor for PQS::pqs::Solver class without PatchHierarchy
+TEST_F(pqsTests, test_Solver_Solver_without_patch_hierarchy)
+{
+    // --- Preparations
+
+    // Configuration databases
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
+
+    // --- Exercise functionality
+
+    // Construct PQS::pqs::Solver object
+    solver = new pqs::Solver(config_db, pore_init_strategy,
+                             interface_init_strategy);
 
     // --- Check results
 
