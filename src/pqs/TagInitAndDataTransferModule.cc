@@ -1,7 +1,7 @@
-/*! \file TagAndInitModule.cc
+/*! \file TagInitAndDataTransferModule.cc
  *
  * \brief
- * Implementation file for TagAndInitModule class.
+ * Implementation file for TagInitAndDataTransferModule class.
  */
 
 /*
@@ -41,7 +41,7 @@
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
-#include "PQS/pqs/TagAndInitModule.h"
+#include "PQS/pqs/TagInitAndDataTransferModule.h"
 #include "PQS/pqs/utilities.h"
 
 // Class/type declarations
@@ -59,12 +59,13 @@ namespace pqs {
 
 // --- Static data members
 
-const string TagAndInitModule::s_object_name = "PQS::pqs::TagAndInitModule";
+const string TagInitAndDataTransferModule::s_object_name =
+    "PQS::pqs::TagInitAndDataTransferModule";
 
 // --- Implementation of public methods
 
 // Constructor
-TagAndInitModule::TagAndInitModule(
+TagInitAndDataTransferModule::TagInitAndDataTransferModule(
         const boost::shared_ptr<tbox::Database>& config_db,
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
@@ -75,37 +76,61 @@ TagAndInitModule::TagAndInitModule(
 {
     // Check arguments
     if (config_db == NULL) {
-        PQS_ERROR(this, "TagAndInitModule", "'config_db' must not be NULL");
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "'config_db' must not be NULL");
+    }
+    if (patch_hierarchy == NULL) {
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "'patch_hierarchy' must not be NULL");
     }
     if (pore_init_strategy == NULL) {
-        PQS_ERROR(this, "TagAndInitModule",
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
                   "'pore_init_strategy' must not be NULL");
     }
     if (interface_init_strategy == NULL) {
-        PQS_ERROR(this, "TagAndInitModule",
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
                   "'interface_init_strategy' must not be NULL");
     }
     if (phi_id < 0) {
-        PQS_ERROR(this, "TagAndInitModule", "Invalid value for 'phi_id'");
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "Invalid value for 'phi_id'");
     }
     if (psi_id < 0) {
-        PQS_ERROR(this, "TagAndInitModule", "Invalid value for 'psi_id'");
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "Invalid value for 'psi_id'");
     }
 
     // Set data members
     d_phi_id = phi_id;
     d_psi_id = psi_id;
+    d_patch_hierarchy = patch_hierarchy;
     d_pore_init_strategy = pore_init_strategy;
     d_interface_init_strategy = interface_init_strategy;
 
-    // Initialize communication objects
-    initializeCommunicationObjects(patch_hierarchy->getGridGeometry());
+    // Initialize data transfer objects
+    initializeDataTransferObjects(patch_hierarchy->getGridGeometry());
 
-} // TagAndInitModule::TagAndInitModule()
+} // TagInitAndDataTransferModule::TagInitAndDataTransferModule()
 
-void TagAndInitModule::initializeLevelData(
+void TagInitAndDataTransferModule::fillGhostCells()
+{
+    for (int level_num=0;
+            level_num < d_patch_hierarchy->getNumberOfLevels();
+            level_num++) {
+
+        boost::shared_ptr<hier::PatchLevel> patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num);
+
+        d_xfer_fill_bdry_schedule->fillData(
+            0.0,    // not used
+            true);  // apply physical boundary conditions
+    }
+
+} // TagInitAndDataTransferModule::fillGhostCells()
+
+void TagInitAndDataTransferModule::initializeLevelData(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const double init_data_time,
         const bool can_be_refined,
         const bool initial_time,
@@ -117,29 +142,29 @@ void TagAndInitModule::initializeLevelData(
         PQS_ERROR(this, "initializeLevelData",
                   "'patch_hierarchy' may not be NULL");
     }
-    if (patch_level_number < 0) {
+    if (level_num < 0) {
         PQS_ERROR(this, "initializeLevelData",
-                  "'patch_level_number' must non-negative");
+                  "'level_num' must non-negative");
     }
-    if (patch_level_number > patch_hierarchy->getFinestLevelNumber()) {
+    if (level_num > patch_hierarchy->getFinestLevelNumber()) {
         PQS_ERROR(this, "initializeLevelData",
-                  "'patch_level_number' exceeds finest PatchLevel number");
+                  "'level_num' exceeds finest PatchLevel number");
     }
     if (old_patch_level != NULL) {
-        if (patch_level_number != old_patch_level->getLevelNumber()) {
+        if (level_num != old_patch_level->getLevelNumber()) {
             PQS_ERROR(this, "initializeLevelData",
-                      std::string("'patch_level_number' must equal ") +
+                      std::string("'level_num' must equal ") +
                       std::string("PatchLevel number of 'old_patch_level'"));
         }
     }
-    if (patch_hierarchy->getPatchLevel(patch_level_number) == NULL) {
+    if (patch_hierarchy->getPatchLevel(level_num) == NULL) {
         PQS_ERROR(this, "initializeLevelData",
-                  "PatchLevel at 'patch_level_number' must not be NULL");
+                  "PatchLevel at 'level_num' must not be NULL");
     }
 
     // Get PatchLevel
     boost::shared_ptr<hier::PatchLevel> patch_level =
-        patch_hierarchy->getPatchLevel(patch_level_number);
+        patch_hierarchy->getPatchLevel(level_num);
 
     // Allocate PatchData
     if (allocate_data) {
@@ -169,10 +194,10 @@ void TagAndInitModule::initializeLevelData(
         }
     } else {
         // If appropriate, fill new PatchLevel with data from the old PatchLevel
-        if ((patch_level_number > 0) || old_patch_level!=NULL) {
+        if ((level_num > 0) || (old_patch_level!=NULL)) {
             boost::shared_ptr<xfer::RefineSchedule> sched =
                 d_xfer_fill_new_level->createSchedule(
-                patch_level, old_patch_level, patch_level_number-1,
+                patch_level, old_patch_level, level_num-1,
                 patch_hierarchy, NULL);
 
             sched->fillData(init_data_time);
@@ -184,49 +209,70 @@ void TagAndInitModule::initializeLevelData(
         old_patch_level->deallocatePatchData(d_phi_id);
         old_patch_level->deallocatePatchData(d_psi_id);
     }
-} // TagAndInitModule::initializeLevelData()
+} // TagInitAndDataTransferModule::initializeLevelData()
 
-void TagAndInitModule::resetHierarchyConfiguration(
+void TagInitAndDataTransferModule::resetHierarchyConfiguration(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int coarsest_patch_level_number,
-        const int finest_patch_level_number)
+        const int coarsest_level_num,
+        const int finest_level_num)
 {
     // Check arguments
     if (patch_hierarchy == NULL) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
                   "'patch_hierarchy' may not be NULL");
     }
-    if (coarsest_patch_level_number < 0) {
+    if (patch_hierarchy != d_patch_hierarchy) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
-                  "'coarsest_patch_level_number' must be non-negative");
+                  std::string("'patch_hierarchy' argument does not match ") +
+                  std::string("'patch_hierarchy' argument passed to ") +
+                  std::string("constructor"));
     }
-    if (coarsest_patch_level_number > finest_patch_level_number) {
+    if (coarsest_level_num < 0) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
-                  std::string("'coarsest_patch_level_number' must be less ") +
-                  std::string("than or equal to 'finest_patch_level_number'"));
+                  "'coarsest_level_num' must be non-negative");
     }
-    for (int ln = 0; ln <= finest_patch_level_number; ln++) {
-        if (patch_hierarchy->getPatchLevel(ln) == NULL) {
+    if (coarsest_level_num > finest_level_num) {
+        PQS_ERROR(this, "resetHierarchyConfiguration",
+                  std::string("'coarsest_level_num' must be less ") +
+                  std::string("than or equal to 'finest_level_num'"));
+    }
+    for (int level_num = 0;
+            level_num <= finest_level_num;
+            level_num++) {
+
+        if (patch_hierarchy->getPatchLevel(level_num) == NULL) {
             PQS_ERROR(this, "resetHierarchyConfiguration",
                       std::string("PatchLevel ") +
-                      std::to_string(ln) +
+                      std::to_string(level_num) +
                       std::string(" is NULL in PatchHierarchy"));
         }
     }
 
-    // TODO: reset communication schedules
-    // - reset communications schedules used to fill boundary data
+    // TODO: reset data transfer schedules
+    // - reset data transfer schedules used to fill boundary data
     //   during time advance
+    for (int level_num = coarsest_level_num;
+            level_num <= finest_level_num;
+            level_num++) {
+
+        boost::shared_ptr<hier::PatchLevel> patch_level =
+            patch_hierarchy->getPatchLevel(level_num);
+
+        d_xfer_fill_bdry_schedule = d_xfer_fill_bdry->createSchedule(
+            patch_level, level_num-1,
+            patch_hierarchy, NULL);  // TODO: change NULL to boundary
+                                     // condition module
+    }
 
     // recompute control volumes
     // LevelSetMethodToolbox::computeControlVolumes(
     // patch_hierarchy, d_control_volume_handle);
 
-} // TagAndInitModule::resetHierarchyConfiguration()
+} // TagInitAndDataTransferModule::resetHierarchyConfiguration()
 
-void TagAndInitModule::tagCellsForRefinement(
+void TagInitAndDataTransferModule::tagCellsForRefinement(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const int regrid_cycle,
         const double regrid_time,
         const int tag_id,
@@ -240,22 +286,22 @@ void TagAndInitModule::tagCellsForRefinement(
         PQS_ERROR(this, "initializeLevelData",
                   "'patch_hierarchy' may not be NULL");
     }
-    if (patch_level_number < 0) {
+    if (level_num < 0) {
         PQS_ERROR(this, "initializeLevelData",
-                  "'patch_level_number' must non-negative");
+                  "'level_num' must non-negative");
     }
-    if (patch_level_number > patch_hierarchy->getFinestLevelNumber()) {
+    if (level_num > patch_hierarchy->getFinestLevelNumber()) {
         PQS_ERROR(this, "initializeLevelData",
-                  "'patch_level_number' exceeds finest PatchLevel number");
+                  "'level_num' exceeds finest PatchLevel number");
     }
-    if (patch_hierarchy->getPatchLevel(patch_level_number) == NULL) {
+    if (patch_hierarchy->getPatchLevel(level_num) == NULL) {
         PQS_ERROR(this, "initializeLevelData",
-                  "PatchLevel at 'patch_level_number' must not be NULL");
+                  "PatchLevel at 'level_num' must not be NULL");
     }
 
     // Get PatchLevel
     boost::shared_ptr<hier::PatchLevel> patch_level =
-        patch_hierarchy->getPatchLevel(patch_level_number);
+        patch_hierarchy->getPatchLevel(level_num);
 
     // Initialize data on Patches on the PatchLevel.
     for (hier::PatchLevel::Iterator pi(patch_level->begin());
@@ -275,35 +321,37 @@ void TagAndInitModule::tagCellsForRefinement(
 
         tag_data->getPointer()[0] = 1;
     }
-} // TagAndInitModule::tagCellsForRefinement()
+} // TagInitAndDataTransferModule::tagCellsForRefinement()
 
-bool TagAndInitModule::refineUserBoxInputOnly(int cycle, double time)
+bool TagInitAndDataTransferModule::refineUserBoxInputOnly(
+        int cycle, double time)
 {
     // TODO
     return false;
-} // TagAndInitModule::refineUserBoxInputOnly()
+} // TagInitAndDataTransferModule::refineUserBoxInputOnly()
 
-bool TagAndInitModule::getUserSuppliedRefineBoxes(
+bool TagInitAndDataTransferModule::getUserSuppliedRefineBoxes(
         hier::BoxContainer& refine_boxes,
-        const int patch_level_number,
+        const int level_num,
         const int cycle,
         const double time)
 {
     // TODO
     return false;
-} // TagAndInitModule::getUserSuppliedRefineBoxes()
+} // TagInitAndDataTransferModule::getUserSuppliedRefineBoxes()
 
-void TagAndInitModule::resetRefineBoxes(
+void TagInitAndDataTransferModule::resetRefineBoxes(
         const hier::BoxContainer& refine_boxes,
-        const int patch_level_number)
+        const int level_num)
 {
-} // TagAndInitModule::resetRefineBoxes()
+} // TagInitAndDataTransferModule::resetRefineBoxes()
 
-void TagAndInitModule::printClassData(ostream& os) const
+void TagInitAndDataTransferModule::printClassData(ostream& os) const
 {
     os << endl;
-    os << "PQS::pqs::TagAndInitModule::printClassData..." << endl;
-    os << "(TagAndInitModule*) this = " << (TagAndInitModule*) this << endl;
+    os << "PQS::pqs::TagInitAndDataTransferModule::printClassData..." << endl;
+    os << "(TagInitAndDataTransferModule*) this = "
+       << (TagInitAndDataTransferModule*) this << endl;
     os << "d_pore_init_strategy = " << d_pore_init_strategy.get() << endl;
     os << "d_interface_init_strategy = " << d_interface_init_strategy.get()
        << endl;
@@ -311,16 +359,16 @@ void TagAndInitModule::printClassData(ostream& os) const
     os << endl;
     d_pore_init_strategy->printClassData(os);
     d_interface_init_strategy->printClassData(os);
-} // TagAndInitModule::printClassData()
+} // TagInitAndDataTransferModule::printClassData()
 
 // --- Implementation of private methods
 
-void TagAndInitModule::loadConfiguration(
+void TagInitAndDataTransferModule::loadConfiguration(
         const boost::shared_ptr<tbox::Database>& config_db)
 {
-} // TagAndInitModule::loadConfiguration()
+} // TagInitAndDataTransferModule::loadConfiguration()
 
-void TagAndInitModule::initializeCommunicationObjects(
+void TagInitAndDataTransferModule::initializeDataTransferObjects(
         const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry)
 {
     // Get pointer to VariableDatabase
@@ -329,7 +377,7 @@ void TagAndInitModule::initializeCommunicationObjects(
     // Get variable associated with d_phi_id
     boost::shared_ptr< hier::Variable > phi_variable;
     if (!var_db->mapIndexToVariable(d_phi_id, phi_variable)) {
-        PQS_ERROR(this, "initializeCommunicationObjects",
+        PQS_ERROR(this, "initializeDataTransferObjects",
                   "'d_phi_id' not found in VariableDatabase");
     }
 
@@ -338,7 +386,7 @@ void TagAndInitModule::initializeCommunicationObjects(
     boost::shared_ptr<hier::RefineOperator> refine_op =
         grid_geometry->lookupRefineOperator(phi_variable, "CONSTANT_REFINE");
 
-    // --- Set up communications objects for filling a new level
+    // --- Set up data transfer objects for filling a new level
     //     (used during initialization of a PatchLevel)
     d_xfer_fill_new_level =
         boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
@@ -348,14 +396,24 @@ void TagAndInitModule::initializeCommunicationObjects(
     d_xfer_fill_new_level->registerRefine(
         d_psi_id, d_psi_id, d_psi_id, refine_op);
 
-} // TagAndInitModule::initializeCommunicationObjects()
+    // --- Set up data transfer objects for filling ghost cells
+    //     during time advance of level set functions
+    d_xfer_fill_bdry =
+        boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
+
+    d_xfer_fill_bdry->registerRefine(
+        d_phi_id, d_phi_id, d_phi_id, refine_op);
+    d_xfer_fill_bdry->registerRefine(
+        d_psi_id, d_psi_id, d_psi_id, refine_op);
+
+} // TagInitAndDataTransferModule::initializeDataTransferObjects()
 
 // Copy constructor
-TagAndInitModule::TagAndInitModule(
-        const TagAndInitModule& rhs):
+TagInitAndDataTransferModule::TagInitAndDataTransferModule(
+        const TagInitAndDataTransferModule& rhs):
     mesh::TagAndInitializeStrategy(s_object_name)
 {
-} // TagAndInitModule::TagAndInitModule()
+} // TagInitAndDataTransferModule::TagInitAndDataTransferModule()
 
 } // PQS::pqs namespace
 } // PQS namespace

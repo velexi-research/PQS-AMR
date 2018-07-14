@@ -122,7 +122,7 @@
 #include "PQS/PQS_config.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
-#include "PQS/pqs/TagAndInitModule.h"
+#include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Namespaces
 using namespace std;
@@ -342,8 +342,15 @@ protected:
 
     // --- Parameters
 
-    // PQS
-    // TODO
+    // --- PQS
+
+    double d_initial_curvature;
+
+    // Level set iteration parameters
+    double d_lsm_t_max;
+    int d_lsm_max_iterations;
+    double d_lsm_min_delta_phi;
+    double d_lsm_min_delta_saturation;
 
     // --- PatchData IDs
 
@@ -376,6 +383,9 @@ protected:
     // geometry
     int d_curvature_id;  // depth = 1
 
+    // Level Set Method
+    int d_lse_rhs_id;  // depth = 1
+
     // AMR data
     int d_control_volume_id;  // depth = 1
 
@@ -397,7 +407,8 @@ protected:
     // SAMR grid
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
     boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_alg;
-    boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module;
+    boost::shared_ptr<pqs::TagInitAndDataTransferModule>
+        d_tag_init_and_data_xfer_module;
 
     // Boundary conditions
     //boost::shared_ptr<BoundaryConditionModule> d_bc_module;
@@ -405,9 +416,6 @@ protected:
     //tbox::Array<hier::IntVector> d_upper_bc_phi;
     //tbox::Array<hier::IntVector> d_lower_bc_psi;
     //tbox::Array<hier::IntVector> d_upper_bc_psi;
-
-    // SAMRAI communication schedules
-    // TODO
 
 private:
 

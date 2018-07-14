@@ -45,11 +45,13 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/pqs/utilities.h"
+#include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/Solver.h"
-#include "PQS/pqs/TagAndInitModule.h"
+#include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace mesh { class TagAndInitializeStrategy; } }
+namespace SAMRAI { namespace hier { class Patch; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
 namespace PQS { namespace pqs { class InterfaceInitStrategy; } }
@@ -118,12 +120,89 @@ Solver::~Solver()
 
 void Solver::equilibrateInterface(const double curvature)
 {
-    // TODO
+    // --- Preparations
+
+    // Iinitialize loop variables
+    double t = 0.0;
+    double dt;
+
+    int step = 0;
+
+    double delta_phi = 2 * d_lsm_min_delta_phi;
+    double delta_saturation = 2 * d_lsm_min_delta_saturation;
+
+    // --- Perform level set method computation
+
+    while ( (step < d_lsm_max_iterations) &&
+            (t < d_lsm_t_max) &&
+            (delta_phi < d_lsm_min_delta_phi) &&
+            (delta_saturation < d_lsm_min_delta_saturation) ) {
+
+        // --- Fill ghostcells
+
+        d_tag_init_and_data_xfer_module->fillGhostCells();
+
+        // --- Compute RHS of level set evolution equation
+
+        // Loop over PatchLevel in PatchHierarchy
+        for (int level_num=0;
+                level_num < d_patch_hierarchy->getNumberOfLevels();
+                level_num++) {
+
+            boost::shared_ptr<hier::PatchLevel> patch_level =
+                d_patch_hierarchy->getPatchLevel(level_num);
+
+            // Loop over Patches on PatchLevel
+            for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                    pi!=patch_level->end(); pi++) {
+
+                boost::shared_ptr<hier::Patch> patch = *pi;
+
+                // Compute RHS of level set evolution equation on Patch
+                Algorithms::computeSlightlyCompressibleModelRHS(patch);
+            }
+        }
+
+        // --- Compute stable time step
+
+        // TODO: dt =
+
+        // --- Advance phi
+
+        // TODO
+
+        // --- Computing stopping criteria
+
+        // TODO
+    }
 } // Solver::equilibrateInterface()
 
 void Solver::advanceInterface(const double delta_curvature)
 {
     // TODO
+    bool done = true;
+    while (!done) {
+        // Loop over PatchLevel in PatchHierarchy
+        for (int level_num=0;
+                level_num < d_patch_hierarchy->getNumberOfLevels();
+                level_num++) {
+
+            boost::shared_ptr<hier::PatchLevel> patch_level =
+                d_patch_hierarchy->getPatchLevel(level_num);
+
+            // Loop over Patches on PatchLevel
+            for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                    pi!=patch_level->end(); pi++) {
+
+                boost::shared_ptr<hier::Patch> patch = *pi;
+                Algorithms::computePrescribedCurvatureModelRHS(patch);
+            }
+        }
+
+        // * compute RHS
+        // * advance phi
+        // * computing stopping criteria
+    }
 } // Solver::advanceInterface()
 
 double Solver::getCurvature() const
@@ -159,13 +238,14 @@ void Solver::printClassData(ostream& os) const
     os << "(Solver*) this = " << (Solver*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
     os << "d_gridding_alg = " << d_gridding_alg.get() << endl;
-    os << "d_tag_and_init_module = " << d_tag_and_init_module.get() << endl;
+    os << "d_tag_init_and_data_xfer_module = "
+       << d_tag_init_and_data_xfer_module.get() << endl;
 
     os << endl;
     d_gridding_alg->printClassData(os);
 
     os << endl;
-    d_tag_and_init_module->printClassData(os);
+    d_tag_init_and_data_xfer_module->printClassData(os);
 
 } // Solver::printClassData()
 
@@ -180,10 +260,37 @@ void Solver::verifyConfigurationDatabase(
                   "'config_db' must not be NULL");
     }
 
-    // Verify PQS database
+    // --- Verify PQS database
+
     if (!config_db->isDatabase("PQS")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'PQS' database missing from 'config_db'");
+    }
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+
+    // Physical parameters
+    if (!pqs_config_db->isDouble("initial_curvature")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'initial_curvature' missing from 'PQS' database");
+    }
+
+    // Level set method parameters
+    if (!pqs_config_db->isDouble("lsm_t_max")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'lsm_t_max' missing from 'PQS' database");
+    }
+    if (!pqs_config_db->isInteger("lsm_max_iterations")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'lsm_max_iterations' missing from 'PQS' database");
+    }
+    if (!pqs_config_db->isDouble("lsm_min_delta_phi")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'lsm_min_delta_phi' missing from 'PQS' database");
+    }
+    if (!pqs_config_db->isDouble("lsm_min_delta_saturation")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'lsm_min_delta_saturation' missing from 'PQS' database");
     }
 
     // Verify SAMRAI database
@@ -220,10 +327,18 @@ void Solver::verifyConfigurationDatabase(
 void Solver::loadConfiguration(
         const boost::shared_ptr<tbox::Database>& config_db)
 {
-    // Load configuration parameters
     boost::shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
+
+    // Physical parameters
     d_curvature = pqs_config_db->getDouble("initial_curvature");
+
+    // Level set method parameters
+    d_lsm_t_max = pqs_config_db->getDouble("lsm_t_max");
+    d_lsm_max_iterations = pqs_config_db->getInteger("lsm_max_iterations");
+    d_lsm_min_delta_phi = pqs_config_db->getDouble("lsm_min_delta_phi");
+    d_lsm_min_delta_saturation =
+        pqs_config_db->getDouble("lsm_min_delta_saturation");
 
 } // Solver::loadConfiguration()
 
@@ -311,7 +426,7 @@ void Solver::setupSimulationVariables()
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_next_context,
                                            zero_ghostcell_width);
-    d_permanent_variables.setFlag(d_phi_lsm_current_id);
+    d_intermediate_variables.setFlag(d_phi_lsm_current_id);
     d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
     // psi (solid-pore interface)
@@ -405,6 +520,23 @@ void Solver::setupSimulationVariables()
                                            zero_ghostcell_width);
     d_intermediate_variables.setFlag(d_curvature_id);
 
+    // RHS of level set evolution equation
+    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > lse_rhs_variable;
+    if (var_db->checkVariableExists("LSE RHS")) {
+        lse_rhs_variable =
+            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+                var_db->getVariable("LSE RHS"));
+    } else {
+        const int depth = 1;
+        lse_rhs_variable = boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+            new pdat::CellVariable<PQS_REAL>(dim, "LSE RHS", depth));
+    }
+    d_lse_rhs_id =
+        var_db->registerVariableAndContext(lse_rhs_variable,
+                                           default_context,
+                                           zero_ghostcell_width);
+    d_intermediate_variables.setFlag(d_psi_id);
+
     // control volume
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > control_volume_variable;
     if (var_db->checkVariableExists("control volume")) {
@@ -438,7 +570,7 @@ void Solver::setupGridManagement(
     // SAMRAI{ BoxGenerator, LoadBalancer, GriddingAlgorithm }
     //
     // throw runtime_error(
-    // "'TagAndInitModule' section not found in configuration database");
+    // "'TagInitAndDataTransferModule' section not found in configuration database");
 
     // --- Preparations
 
@@ -457,18 +589,20 @@ void Solver::setupGridManagement(
 
     boost::shared_ptr<mesh::ChopAndPackLoadBalancer> load_balancer =
         boost::shared_ptr<mesh::ChopAndPackLoadBalancer> (
-            new mesh::ChopAndPackLoadBalancer(d_patch_hierarchy->getDim(),
+            new mesh::ChopAndPackLoadBalancer(
+                d_patch_hierarchy->getDim(),
                 "LoadBalancer",
                 samrai_config_db->getDatabase("LoadBalancer")));
 
-    // Construct PQS::pqs::TagAndInitModule
-    boost::shared_ptr<pqs::TagAndInitModule> d_tag_and_init_module =
-        boost::shared_ptr<pqs::TagAndInitModule>(
-            new pqs::TagAndInitModule(config_db->getDatabase("PQS"),
-                                      d_patch_hierarchy,
-                                      pore_init_strategy,
-                                      interface_init_strategy,
-                                      d_phi_pqs_current_id, d_psi_id));
+    // Construct PQS::pqs::TagInitAndDataTransferModule
+    d_tag_init_and_data_xfer_module =
+        boost::shared_ptr<pqs::TagInitAndDataTransferModule>(
+            new pqs::TagInitAndDataTransferModule(
+                config_db->getDatabase("PQS"),
+                d_patch_hierarchy,
+                pore_init_strategy,
+                interface_init_strategy,
+                d_phi_pqs_current_id, d_psi_id));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
     d_gridding_alg = boost::shared_ptr<mesh::GriddingAlgorithm> (
@@ -477,7 +611,7 @@ void Solver::setupGridManagement(
             "GriddingAlgorithm",
             samrai_config_db->getDatabase("GriddingAlgorithm"),
             boost::shared_ptr<mesh::TagAndInitializeStrategy>(
-                d_tag_and_init_module),
+                d_tag_init_and_data_xfer_module),
             box_generator,
             load_balancer));
 

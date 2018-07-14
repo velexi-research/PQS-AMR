@@ -1,7 +1,7 @@
-/*! \file TagAndInitModule.h
+/*! \file TagInitAndDataTransferModule.h
  *
  * \brief
- * Header file for TagAndInitModule class.
+ * Header file for TagInitAndDataTransferModule class.
  */
 
 /*
@@ -15,10 +15,10 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_TagAndInitModule_h
-#define INCLUDED_PQS_pqs_TagAndInitModule_h
+#ifndef INCLUDED_PQS_pqs_TagInitAndDataTransferModule_h
+#define INCLUDED_PQS_pqs_TagInitAndDataTransferModule_h
 
-/*! \class PQS::pqs::TagAndInitModule
+/*! \class PQS::pqs::TagInitAndDataTransferModule
  *
  * \brief
  * TODO: add description
@@ -132,12 +132,12 @@ using namespace SAMRAI;
 namespace SAMRAI { namespace hier { class BaseGridGeometry; } }
 
 
-// --- PQS::pqs::TagAndInitModule Class
+// --- PQS::pqs::TagInitAndDataTransferModule Class
 
 namespace PQS {
 namespace pqs {
 
-class TagAndInitModule:
+class TagInitAndDataTransferModule:
     public mesh::TagAndInitializeStrategy
 {
 public:
@@ -152,7 +152,7 @@ public:
      ************************************************************************/
 
     /*!
-     * This constructor for TagAndInitModule creates a TODO
+     * This constructor for TagInitAndDataTransferModule creates a TODO
      *
      * Parameters
      * ----------
@@ -163,7 +163,7 @@ public:
      * psi_id: PatchData ID for solid-pore interface level set function
      *
      */
-    TagAndInitModule(
+    TagInitAndDataTransferModule(
         const boost::shared_ptr<tbox::Database>& config_db,
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
@@ -174,7 +174,31 @@ public:
     /*!
      * Empty default destructor.
      */
-    virtual ~TagAndInitModule() {};
+    virtual ~TagInitAndDataTransferModule() {};
+
+    //! @}
+
+    //! @{
+
+    /*!
+     ************************************************************************
+     *
+     * @name Data transfer methods
+     *
+     ************************************************************************/
+
+    /*!
+     * Fill ghostcells for Patches in PatchLevel.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void fillGhostCells();
 
     //! @}
 
@@ -194,7 +218,7 @@ public:
      * ----------
      * patch_hierarchy: PatchHierarchy for AMR computation
      *
-     * patch_level_number: number of PatchLevel to initialize data for
+     * level_num: number of PatchLevel to initialize data for
      *
      * init_data_time: current simulation time
      *
@@ -207,7 +231,7 @@ public:
      *      simulation.
      *
      * old_patch_level: old PatchLevel in the PatchHierarchy at the specified
-     *      'patch_level_number'. If 'old_patch_level' is null, there was no
+     *      'level_num'. If 'old_patch_level' is null, there was no
      *      PatchLevel in the PatchHierarchy prior to the call to
      *      'initializeLevelData()', so the data on the new PatchLevel is set
      *      by interpolating data from coarser PatchLevels in the
@@ -217,7 +241,7 @@ public:
      *      destroyed.
      *
      * allocate_data: flag that indicates whether memory for the new PatchLevel
-     *      at the specified 'patch_level_number' must be allocated before
+     *      at the specified 'level_num' must be allocated before
      *      data is initialized.
      *
      * Return value
@@ -239,7 +263,7 @@ public:
      */
     virtual void initializeLevelData(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const double init_data_time,
         const bool can_be_refined,
         const bool initial_time,
@@ -262,9 +286,9 @@ public:
      * ----------
      * patch_hierarchy: PatchHierarchy for AMR computation
      *
-     * coarsest_patch_level_number: number of coarsest PatchLevel to reset
+     * coarsest_level_num: number of coarsest PatchLevel to reset
      *
-     * finest_patch_level_number: number of finest PatchLevel to reset
+     * finest_level_num: number of finest PatchLevel to reset
      *
      * Return value
      * ------------
@@ -273,8 +297,8 @@ public:
      */
     virtual void resetHierarchyConfiguration(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int coarsest_patch_level_number,
-        const int finest_patch_level_number);
+        const int coarsest_level_num,
+        const int finest_level_num);
 
     /*!
      * Tag cells that should be refined on the specified PatchLevel.
@@ -283,7 +307,7 @@ public:
      * ----------
      * patch_hierarchy: PatchHierarchy for AMR computation
      *
-     * patch_level_number: number of PatchLevel to tag cells on
+     * level_num: number of PatchLevel to tag cells on
      *
      * regrid_cycle: [unused] current cycle number
      *
@@ -294,7 +318,7 @@ public:
      * initial_time: flag that indicates whether current call to
      *      'tagCellsForRefinement()' is at the initial simulation time.
      *
-     * coarsest_sync_patch_level_number: [unused] flag that indicates that
+     * coarsest_sync_level_num: [unused] flag that indicates that
      *      the current PatchLevel is the coarsest PatchLevel in the
      *      PatchHierarchy in the current regridding process
      *
@@ -315,7 +339,7 @@ public:
      */
     virtual void tagCellsForRefinement(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const int regrid_cycle,
         const double regrid_time,
         const int tag_id,
@@ -348,7 +372,7 @@ public:
      * ----------
      * refine_boxes: [output] refine boxes
      *
-     * patch_level_number: number of PatchLevel to set refine boxes for
+     * level_num: number of PatchLevel to set refine boxes for
      *
      * cycle: [unused] current cycle number
      *
@@ -366,7 +390,7 @@ public:
      */
     virtual bool getUserSuppliedRefineBoxes(
         hier::BoxContainer& refine_boxes,
-        const int patch_level_number,
+        const int level_num,
         const int cycle,
         const double time);
 
@@ -378,7 +402,7 @@ public:
      * ----------
      * refine_boxes: [output] refine boxes
      *
-     * patch_level_number: number of PatchLevel to reset refine boxes for
+     * level_num: number of PatchLevel to reset refine boxes for
      *
      * Notes
      * -----
@@ -389,7 +413,7 @@ public:
      */
     virtual void resetRefineBoxes(
         const hier::BoxContainer& refine_boxes,
-        const int patch_level_number);
+        const int level_num);
 
     //! @}
 
@@ -408,7 +432,7 @@ public:
      */
     virtual void preprocessErrorEstimation(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const int cycle,
         const double regrid_time,
         const double regrid_start_time,
@@ -491,7 +515,7 @@ public:
      */
     virtual void processHierarchyBeforeAddingNewLevel(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const boost::shared_ptr<hier::BoxLevel>& new_box_level) {}
 
     /*!
@@ -500,7 +524,7 @@ public:
      */
     virtual void processLevelBeforeRemoval(
         const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int patch_level_number,
+        const int level_num,
         const boost::shared_ptr<hier::PatchLevel>& old_patch_level =
             boost::shared_ptr<hier::PatchLevel>()) {}
 
@@ -555,6 +579,9 @@ protected:
 
     // --- Components
 
+    // SAMRAI components
+    boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
+
     // Pore initialization
     boost::shared_ptr<pqs::PoreInitStrategy> d_pore_init_strategy;
 
@@ -563,6 +590,9 @@ protected:
 
     // Data transfer
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
+
+    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry;
+    boost::shared_ptr<xfer::RefineSchedule> d_xfer_fill_bdry_schedule;
 
     // --- Object name
     //
@@ -579,7 +609,7 @@ private:
     /*
      * Initialize PatchLevel data transfer objects.
      */
-    void initializeCommunicationObjects(
+    void initializeDataTransferObjects(
         const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry);
 
     /*
@@ -589,7 +619,7 @@ private:
      * ----------
      * rhs: object to copy
      */
-    TagAndInitModule(const TagAndInitModule& rhs);
+    TagInitAndDataTransferModule(const TagInitAndDataTransferModule& rhs);
 
     /*
      * Private assignment operator to prevent use.
@@ -602,11 +632,12 @@ private:
      * ------------
      * return object
      */
-    const TagAndInitModule& operator=(const TagAndInitModule& rhs) {
+    const TagInitAndDataTransferModule& operator=(
+            const TagInitAndDataTransferModule& rhs) {
         return *this;
     }
 
-};  // PQS::pqs::TagAndInitModule class
+};  // PQS::pqs::TagInitAndDataTransferModule class
 
 }  // PQS::pqs namespace
 }  // PQS namespace
