@@ -77,7 +77,14 @@ pqsTests::pqsTests() {
     boost::shared_ptr<tbox::Database> pqs_config_db =
         config_db->putDatabase("PQS");
 
+    // Physical parameters
     pqs_config_db->putDouble("initial_curvature", 0.5);
+
+    // Level set method parameters
+    pqs_config_db->putInteger("lsm_t_max", 1.0);
+    pqs_config_db->putInteger("lsm_max_iterations", 5);
+    pqs_config_db->putDouble("lsm_min_delta_phi", 0.1);
+    pqs_config_db->putDouble("lsm_min_delta_saturation", 0.1);
 
     // ------ SAMRAI configuration
 
