@@ -139,7 +139,7 @@ void Solver::equilibrateInterface(const double curvature)
             (delta_phi < d_lsm_min_delta_phi) &&
             (delta_saturation < d_lsm_min_delta_saturation) ) {
 
-        // --- Fill ghostcells
+        // --- Fill ghost cells
 
         d_tag_init_and_data_xfer_module->fillGhostCells();
 
@@ -394,22 +394,22 @@ void Solver::loadConfiguration(
     // --- Set simulation parameters computed from configuration parameters
 
     // Set maximum ghost cell width
-    int ghostcell_width;
+    int ghost_cell_width;
     switch (d_lsm_spatial_derivative_type) {
         case ENO1: {
-            ghostcell_width = 1;
+            ghost_cell_width = 1;
             break;
         }
         case ENO2: {
-            ghostcell_width = 2;
+            ghost_cell_width = 2;
             break;
         }
         case ENO3: {
-            ghostcell_width = 3;
+            ghost_cell_width = 3;
             break;
         }
         case WENO5: {
-            ghostcell_width = 3;
+            ghost_cell_width = 3;
             break;
         }
         default: {
@@ -420,8 +420,8 @@ void Solver::loadConfiguration(
         }
     }
 
-    d_max_ghostcell_width = boost::shared_ptr<hier::IntVector>(
-        new hier::IntVector(d_patch_hierarchy->getDim(), ghostcell_width));
+    d_max_ghost_cell_width = boost::shared_ptr<hier::IntVector>(
+        new hier::IntVector(d_patch_hierarchy->getDim(), ghost_cell_width));
 
 } // Solver::loadConfiguration()
 
@@ -456,36 +456,9 @@ void Solver::setupSimulationVariables()
     // Get dimensionality of problem
     tbox::Dimension dim = d_patch_hierarchy->getDim();
 
-    // Set ghost cell width
-    int ghostcell_width;
-    switch (d_lsm_spatial_derivative_type) {
-        case ENO1: {
-            ghostcell_width = 1;
-            break;
-        }
-        case ENO2: {
-            ghostcell_width = 2;
-            break;
-        }
-        case ENO3: {
-            ghostcell_width = 3;
-            break;
-        }
-        case WENO5: {
-            ghostcell_width = 3;
-            break;
-        }
-        default: {
-            PQS_ERROR(this, "setupSimulationVariables",
-                      std::string("Invalid 'd_lsm_spatial_derivative_type' ") +
-                      std::string("value: ") +
-                      std::to_string(d_lsm_spatial_derivative_type));
-        }
-    }
-    hier::IntVector max_ghostcell_width(*d_max_ghostcell_width);
-
-    // Create zero ghostcell width IntVector
-    hier::IntVector zero_ghostcell_width(dim, 0);
+    // Create IntVector for ghost cell widths
+    hier::IntVector max_ghost_cell_width(*d_max_ghost_cell_width);
+    hier::IntVector zero_ghost_cell_width(dim, 0);
 
     // Initialize PatchData component selectors
     d_permanent_variables.clrAllFlags();
@@ -523,22 +496,22 @@ void Solver::setupSimulationVariables()
     d_phi_pqs_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            pqs_current_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_phi_pqs_next_id =
         var_db->registerVariableAndContext(phi_variable,
                                            pqs_next_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_permanent_variables.setFlag(d_phi_pqs_current_id);
     d_intermediate_variables.setFlag(d_phi_pqs_next_id);
 
     d_phi_lsm_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_current_context,
-                                           max_ghostcell_width);
+                                           max_ghost_cell_width);
     d_phi_lsm_next_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_next_context,
-                                           max_ghostcell_width);
+                                           max_ghost_cell_width);
     d_intermediate_variables.setFlag(d_phi_lsm_current_id);
     d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
@@ -556,7 +529,7 @@ void Solver::setupSimulationVariables()
     d_psi_id =
         var_db->registerVariableAndContext(psi_variable,
                                            default_context,
-                                           max_ghostcell_width);
+                                           max_ghost_cell_width);
     d_permanent_variables.setFlag(d_psi_id);
 
     // grad psi (solid-pore interface)
@@ -574,7 +547,7 @@ void Solver::setupSimulationVariables()
     d_grad_psi_id =
         var_db->registerVariableAndContext(grad_psi_variable,
                                            default_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_grad_psi_id);
 
     /* TODO: review to see if these are needed
@@ -595,7 +568,7 @@ void Solver::setupSimulationVariables()
     d_normal_velocity_id =
         var_db->registerVariableAndContext(normal_velocity_variable,
                                            default_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_normal_velocity_id);
 
     // vector velocity
@@ -614,7 +587,7 @@ void Solver::setupSimulationVariables()
     d_vector_velocity_id =
         var_db->registerVariableAndContext(vector_velocity_variable,
                                            default_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_vector_velocity_id);
 
     */
@@ -633,7 +606,7 @@ void Solver::setupSimulationVariables()
     d_lse_rhs_id =
         var_db->registerVariableAndContext(lse_rhs_variable,
                                            default_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_psi_id);
 
     // control volume
@@ -651,7 +624,7 @@ void Solver::setupSimulationVariables()
     d_control_volume_id =
         var_db->registerVariableAndContext(control_volume_variable,
                                            default_context,
-                                           zero_ghostcell_width);
+                                           zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_control_volume_id);
 
 } // Solver::setupSimulationVariables()

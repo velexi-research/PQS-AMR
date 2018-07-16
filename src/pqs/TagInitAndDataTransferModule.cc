@@ -248,9 +248,9 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
         }
     }
 
-    // TODO: reset data transfer schedules
-    // - reset data transfer schedules used to fill boundary data
-    //   during time advance
+    // --- Reset data transfer schedules
+
+    // data transfer schedules for filling ghost cells data
     for (int level_num = coarsest_level_num;
             level_num <= finest_level_num;
             level_num++) {

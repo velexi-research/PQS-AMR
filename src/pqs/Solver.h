@@ -381,10 +381,10 @@ protected:
 
     // --- SAMRAI parameters
 
-    // ------ ghost
+    // ------ Data management
 
-    // maximum required ghostcell width (over all simulation variables)
-    boost::shared_ptr<hier::IntVector> d_max_ghostcell_width;
+    // maximum required ghost cell width (over all simulation variables)
+    boost::shared_ptr<hier::IntVector> d_max_ghost_cell_width;
 
     // ------ PatchData IDs
 
