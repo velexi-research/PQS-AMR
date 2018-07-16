@@ -158,9 +158,31 @@ public:
      * ----------
      * config_db: database containing configuration parameters
      *
-     * phi_id: PatchData ID for fluid-fluid interface level set function
+     * patch_hierarchy: pointer to PatchHierarchy that object manages
      *
-     * psi_id: PatchData ID for solid-pore interface level set function
+     * pore_init_strategy: pointer to PoreInitStrategy object that
+     *      implements algorithm for initializing level set function that
+     *      defines solid-pore interface
+     *
+     * interface_init_strategy: pointer to PoreInitStrategy object that
+     *      implements algorithm for initializing level set function that
+     *      defines fluid-fluid interface
+     *
+     * phi_pqs_id: PatchData ID of the level set function for the
+     *      fluid-fluid interface (at each PQS step)
+     *
+     * phi_lsm_current_id: PatchData ID of the level set function for the
+     *      fluid-fluid interface (before each time step during evolution
+     *      of the level set function)
+     *
+     * phi_lsm_next_id: PatchData ID of the level set function for the
+     *      fluid-fluid interface (during and after each time step during
+     *      evolution of the level set function)
+     *
+     * psi_id: PatchData ID of the level set function for the solid-pore
+     *      interface
+     *
+     * max_stencil_width: maximum stencil width required for computations
      *
      */
     TagInitAndDataTransferModule(
@@ -169,7 +191,11 @@ public:
         const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
         const boost::shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
-        const int phi_id, const int psi_id);
+        const int phi_pqs_id,
+        const int phi_lsm_current_id,
+        const int phi_lsm_next_id,
+        const int phi_id,
+        const hier::IntVector& max_stencil_width);
 
     /*!
      * Empty default destructor.
@@ -564,18 +590,19 @@ protected:
 
     // --- Parameters
 
-    // PQS
-    // TODO
-
     // --- PatchData IDs
 
     // fluid-fluid interface level set function
-    int d_phi_id;
+    int d_phi_pqs_id;
+    int d_phi_lsm_current_id;
+    int d_phi_lsm_next_id;
+    int d_phi_scratch_id;
 
     // solid-pore interface level set function
     //
     // Note: the solid phase is defined by the region where psi < 0
     int d_psi_id;
+    int d_psi_scratch_id;
 
     // --- Components
 
@@ -591,8 +618,12 @@ protected:
     // Data transfer
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
 
-    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry;
-    boost::shared_ptr<xfer::RefineSchedule> d_xfer_fill_bdry_schedule;
+    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
+    boost::shared_ptr<xfer::RefineSchedule>
+        d_xfer_fill_bdry_schedule_lsm_current;
+
+    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
+    boost::shared_ptr<xfer::RefineSchedule> d_xfer_fill_bdry_schedule_lsm_next;
 
     // --- Object name
     //
@@ -607,10 +638,17 @@ private:
     void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
 
     /*
-     * Initialize PatchLevel data transfer objects.
+     * Set up data transfer objects and associated scratch space variables.
+     *
+     * Parameters
+     * ----------
+     * grid_geometry: grid geometry that defines refinement operators
+     *
+     * max_stencil_width: maximum stencil width required for computations
      */
-    void initializeDataTransferObjects(
-        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry);
+    void setupDataTransferObjects(
+        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry,
+        const hier::IntVector& max_stencil_width);
 
     /*
      * Private copy constructor to prevent use.

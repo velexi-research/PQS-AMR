@@ -27,6 +27,7 @@
 
 // SAMRAI
 #include "SAMRAI/hier/BaseGridGeometry.h"
+#include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/PatchLevel.h"
@@ -49,6 +50,7 @@ namespace SAMRAI { namespace hier { class BoxContainer; } }
 namespace SAMRAI { namespace hier { class PatchData; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
+namespace SAMRAI { namespace hier { class VariableContext; } }
 namespace SAMRAI { namespace tbox { class Database; } }
 
 
@@ -71,7 +73,11 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
         const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
         const boost::shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
-        const int phi_id, const int psi_id):
+        const int phi_pqs_id,
+        const int phi_lsm_current_id,
+        const int phi_lsm_next_id,
+        const int psi_id,
+        const hier::IntVector& max_stencil_width):
     mesh::TagAndInitializeStrategy(s_object_name)
 {
     // Check arguments
@@ -91,9 +97,17 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
         PQS_ERROR(this, "TagInitAndDataTransferModule",
                   "'interface_init_strategy' must not be NULL");
     }
-    if (phi_id < 0) {
+    if (phi_pqs_id < 0) {
         PQS_ERROR(this, "TagInitAndDataTransferModule",
-                  "Invalid value for 'phi_id'");
+                  "Invalid value for 'phi_pqs_id'");
+    }
+    if (phi_lsm_current_id < 0) {
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "Invalid value for 'phi_lsm_current_id'");
+    }
+    if (phi_lsm_next_id < 0) {
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "Invalid value for 'phi_lsm_next_id'");
     }
     if (psi_id < 0) {
         PQS_ERROR(this, "TagInitAndDataTransferModule",
@@ -101,14 +115,17 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
     }
 
     // Set data members
-    d_phi_id = phi_id;
+    d_phi_pqs_id = phi_pqs_id;
+    d_phi_lsm_current_id = phi_lsm_current_id;
+    d_phi_lsm_next_id = phi_lsm_next_id;
     d_psi_id = psi_id;
     d_patch_hierarchy = patch_hierarchy;
     d_pore_init_strategy = pore_init_strategy;
     d_interface_init_strategy = interface_init_strategy;
 
-    // Initialize data transfer objects
-    initializeDataTransferObjects(patch_hierarchy->getGridGeometry());
+    // Set up data transfer objects
+    setupDataTransferObjects(patch_hierarchy->getGridGeometry(),
+                             max_stencil_width);
 
 } // TagInitAndDataTransferModule::TagInitAndDataTransferModule()
 
@@ -121,7 +138,7 @@ void TagInitAndDataTransferModule::fillGhostCells()
         boost::shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
 
-        d_xfer_fill_bdry_schedule->fillData(
+        d_xfer_fill_bdry_schedule_lsm_current->fillData(
             0.0,    // not used
             true);  // apply physical boundary conditions
     }
@@ -168,10 +185,10 @@ void TagInitAndDataTransferModule::initializeLevelData(
 
     // Allocate PatchData
     if (allocate_data) {
-        patch_level->allocatePatchData(d_phi_id);
+        patch_level->allocatePatchData(d_phi_pqs_id);
         patch_level->allocatePatchData(d_psi_id);
     } else {
-        patch_level->setTime(init_data_time, d_phi_id);
+        patch_level->setTime(init_data_time, d_phi_pqs_id);
         patch_level->setTime(init_data_time, d_psi_id);
     }
 
@@ -190,7 +207,8 @@ void TagInitAndDataTransferModule::initializeLevelData(
             // Initialize level set functions for solid-pore and fluid-fluid
             // interfaces.
             d_pore_init_strategy->initializePoreSpace(*patch, d_psi_id);
-            d_interface_init_strategy->initializeInterface(*patch, d_phi_id);
+            d_interface_init_strategy->initializeInterface(*patch,
+                                                           d_phi_pqs_id);
         }
     } else {
         // If appropriate, fill new PatchLevel with data from the old PatchLevel
@@ -206,7 +224,7 @@ void TagInitAndDataTransferModule::initializeLevelData(
 
     // deallocate data on old PatchLevel if it exists
     if (old_patch_level!=NULL) {
-        old_patch_level->deallocatePatchData(d_phi_id);
+        old_patch_level->deallocatePatchData(d_phi_pqs_id);
         old_patch_level->deallocatePatchData(d_psi_id);
     }
 } // TagInitAndDataTransferModule::initializeLevelData()
@@ -258,10 +276,17 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
         boost::shared_ptr<hier::PatchLevel> patch_level =
             patch_hierarchy->getPatchLevel(level_num);
 
-        d_xfer_fill_bdry_schedule = d_xfer_fill_bdry->createSchedule(
-            patch_level, level_num-1,
-            patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                     // condition module
+        d_xfer_fill_bdry_schedule_lsm_current =
+            d_xfer_fill_bdry_lsm_current->createSchedule(
+                patch_level, level_num-1,
+                patch_hierarchy, NULL);  // TODO: change NULL to boundary
+                                         // condition module
+
+        d_xfer_fill_bdry_schedule_lsm_next =
+            d_xfer_fill_bdry_lsm_next->createSchedule(
+                patch_level, level_num-1,
+                patch_hierarchy, NULL);  // TODO: change NULL to boundary
+                                         // condition module
     }
 
     // recompute control volumes
@@ -368,45 +393,80 @@ void TagInitAndDataTransferModule::loadConfiguration(
 {
 } // TagInitAndDataTransferModule::loadConfiguration()
 
-void TagInitAndDataTransferModule::initializeDataTransferObjects(
-        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry)
+void TagInitAndDataTransferModule::setupDataTransferObjects(
+        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry,
+        const hier::IntVector& max_stencil_width)
 {
+    // --- Preparations
+
     // Get pointer to VariableDatabase
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
-    // Get variable associated with d_phi_id
+    hier::IntVector scratch_ghost_cell_width(max_stencil_width);
+
+    // --- Create PatchData for data transfer scratch space
+
+    // Get 'scratch' variable context
+    boost::shared_ptr<hier::VariableContext> scratch_context =
+        var_db->getContext("scratch");
+
+    // Get variable associated with d_phi_lsm_current_id
     boost::shared_ptr< hier::Variable > phi_variable;
-    if (!var_db->mapIndexToVariable(d_phi_id, phi_variable)) {
-        PQS_ERROR(this, "initializeDataTransferObjects",
-                  "'d_phi_id' not found in VariableDatabase");
+    if (!var_db->mapIndexToVariable(d_phi_lsm_current_id, phi_variable)) {
+        PQS_ERROR(this, "setupDataTransferObjects",
+                  "Error mapping 'd_phi_lsm_current_id' to Variable object.");
     }
+    d_phi_scratch_id =
+        var_db->registerVariableAndContext(phi_variable,
+                                           scratch_context,
+                                           scratch_ghost_cell_width);
 
-    // Lookup refine operations
-    // TODO: review choice of refinement operator
-    boost::shared_ptr<hier::RefineOperator> refine_op =
-        grid_geometry->lookupRefineOperator(phi_variable, "CONSTANT_REFINE");
+    // Get variable associated with d_psi_id
+    boost::shared_ptr< hier::Variable > psi_variable;
+    if (!var_db->mapIndexToVariable(d_psi_id, psi_variable)) {
+        PQS_ERROR(this, "setupDataTransferObjects",
+                  "Error mapping 'd_psi_id' to Variable object.");
+    }
+    d_psi_scratch_id =
+        var_db->registerVariableAndContext(psi_variable,
+                                           scratch_context,
+                                           scratch_ghost_cell_width);
 
-    // --- Set up data transfer objects for filling a new level
-    //     (used during initialization of a PatchLevel)
+
+    // --- Get refinement operators for filling PatchData from coarser
+    //     PatchLevels
+
+    boost::shared_ptr<hier::RefineOperator> phi_linear_refine_op =
+        grid_geometry->lookupRefineOperator(phi_variable, "LINEAR_REFINE");
+
+    boost::shared_ptr<hier::RefineOperator> psi_linear_refine_op =
+        grid_geometry->lookupRefineOperator(psi_variable, "LINEAR_REFINE");
+
+    // --- Set up data transfer objects
+
+    // Filling a new level (used during initialization of a PatchLevel)
     d_xfer_fill_new_level =
         boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
 
     d_xfer_fill_new_level->registerRefine(
-        d_phi_id, d_phi_id, d_phi_id, refine_op);
+        d_phi_pqs_id, d_phi_pqs_id, d_phi_scratch_id, phi_linear_refine_op);
     d_xfer_fill_new_level->registerRefine(
-        d_psi_id, d_psi_id, d_psi_id, refine_op);
+        d_psi_id, d_psi_id, d_psi_scratch_id, psi_linear_refine_op);
 
-    // --- Set up data transfer objects for filling ghost cells
-    //     during time advance of level set functions
-    d_xfer_fill_bdry =
+    // Filling a ghost cells during time integration of level set functions
+    d_xfer_fill_bdry_lsm_current =
         boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
+    d_xfer_fill_bdry_lsm_current->registerRefine(
+        d_phi_lsm_current_id, d_phi_lsm_current_id, d_phi_scratch_id,
+        phi_linear_refine_op);
 
-    d_xfer_fill_bdry->registerRefine(
-        d_phi_id, d_phi_id, d_phi_id, refine_op);
-    d_xfer_fill_bdry->registerRefine(
-        d_psi_id, d_psi_id, d_psi_id, refine_op);
+    d_xfer_fill_bdry_lsm_next =
+        boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
+    d_xfer_fill_bdry_lsm_next->registerRefine(
+        d_phi_lsm_next_id, d_phi_lsm_next_id, d_phi_scratch_id,
+        phi_linear_refine_op);
 
-} // TagInitAndDataTransferModule::initializeDataTransferObjects()
+} // TagInitAndDataTransferModule::setupDataTransferObjects()
 
 // Copy constructor
 TagInitAndDataTransferModule::TagInitAndDataTransferModule(
