@@ -20,6 +20,7 @@
 // Standard library
 #include <cstddef>
 #include <sstream>
+#include <string>
 
 // Boost
 #include <boost/smart_ptr/make_shared_object.hpp>
@@ -293,6 +294,38 @@ void Solver::verifyConfigurationDatabase(
                   "'lsm_min_delta_saturation' missing from 'PQS' database");
     }
 
+    // Numerical method parameters
+    if (!pqs_config_db->isString("lsm_spatial_derivative_type")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'lsm_spatial_derivative_type' missing from 'PQS' database");
+    }
+    std::string lsm_spatial_derivative_type =
+        pqs_config_db->getString("lsm_spatial_derivative_type");
+    if ( !( (lsm_spatial_derivative_type == "ENO1") ||
+            (lsm_spatial_derivative_type == "ENO2") ||
+            (lsm_spatial_derivative_type == "ENO3") ||
+            (lsm_spatial_derivative_type == "WENO5") ) ) {
+
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  std::string("Invalid 'lsm_spatial_derivative_order'. ") +
+                  std::string("Valid values: \"ENO1\", \"ENO2\", ") +
+                  std::string("\"ENO3\", \"WENO5\"."));
+    }
+
+    if (!pqs_config_db->isInteger("time_integration_order")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'time_integration_order' missing from 'PQS' database");
+    }
+    int time_integration_order =
+        pqs_config_db->getInteger("time_integration_order");
+    if ( !( (time_integration_order == 1) ||
+            (time_integration_order == 2) ||
+            (time_integration_order == 3) ) ) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  std::string("Inavlid 'time_integration_order'. ") +
+                  std::string("Valid values: 1, 2, 3."));
+    }
+
     // Verify SAMRAI database
     if (!config_db->isDatabase("SAMRAI")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -327,6 +360,8 @@ void Solver::verifyConfigurationDatabase(
 void Solver::loadConfiguration(
         const boost::shared_ptr<tbox::Database>& config_db)
 {
+    // --- Load configuration parameters
+
     boost::shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
@@ -339,6 +374,54 @@ void Solver::loadConfiguration(
     d_lsm_min_delta_phi = pqs_config_db->getDouble("lsm_min_delta_phi");
     d_lsm_min_delta_saturation =
         pqs_config_db->getDouble("lsm_min_delta_saturation");
+
+    // Numerical set method parameters
+    std::string lsm_spatial_derivative_type =
+        pqs_config_db->getString("lsm_spatial_derivative_type");
+    if (lsm_spatial_derivative_type == "ENO1") {
+        d_lsm_spatial_derivative_type = ENO1;
+    } else if (lsm_spatial_derivative_type == "ENO2") {
+        d_lsm_spatial_derivative_type = ENO2;
+    } else if (lsm_spatial_derivative_type == "ENO3") {
+        d_lsm_spatial_derivative_type = ENO3;
+    } else if (lsm_spatial_derivative_type == "WENO5") {
+        d_lsm_spatial_derivative_type = WENO5;
+    }
+
+    d_time_integration_order =
+        pqs_config_db->getInteger("time_integration_order");
+
+    // --- Set simulation parameters computed from configuration parameters
+
+    // Set maximum ghost cell width
+    int ghostcell_width;
+    switch (d_lsm_spatial_derivative_type) {
+        case ENO1: {
+            ghostcell_width = 1;
+            break;
+        }
+        case ENO2: {
+            ghostcell_width = 2;
+            break;
+        }
+        case ENO3: {
+            ghostcell_width = 3;
+            break;
+        }
+        case WENO5: {
+            ghostcell_width = 3;
+            break;
+        }
+        default: {
+            PQS_ERROR(this, "setupGridManagement",
+                      std::string("Invalid 'd_lsm_spatial_derivative_type' ") +
+                      std::string("value: ") +
+                      std::to_string(d_lsm_spatial_derivative_type));
+        }
+    }
+
+    d_max_ghostcell_width = boost::shared_ptr<hier::IntVector>(
+        new hier::IntVector(d_patch_hierarchy->getDim(), ghostcell_width));
 
 } // Solver::loadConfiguration()
 
@@ -368,20 +451,50 @@ void Solver::createPatchHierarchy(
 
 void Solver::setupSimulationVariables()
 {
+    // --- Preparations
+
+    // Get dimensionality of problem
+    tbox::Dimension dim = d_patch_hierarchy->getDim();
+
+    // Set ghost cell width
+    int ghostcell_width;
+    switch (d_lsm_spatial_derivative_type) {
+        case ENO1: {
+            ghostcell_width = 1;
+            break;
+        }
+        case ENO2: {
+            ghostcell_width = 2;
+            break;
+        }
+        case ENO3: {
+            ghostcell_width = 3;
+            break;
+        }
+        case WENO5: {
+            ghostcell_width = 3;
+            break;
+        }
+        default: {
+            PQS_ERROR(this, "setupSimulationVariables",
+                      std::string("Invalid 'd_lsm_spatial_derivative_type' ") +
+                      std::string("value: ") +
+                      std::to_string(d_lsm_spatial_derivative_type));
+        }
+    }
+    hier::IntVector max_ghostcell_width(*d_max_ghostcell_width);
+
+    // Create zero ghostcell width IntVector
+    hier::IntVector zero_ghostcell_width(dim, 0);
+
     // Initialize PatchData component selectors
     d_permanent_variables.clrAllFlags();
     d_intermediate_variables.clrAllFlags();
 
     // --- Create PatchData for simulation variables
 
-    // Get dimensionality of problem
-    tbox::Dimension dim = d_patch_hierarchy->getDim();
-
     // Get pointer to VariableDatabase
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
-
-    // Create zero ghostcell width IntVector
-    hier::IntVector zero_ghostcell_width(dim, 0);
 
     // Get default variable context
     boost::shared_ptr<hier::VariableContext> default_context =
@@ -421,11 +534,11 @@ void Solver::setupSimulationVariables()
     d_phi_lsm_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_current_context,
-                                           zero_ghostcell_width);
+                                           max_ghostcell_width);
     d_phi_lsm_next_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_next_context,
-                                           zero_ghostcell_width);
+                                           max_ghostcell_width);
     d_intermediate_variables.setFlag(d_phi_lsm_current_id);
     d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
@@ -443,7 +556,7 @@ void Solver::setupSimulationVariables()
     d_psi_id =
         var_db->registerVariableAndContext(psi_variable,
                                            default_context,
-                                           zero_ghostcell_width);
+                                           max_ghostcell_width);
     d_permanent_variables.setFlag(d_psi_id);
 
     // grad psi (solid-pore interface)
@@ -463,6 +576,8 @@ void Solver::setupSimulationVariables()
                                            default_context,
                                            zero_ghostcell_width);
     d_intermediate_variables.setFlag(d_grad_psi_id);
+
+    /* TODO: review to see if these are needed
 
     // normal velocity
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > normal_velocity_variable;
@@ -502,23 +617,7 @@ void Solver::setupSimulationVariables()
                                            zero_ghostcell_width);
     d_intermediate_variables.setFlag(d_vector_velocity_id);
 
-    // curvature
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > curvature_variable;
-    if (var_db->checkVariableExists("curvature")) {
-        curvature_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
-                var_db->getVariable("curvature"));
-    } else {
-        const int depth = 1;
-        curvature_variable =
-            boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
-                new pdat::CellVariable<PQS_REAL>(dim, "curvature", depth));
-    }
-    d_curvature_id =
-        var_db->registerVariableAndContext(curvature_variable,
-                                           default_context,
-                                           zero_ghostcell_width);
-    d_intermediate_variables.setFlag(d_curvature_id);
+    */
 
     // RHS of level set evolution equation
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > lse_rhs_variable;

@@ -86,6 +86,10 @@ pqsTests::pqsTests() {
     pqs_config_db->putDouble("lsm_min_delta_phi", 0.1);
     pqs_config_db->putDouble("lsm_min_delta_saturation", 0.1);
 
+    // Numerical method parameters
+    pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
+    pqs_config_db->putInteger("time_integration_order", 3);
+
     // ------ SAMRAI configuration
 
     // SAMRAI database

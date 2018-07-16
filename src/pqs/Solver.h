@@ -48,7 +48,7 @@
  *      cfl_number               = 0.5
  *      spatial_derivative_type  = "WENO"
  *      spatial_derivative_order = 5
- *      tvd_runge_kutta_order    = 3
+ *      time_integration_order    = 3
  *
  *      reinitialization_interval = 0
  *      reinitialization_max_iters = 20
@@ -114,6 +114,7 @@
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
 #include "SAMRAI/tbox/Database.h"
@@ -135,6 +136,19 @@ using namespace SAMRAI;
 
 namespace PQS {
 namespace pqs {
+
+/*! \enum SPATIAL_DERIVATIVE_TYPE
+ *
+ * Enumerated type for the different methods of computing spatial derivatives.
+ *
+ */
+typedef enum {
+    ENO1 = 1,
+    ENO2 = 2,
+    ENO3 = 3,
+    WENO5 = 5,
+    UNKNOWN = -1
+} SPATIAL_DERIVATIVE_TYPE;
 
 class Solver {
 
@@ -342,17 +356,37 @@ protected:
 
     // --- Parameters
 
-    // --- PQS
-
+    // PQS
     double d_initial_curvature;
 
-    // Level set iteration parameters
+    // Level set method parameters
     double d_lsm_t_max;
     int d_lsm_max_iterations;
     double d_lsm_min_delta_phi;
     double d_lsm_min_delta_saturation;
 
-    // --- PatchData IDs
+    int d_lsm_spatial_derivative_type;
+
+    // Numerical method parameters
+    int d_time_integration_order;
+
+    // --- State
+
+    // PQS
+    double d_curvature;  // current value of prescribed mean curvature
+    int d_cycle;  // number of prescribed curvature steps taken
+
+    // AMR
+    int d_regrid_count;
+
+    // --- SAMRAI parameters
+
+    // ------ ghost
+
+    // maximum required ghostcell width (over all simulation variables)
+    boost::shared_ptr<hier::IntVector> d_max_ghostcell_width;
+
+    // ------ PatchData IDs
 
     // PatchData component selectors to organize variables by
     // data management cycle requirements
@@ -367,6 +401,9 @@ protected:
 
     // fluid-fluid interface level set function during evolution of the
     // interface towards steady-state
+    //
+    // Note: d_phi_lsm_next_id is also used to hold intermediate
+    //       Runge-Kutta steps
     int d_phi_lsm_current_id;  // depth = 1
     int d_phi_lsm_next_id;  // depth = 1
 
@@ -376,31 +413,20 @@ protected:
     int d_psi_id;   // depth = 1
     int d_grad_psi_id;  // depth = number of spatial dimensions
 
-    // velocities
-    int d_normal_velocity_id;  // depth = 1
-    int d_vector_velocity_id;  // depth = number of spatial dimensions
-
-    // geometry
-    int d_curvature_id;  // depth = 1
-
-    // Level Set Method
+    // level set method
     int d_lse_rhs_id;  // depth = 1
 
     // AMR data
     int d_control_volume_id;  // depth = 1
 
     // TODO
+    // int d_curvature_id;  // depth = 1
     // int d_connectivity_label_id;  // depth = 1
     // int d_phi_binary;  // depth = 1
 
-    // --- State
-
-    // PQS
-    double d_curvature;  // current value of prescribed mean curvature
-    int d_cycle;  // number of prescribed curvature steps taken
-
-    // AMR
-    int d_regrid_count;
+    // velocities
+    //int d_normal_velocity_id;  // depth = 1
+    //int d_vector_velocity_id;  // depth = number of spatial dimensions
 
     // --- Components
 
