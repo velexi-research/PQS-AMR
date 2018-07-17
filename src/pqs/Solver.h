@@ -121,6 +121,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"
+#include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
@@ -196,10 +197,10 @@ public:
      * patch_hierarchy: PatchHierarchy to use for simulation
      */
     Solver(const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
-            interface_init_strategy,
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL);
+           const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+           const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+                   interface_init_strategy,
+           const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL);
 
     /*!
      * Default destructor frees memory allocated for simulation.
@@ -406,20 +407,20 @@ protected:
     hier::ComponentSelector d_permanent_variables;
     hier::ComponentSelector d_intermediate_variables;
 
-    // steady state fluid-fluid interface level set function before
-    // increment of the interface curvature (which is related to changes
-    // in the pressure difference across the fluid-fluid interface)
+    // level set function that defines steady-state fluid-fluid interface
+    // before increment of the interface curvature (which is related to
+    // changes in the pressure difference across the fluid-fluid interface)
     int d_phi_pqs_id;  // depth = 1
 
-    // fluid-fluid interface level set function during evolution of the
-    // interface towards steady-state
+    // level set function that defines fluid-fluid interface during evolution
+    // of the interface towards steady-state
     //
     // Note: d_phi_lsm_next_id is also used to hold intermediate
     //       Runge-Kutta steps
     int d_phi_lsm_current_id;  // depth = 1
     int d_phi_lsm_next_id;  // depth = 1
 
-    // solid-pore interface level set function
+    // level set function that defines solid-pore interface
     //
     // Note: the solid phase is defined by the region where psi < 0
     int d_psi_id;   // depth = 1
@@ -442,11 +443,14 @@ protected:
 
     // --- Components
 
+    // PQS algorithms
+    boost::shared_ptr<pqs::Algorithms> d_pqs_algorithms;
+
     // SAMR grid
     boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
-    boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_alg;
+    boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_algorithm;
     boost::shared_ptr<pqs::TagInitAndDataTransferModule>
-        d_tag_init_and_data_xfer_module;
+            d_tag_init_and_data_xfer_module;
 
     // Boundary conditions
     //boost::shared_ptr<BoundaryConditionModule> d_bc_module;
