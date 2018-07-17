@@ -26,6 +26,9 @@
 #include <boost/smart_ptr/make_shared_object.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+// MPI
+#include "mpi.h"
+
 // SAMRAI
 #include "SAMRAI/geom/CartesianGridGeometry.h"
 #include "SAMRAI/hier/ComponentSelector.h"
@@ -41,6 +44,7 @@
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/RestartManager.h"
+#include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/tbox/Utilities.h"
 
 // PQS
@@ -110,7 +114,7 @@ Solver::Solver(
 Solver::~Solver()
 {
     // Free memory allocated for simulation data
-    for (int level_num=0;
+    for (int level_num = 0;
             level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
         boost::shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
@@ -139,42 +143,73 @@ void Solver::equilibrateInterface(const double curvature)
             (delta_phi < d_lsm_min_delta_phi) &&
             (delta_saturation < d_lsm_min_delta_saturation) ) {
 
-        // --- Fill ghost cells
+        for (int rk_stage = 0; rk_stage < d_time_integration_order;
+                rk_stage++)
+        {
+            // Preparations
+            double dt;
+            double max_stable_dt_on_proc;
 
-        d_tag_init_and_data_xfer_module->fillGhostCells();
+            // Loop over PatchLevels in PatchHierarchy
+            for (int level_num = 0;
+                    level_num < d_patch_hierarchy->getNumberOfLevels();
+                    level_num++) {
 
-        // --- Compute RHS of level set evolution equation
+                boost::shared_ptr<hier::PatchLevel> patch_level =
+                    d_patch_hierarchy->getPatchLevel(level_num);
 
-        // Loop over PatchLevel in PatchHierarchy
-        for (int level_num=0;
-                level_num < d_patch_hierarchy->getNumberOfLevels();
-                level_num++) {
+                // --- Fill ghost cells
 
-            boost::shared_ptr<hier::PatchLevel> patch_level =
-                d_patch_hierarchy->getPatchLevel(level_num);
+                int ghost_cell_fill_context;
+                if (rk_stage == 0) {
+                    ghost_cell_fill_context = LSM_CURRENT;
+                } else {
+                    ghost_cell_fill_context = LSM_NEXT;
+                }
 
-            // Loop over Patches on PatchLevel
-            for (hier::PatchLevel::Iterator pi(patch_level->begin());
-                    pi!=patch_level->end(); pi++) {
+                d_tag_init_and_data_xfer_module->fillGhostCells(
+                        level_num, ghost_cell_fill_context);
 
-                boost::shared_ptr<hier::Patch> patch = *pi;
+                // --- Compute RHS of level set evolution equation
 
-                // Compute RHS of level set evolution equation on Patch
-                Algorithms::computeSlightlyCompressibleModelRHS(patch);
+                // Loop over Patches on PatchLevel
+                for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                        pi!=patch_level->end(); pi++) {
+
+                    boost::shared_ptr<hier::Patch> patch = *pi;
+
+                    // Compute RHS of level set evolution equation on Patch
+                    double stable_dt_on_patch =
+                        Algorithms::computeSlightlyCompressibleModelRHS(patch);
+
+                    if (stable_dt_on_patch < max_stable_dt_on_proc) {
+                        max_stable_dt_on_proc = stable_dt_on_patch;
+                    };
+                }
             }
+
+            // --- Compute stable time step (across processors)
+
+            dt = max_stable_dt_on_proc;
+            int err =
+                tbox::SAMRAI_MPI::getSAMRAIWorld().AllReduce(&dt, 1, MPI_MIN);
+            if (err != 0) {
+                PQS_ERROR(this, "equilibrateInterface",
+                          "MPI.AllReduce() to compute 'dt' failed");
+            }
+
+            // --- Advance phi
+
+            // TODO
         }
 
-        // --- Compute stable time step
-
-        // TODO: dt =
-
-        // --- Advance phi
+        // --- Update metrics used in stopping criteria
 
         // TODO
-
-        // --- Computing stopping criteria
-
-        // TODO
+        step++;
+        t += dt;
+        //delta_phi =
+        //delta_saturation =
     }
 } // Solver::equilibrateInterface()
 
@@ -184,7 +219,7 @@ void Solver::advanceInterface(const double delta_curvature)
     bool done = true;
     while (!done) {
         // Loop over PatchLevel in PatchHierarchy
-        for (int level_num=0;
+        for (int level_num = 0;
                 level_num < d_patch_hierarchy->getNumberOfLevels();
                 level_num++) {
 
@@ -228,9 +263,8 @@ int Solver::getPoreSpacePatchDataId() const
 
 int Solver::getInterfacePatchDataId() const
 {
-    return d_phi_pqs_current_id;
+    return d_phi_pqs_id;
 } // Solver::getInterfacePatchDataId()
-
 
 void Solver::printClassData(ostream& os) const
 {
@@ -393,23 +427,23 @@ void Solver::loadConfiguration(
 
     // --- Set simulation parameters computed from configuration parameters
 
-    // Set maximum ghost cell width
-    int ghost_cell_width;
+    // Set maximum stencil width
+    int stencil_width;
     switch (d_lsm_spatial_derivative_type) {
         case ENO1: {
-            ghost_cell_width = 1;
+            stencil_width = 1;
             break;
         }
         case ENO2: {
-            ghost_cell_width = 2;
+            stencil_width = 2;
             break;
         }
         case ENO3: {
-            ghost_cell_width = 3;
+            stencil_width = 3;
             break;
         }
         case WENO5: {
-            ghost_cell_width = 3;
+            stencil_width = 3;
             break;
         }
         default: {
@@ -420,8 +454,8 @@ void Solver::loadConfiguration(
         }
     }
 
-    d_max_ghost_cell_width = boost::shared_ptr<hier::IntVector>(
-        new hier::IntVector(d_patch_hierarchy->getDim(), ghost_cell_width));
+    d_max_stencil_width = boost::shared_ptr<hier::IntVector>(
+        new hier::IntVector(d_patch_hierarchy->getDim(), stencil_width));
 
 } // Solver::loadConfiguration()
 
@@ -457,7 +491,6 @@ void Solver::setupSimulationVariables()
     tbox::Dimension dim = d_patch_hierarchy->getDim();
 
     // Create IntVector for ghost cell widths
-    hier::IntVector max_ghost_cell_width(*d_max_ghost_cell_width);
     hier::IntVector zero_ghost_cell_width(dim, 0);
 
     // Initialize PatchData component selectors
@@ -469,9 +502,17 @@ void Solver::setupSimulationVariables()
     // Get pointer to VariableDatabase
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
-    // Get default variable context
-    boost::shared_ptr<hier::VariableContext> default_context =
-        var_db->getContext("default");
+    // Get variable contexts
+    boost::shared_ptr<hier::VariableContext> pqs_context =
+        var_db->getContext("pqs");
+    boost::shared_ptr<hier::VariableContext> lsm_current_context =
+        var_db->getContext("lsm_current");
+    boost::shared_ptr<hier::VariableContext> lsm_next_context =
+        var_db->getContext("lsm_next");
+    boost::shared_ptr<hier::VariableContext> computed_context =
+        var_db->getContext("computed");  // computed from phi or psi
+    boost::shared_ptr<hier::VariableContext> samr_context =
+        var_db->getContext("SAMR");  // variable that supports SAMR
 
     // phi (fluid-fluid interface)
     boost::shared_ptr< pdat::CellVariable<PQS_REAL> > phi_variable;
@@ -484,34 +525,21 @@ void Solver::setupSimulationVariables()
         phi_variable = boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
             new pdat::CellVariable<PQS_REAL>(dim, "phi", depth));
     }
-    boost::shared_ptr<hier::VariableContext> pqs_current_context =
-        var_db->getContext("pqs_current");
-    boost::shared_ptr<hier::VariableContext> pqs_next_context =
-        var_db->getContext("pqs_next");
-    boost::shared_ptr<hier::VariableContext> lsm_current_context =
-        var_db->getContext("lsm_current");
-    boost::shared_ptr<hier::VariableContext> lsm_next_context =
-        var_db->getContext("lsm_next");
 
-    d_phi_pqs_current_id =
+    d_phi_pqs_id =
         var_db->registerVariableAndContext(phi_variable,
-                                           pqs_current_context,
+                                           pqs_context,
                                            zero_ghost_cell_width);
-    d_phi_pqs_next_id =
-        var_db->registerVariableAndContext(phi_variable,
-                                           pqs_next_context,
-                                           zero_ghost_cell_width);
-    d_permanent_variables.setFlag(d_phi_pqs_current_id);
-    d_intermediate_variables.setFlag(d_phi_pqs_next_id);
+    d_permanent_variables.setFlag(d_phi_pqs_id);
 
     d_phi_lsm_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_current_context,
-                                           max_ghost_cell_width);
+                                           *d_max_stencil_width);
     d_phi_lsm_next_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_next_context,
-                                           max_ghost_cell_width);
+                                           *d_max_stencil_width);
     d_intermediate_variables.setFlag(d_phi_lsm_current_id);
     d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
@@ -528,8 +556,8 @@ void Solver::setupSimulationVariables()
     }
     d_psi_id =
         var_db->registerVariableAndContext(psi_variable,
-                                           default_context,
-                                           max_ghost_cell_width);
+                                           pqs_context,
+                                           *d_max_stencil_width);
     d_permanent_variables.setFlag(d_psi_id);
 
     // grad psi (solid-pore interface)
@@ -546,7 +574,7 @@ void Solver::setupSimulationVariables()
     }
     d_grad_psi_id =
         var_db->registerVariableAndContext(grad_psi_variable,
-                                           default_context,
+                                           computed_context,
                                            zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_grad_psi_id);
 
@@ -567,7 +595,7 @@ void Solver::setupSimulationVariables()
     }
     d_normal_velocity_id =
         var_db->registerVariableAndContext(normal_velocity_variable,
-                                           default_context,
+                                           computed_context,
                                            zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_normal_velocity_id);
 
@@ -586,7 +614,7 @@ void Solver::setupSimulationVariables()
     }
     d_vector_velocity_id =
         var_db->registerVariableAndContext(vector_velocity_variable,
-                                           default_context,
+                                           computed_context,
                                            zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_vector_velocity_id);
 
@@ -605,7 +633,7 @@ void Solver::setupSimulationVariables()
     }
     d_lse_rhs_id =
         var_db->registerVariableAndContext(lse_rhs_variable,
-                                           default_context,
+                                           computed_context,
                                            zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_psi_id);
 
@@ -623,7 +651,7 @@ void Solver::setupSimulationVariables()
     }
     d_control_volume_id =
         var_db->registerVariableAndContext(control_volume_variable,
-                                           default_context,
+                                           samr_context,
                                            zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_control_volume_id);
 
@@ -674,7 +702,11 @@ void Solver::setupGridManagement(
                 d_patch_hierarchy,
                 pore_init_strategy,
                 interface_init_strategy,
-                d_phi_pqs_current_id, d_psi_id));
+                d_phi_pqs_id,
+                d_phi_lsm_current_id,
+                d_phi_lsm_next_id,
+                d_psi_id,
+                *d_max_stencil_width));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
     d_gridding_alg = boost::shared_ptr<mesh::GriddingAlgorithm> (

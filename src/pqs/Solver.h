@@ -139,7 +139,7 @@ namespace pqs {
 
 /*! \enum SPATIAL_DERIVATIVE_TYPE
  *
- * Enumerated type for the different methods of computing spatial derivatives.
+ * Enumerated type for the methods of computing spatial derivatives.
  *
  */
 typedef enum {
@@ -149,6 +149,19 @@ typedef enum {
     WENO5 = 5,
     UNKNOWN = -1
 } SPATIAL_DERIVATIVE_TYPE;
+
+/*! \enum VARIABLE_CONTEXT
+ *
+ * Enumerated type for the contexts of simulation variables.
+ *
+ */
+typedef enum {
+    PQS = 0,
+    LSM_CURRENT = 1,
+    LSM_NEXT = 2,
+    COMPUTED = 3,
+    SAMR = 4
+} VARIABLE_CONTEXT;
 
 class Solver {
 
@@ -365,10 +378,10 @@ protected:
     double d_lsm_min_delta_phi;
     double d_lsm_min_delta_saturation;
 
-    int d_lsm_spatial_derivative_type;
+    int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
 
     // Numerical method parameters
-    int d_time_integration_order;
+    int d_time_integration_order;  // for TVD Runge-Kutta time integration
 
     // --- State
 
@@ -383,8 +396,8 @@ protected:
 
     // ------ Data management
 
-    // maximum required ghost cell width (over all simulation variables)
-    boost::shared_ptr<hier::IntVector> d_max_ghost_cell_width;
+    // maximum stencil width (over all simulation variables and computations)
+    boost::shared_ptr<hier::IntVector> d_max_stencil_width;
 
     // ------ PatchData IDs
 
@@ -393,11 +406,10 @@ protected:
     hier::ComponentSelector d_permanent_variables;
     hier::ComponentSelector d_intermediate_variables;
 
-    // steady state fluid-fluid interface level set function before and
-    // after increments of the interface curvature (which is related to
-    // changes in the pressure difference across the fluid-fluid interface)
-    int d_phi_pqs_current_id;  // depth = 1
-    int d_phi_pqs_next_id;  // depth = 1
+    // steady state fluid-fluid interface level set function before
+    // increment of the interface curvature (which is related to changes
+    // in the pressure difference across the fluid-fluid interface)
+    int d_phi_pqs_id;  // depth = 1
 
     // fluid-fluid interface level set function during evolution of the
     // interface towards steady-state
