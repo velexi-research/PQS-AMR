@@ -31,7 +31,13 @@
  *
  * <h3> USAGE </h3>
  *
- * TODO
+ * Configuration Parameters
+ * ------------------------
+ *
+ * "P_reference": reference pressure
+ * "V_target": target volume of phase where phi < 0
+ * "surface_tensions": surface tension
+ * "bulk_modulus": dimensionless bulk modulus
  *
  */
 
@@ -45,14 +51,12 @@
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/hier/PatchHierarchy.h"
+#include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 
 // PQS
 #include "PQS/PQS_config.h"
-#include "PQS/pqs/InterfaceInitStrategy.h"
-#include "PQS/pqs/PoreInitStrategy.h"
 
 // Namespaces
 using namespace std;
@@ -81,9 +85,25 @@ public:
      ************************************************************************/
 
     /*!
-     * Empty default constructor.
+     * This constructor for pqs::Algorithms creates a TODO
+     *
+     * - Create simulation variables.
+     * - Register PatchData
+     * - Create SAMRAI::mesh::GriddingAlgorithm
+     *
+     * Parameters
+     * ----------
+     * config_db: database containing configuration parameters
+     *
+     * psi_id: PatchData ID of the level set function for the solid-pore
+     *      interface
+     *
+     * grad_psi_id: PatchData ID of the gradient of the level set function
+     *      for the solid-pore interface
      */
-    Algorithms() {};
+    Algorithms(const boost::shared_ptr<tbox::Database>& config_db,
+               const int psi_id,
+               const int grad_psi_id);
 
     /*!
      * Empty default destructor.
@@ -102,20 +122,52 @@ public:
      ************************************************************************/
 
     /*!
-     * TODO
+     * Compute RHS of level set equation for "Prescribed Curvature Model".
      *
      * Parameters
      * ----------
+     * patch: Patch to compute RHS of level set equation on
+     *
+     * phi_id: PatchData ID of level set function that defines fluid-fluid
+     *      interface
+     *
+     * psi_id: PatchData ID of level set function that defines solid-pore
+     *      interface
+     *
+     * grad_psi_id: PatchData ID of gradient of level set function that
+     *      defines solid-pore interface
+     *
+     * Return value
+     * ------------
+     * maximum stable timestep on Patch
      */
-    static void computePrescribedCurvatureModelRHS();
+    double computePrescribedCurvatureModelRHS(
+        const boost::shared_ptr<hier::Patch> patch,
+        const int phi_id) const;
 
     /*!
-     * TODO
+     * Compute RHS of level set equation for "Slightly Compressible Model".
      *
      * Parameters
      * ----------
+     * patch: Patch to compute RHS of level set equation on
+     *
+     * phi_id: PatchData ID of level set function that defines fluid-fluid
+     *      interface
+     *
+     * psi_id: PatchData ID of level set function that defines solid-pore
+     *      interface
+     *
+     * grad_psi_id: PatchData ID of gradient of level set function that
+     *      defines solid-pore interface
+     *
+     * Return value
+     * ------------
+     * maximum stable timestep on Patch
      */
-    static void computeSlightlyCompressibleModelRHS();
+    double computeSlightlyCompressibleModelRHS(
+        const boost::shared_ptr<hier::Patch> patch,
+        const int phi_id) const;
 
     //! @}
 
@@ -153,10 +205,53 @@ protected:
 
     // --- Parameters
 
-    // PQS
-    // TODO
+    // ------ PQS
+
+    // Slightly Compressible Model
+    double d_P_reference;
+    double d_V_target;
+    double d_surface_tension;
+    double d_bulk_modulus;
+
+    // --- SAMRAI parameters
+
+    // ------ PatchData IDs
+
+    // level set function that defines solid-pore interface
+    //
+    // Note: the solid phase is defined by the region where psi < 0
+    int d_psi_id;   // depth = 1
+    int d_grad_psi_id;  // depth = number of spatial dimensions
 
 private:
+
+    /*
+     * Verify that configuration database from specified database.
+     *
+     * Parameters
+     * ----------
+     * config_db: database containing configuration parameters
+     *
+     * Return value
+     * ------------
+     * true
+     *
+     * Notes
+     * -----
+     * - If 'config_db' is not valid, this method throws an exception
+     *   containing error information.
+     */
+    void verifyConfigurationDatabase(
+            const boost::shared_ptr<tbox::Database>& config_db) const;
+
+    /*
+     * Load configuration parameters from specified database.
+     *
+     * Parameters
+     * ----------
+     * config_db: database containing configuration parameters
+     */
+    void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
 
     /*
      * Private copy constructor to prevent use.
