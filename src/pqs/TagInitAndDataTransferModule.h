@@ -108,6 +108,7 @@
 
 // Standard
 #include <ostream>
+#include <vector>
 
 // Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -198,9 +199,10 @@ public:
         const hier::IntVector& max_stencil_width);
 
     /*!
-     * Empty default destructor.
+     * Default destructor frees memory allocated for data transfer scratch
+     * space.
      */
-    virtual ~TagInitAndDataTransferModule() {};
+    virtual ~TagInitAndDataTransferModule();
 
     //! @}
 
@@ -218,13 +220,15 @@ public:
      *
      * Parameters
      * ----------
-     * None
+     * level_num: number of PatchLevel to fill ghost cells for
+     *
+     * context: variable context that ghost cell data should be filled for
      *
      * Return value
      * ------------
      * None
      */
-    virtual void fillGhostCells();
+    virtual void fillGhostCells(const int level_num, const int context) const;
 
     //! @}
 
@@ -592,6 +596,10 @@ protected:
 
     // --- PatchData IDs
 
+    // PatchData component selectors to organize variables by
+    // data management cycle requirements
+    hier::ComponentSelector d_scratch_variables;
+
     // fluid-fluid interface level set function
     int d_phi_pqs_id;
     int d_phi_lsm_current_id;
@@ -619,11 +627,12 @@ protected:
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
 
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
-    boost::shared_ptr<xfer::RefineSchedule>
-        d_xfer_fill_bdry_schedule_lsm_current;
+    std::vector< boost::shared_ptr<xfer::RefineSchedule> >
+            d_xfer_fill_bdry_schedule_lsm_current;
 
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
-    boost::shared_ptr<xfer::RefineSchedule> d_xfer_fill_bdry_schedule_lsm_next;
+    std::vector< boost::shared_ptr<xfer::RefineSchedule> >
+            d_xfer_fill_bdry_schedule_lsm_next;
 
     // --- Object name
     //

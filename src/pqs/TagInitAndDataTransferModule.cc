@@ -21,12 +21,14 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
+#include <vector>
 
 // Boost
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 // SAMRAI
 #include "SAMRAI/hier/BaseGridGeometry.h"
+#include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
@@ -42,6 +44,7 @@
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
+#include "PQS/pqs/Solver.h"
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
 #include "PQS/pqs/utilities.h"
 
@@ -129,18 +132,44 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
 
 } // TagInitAndDataTransferModule::TagInitAndDataTransferModule()
 
-void TagInitAndDataTransferModule::fillGhostCells()
+TagInitAndDataTransferModule::~TagInitAndDataTransferModule()
 {
-    for (int level_num=0;
-            level_num < d_patch_hierarchy->getNumberOfLevels();
-            level_num++) {
+    // Free memory allocated for simulation data
+    for (int level_num = 0;
+            level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
 
         boost::shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
 
-        d_xfer_fill_bdry_schedule_lsm_current->fillData(
-            0.0,    // not used
-            true);  // apply physical boundary conditions
+        patch_level->deallocatePatchData(d_scratch_variables);
+    }
+} // TagInitAndDataTransferModule::~TagInitAndDataTransferModule()
+
+void TagInitAndDataTransferModule::fillGhostCells(
+        const int level_num, const int context) const
+{
+    // Check arguments
+    if (level_num >= d_patch_hierarchy->getNumberOfLevels()) {
+        PQS_ERROR(this, "fillGhostCells",
+                  std::string("'level_num' must be less than number of ") +
+                  std::string("levels in PatchHierarchy"));
+    }
+
+    // Fill ghost cells
+    if (context == LSM_CURRENT) {
+        d_xfer_fill_bdry_schedule_lsm_current[level_num]->fillData(
+                0.0,    // not used
+                true);  // apply physical boundary conditions
+    } else if (context == LSM_NEXT) {
+        d_xfer_fill_bdry_schedule_lsm_next[level_num]->fillData(
+                0.0,    // not used
+                true);  // apply physical boundary conditions
+    } else {
+        PQS_ERROR(this, "fillGhostCells",
+                  std::string("Invalid 'context': ") +
+                  std::to_string(context) +
+                  std::string(". Valid values: LSM_CURRENT (=1), ") +
+                  std::string("LSM_NEXT (=2)"));
     }
 
 } // TagInitAndDataTransferModule::fillGhostCells()
@@ -269,6 +298,11 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
     // --- Reset data transfer schedules
 
     // data transfer schedules for filling ghost cells data
+    d_xfer_fill_bdry_schedule_lsm_current.resize(
+        patch_hierarchy->getNumberOfLevels());
+    d_xfer_fill_bdry_schedule_lsm_next.resize(
+        patch_hierarchy->getNumberOfLevels());
+
     for (int level_num = coarsest_level_num;
             level_num <= finest_level_num;
             level_num++) {
@@ -276,17 +310,29 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
         boost::shared_ptr<hier::PatchLevel> patch_level =
             patch_hierarchy->getPatchLevel(level_num);
 
-        d_xfer_fill_bdry_schedule_lsm_current =
-            d_xfer_fill_bdry_lsm_current->createSchedule(
-                patch_level, level_num-1,
-                patch_hierarchy, NULL);  // TODO: change NULL to boundary
+        if (level_num == 0) {
+            d_xfer_fill_bdry_schedule_lsm_current[level_num] =
+                d_xfer_fill_bdry_lsm_current->createSchedule(
+                    patch_level, NULL);  // TODO: change NULL to boundary
                                          // condition module
+                                         //
+            d_xfer_fill_bdry_schedule_lsm_next[level_num] =
+                d_xfer_fill_bdry_lsm_next->createSchedule(
+                    patch_level, NULL);  // TODO: change NULL to boundary
+                                         // condition module
+        } else {
+            d_xfer_fill_bdry_schedule_lsm_current[level_num] =
+                d_xfer_fill_bdry_lsm_current->createSchedule(
+                    patch_level, level_num-1,
+                    patch_hierarchy, NULL);  // TODO: change NULL to boundary
+                                             // condition module
 
-        d_xfer_fill_bdry_schedule_lsm_next =
-            d_xfer_fill_bdry_lsm_next->createSchedule(
-                patch_level, level_num-1,
-                patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                         // condition module
+            d_xfer_fill_bdry_schedule_lsm_next[level_num] =
+                d_xfer_fill_bdry_lsm_next->createSchedule(
+                    patch_level, level_num-1,
+                    patch_hierarchy, NULL);  // TODO: change NULL to boundary
+                                             // condition module
+        }
     }
 
     // recompute control volumes
@@ -403,6 +449,9 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
     hier::IntVector scratch_ghost_cell_width(max_stencil_width);
+
+    // Initialize PatchData component selectors
+    d_scratch_variables.clrAllFlags();
 
     // --- Create PatchData for data transfer scratch space
 
