@@ -90,6 +90,18 @@ pqsTests::pqsTests() {
     pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
     pqs_config_db->putInteger("time_integration_order", 3);
 
+    // Algorithms database
+    boost::shared_ptr<tbox::Database> algorithms_config_db =
+        pqs_config_db->putDatabase("Algorithms");
+
+    // Slightly Compressible Model database
+    boost::shared_ptr<tbox::Database> scm_config_db =
+        algorithms_config_db->putDatabase("SlightlyCompressibleModel");
+    scm_config_db->putDouble("P_reference", 1.0);
+    scm_config_db->putDouble("V_target", 0.5);
+    scm_config_db->putDouble("surface_tension", 0.1);
+    scm_config_db->putDouble("bulk_modulus", 1.0);
+
     // ------ SAMRAI configuration
 
     // SAMRAI database
