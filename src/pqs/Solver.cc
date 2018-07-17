@@ -36,6 +36,7 @@
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
+#include "SAMRAI/math/HierarchyCellDataOpsReal.h"
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/mesh/ChopAndPackLoadBalancer.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
@@ -106,6 +107,13 @@ Solver::Solver(
     // Set up grid management objects
     setupGridManagement(config_db, pore_init_strategy, interface_init_strategy);
 
+    // Construct pqs::Algorithms object
+    boost::shared_ptr<tbox::Database> pqs_config_db =
+        config_db->getDatabase("PQS");
+    d_pqs_algorithms = boost::shared_ptr<pqs::Algorithms>(
+            new pqs::Algorithms(pqs_config_db->getDatabase("Algorithms"),
+                                d_psi_id, d_grad_psi_id));
+
     // Initialize simulation
     initializeSimulation();
 
@@ -127,7 +135,11 @@ void Solver::equilibrateInterface(const double curvature)
 {
     // --- Preparations
 
-    // Iinitialize loop variables
+    // Create HierarchyCellDataOpsReal object
+    math::HierarchyCellDataOpsReal<PQS_REAL>
+            hierarchy_math_ops(d_patch_hierarchy);
+
+    // Initialize loop variables
     double t = 0.0;
     double dt;
 
@@ -140,17 +152,47 @@ void Solver::equilibrateInterface(const double curvature)
 
     while ( (step < d_lsm_max_iterations) &&
             (t < d_lsm_t_max) &&
-            (delta_phi < d_lsm_min_delta_phi) &&
-            (delta_saturation < d_lsm_min_delta_saturation) ) {
+            (delta_phi > d_lsm_min_delta_phi) &&
+            (delta_saturation > d_lsm_min_delta_saturation) ) {
 
         for (int rk_stage = 0; rk_stage < d_time_integration_order;
                 rk_stage++)
         {
-            // Preparations
+            // --- Preparations
+
+            // Time step variables
             double dt;
             double max_stable_dt_on_proc;
 
-            // Loop over PatchLevels in PatchHierarchy
+            // Configuration for TVD Runge-Kutta stage
+            int phi_id;
+            if (d_time_integration_order == 1) {
+                phi_id = d_phi_lsm_current_id;
+            } else if (d_time_integration_order == 2) {
+                if (rk_stage == 1) {
+                    phi_id = d_phi_lsm_current_id;
+                } else if (rk_stage == 2) {
+                    phi_id = d_phi_lsm_next_id;
+                }
+            } else if (d_time_integration_order == 3) {
+                if (rk_stage == 1) {
+                    phi_id = d_phi_lsm_current_id;
+                } else if (rk_stage == 2) {
+                    phi_id = d_phi_lsm_next_id;
+                } else if (rk_stage == 3) {
+                    phi_id = d_phi_lsm_next_id;
+                }
+            }
+
+            int ghost_cell_fill_context;
+            if (rk_stage == 0) {
+                ghost_cell_fill_context = LSM_CURRENT;
+            } else {
+                ghost_cell_fill_context = LSM_NEXT;
+            }
+
+            // --- Compute RHS of level set evolution equation
+
             for (int level_num = 0;
                     level_num < d_patch_hierarchy->getNumberOfLevels();
                     level_num++) {
@@ -158,33 +200,25 @@ void Solver::equilibrateInterface(const double curvature)
                 boost::shared_ptr<hier::PatchLevel> patch_level =
                     d_patch_hierarchy->getPatchLevel(level_num);
 
-                // --- Fill ghost cells
-
-                int ghost_cell_fill_context;
-                if (rk_stage == 0) {
-                    ghost_cell_fill_context = LSM_CURRENT;
-                } else {
-                    ghost_cell_fill_context = LSM_NEXT;
-                }
-
+                // Fill ghost cells
                 d_tag_init_and_data_xfer_module->fillGhostCells(
                         level_num, ghost_cell_fill_context);
 
-                // --- Compute RHS of level set evolution equation
-
-                // Loop over Patches on PatchLevel
+                // Compute RHS of level set evolution equation
                 for (hier::PatchLevel::Iterator pi(patch_level->begin());
                         pi!=patch_level->end(); pi++) {
 
                     boost::shared_ptr<hier::Patch> patch = *pi;
 
                     // Compute RHS of level set evolution equation on Patch
-                    double stable_dt_on_patch =
-                        Algorithms::computeSlightlyCompressibleModelRHS(patch);
+                    double stable_dt_on_patch;
+                    stable_dt_on_patch =
+                        d_pqs_algorithms->computeSlightlyCompressibleModelRHS(
+                            patch, phi_id);
 
                     if (stable_dt_on_patch < max_stable_dt_on_proc) {
                         max_stable_dt_on_proc = stable_dt_on_patch;
-                    };
+                    }
                 }
             }
 
@@ -200,7 +234,68 @@ void Solver::equilibrateInterface(const double curvature)
 
             // --- Advance phi
 
-            // TODO
+            if (d_time_integration_order == 1) {
+                // lsm_current --> lsm_current
+                hierarchy_math_ops.axpy(d_phi_lsm_current_id,
+                                        dt,
+                                        d_lse_rhs_id,
+                                        d_phi_lsm_current_id);
+
+            } else if (d_time_integration_order == 2) {
+                if (rk_stage == 1) {
+                    // lsm_current --> lsm_next
+                    hierarchy_math_ops.axpy(d_phi_lsm_next_id,
+                                            dt,
+                                            d_lse_rhs_id,
+                                            d_phi_lsm_current_id);
+
+                } else if (rk_stage == 2) {
+                    // lsm_next --> lsm_current
+                    hierarchy_math_ops.axpy(d_phi_lsm_next_id,
+                                            dt,
+                                            d_lse_rhs_id,
+                                            d_phi_lsm_next_id);
+
+                    hierarchy_math_ops.linearSum(d_phi_lsm_current_id,
+                                                 0.5,
+                                                 d_phi_lsm_current_id,
+                                                 0.5,
+                                                 d_phi_lsm_next_id);
+                }
+            } else if (d_time_integration_order == 3) {
+                if (rk_stage == 1) {
+                    // lsm_current --> lsm_next
+                    hierarchy_math_ops.axpy(d_phi_lsm_next_id,
+                                            dt,
+                                            d_lse_rhs_id,
+                                            d_phi_lsm_current_id);
+
+                } else if (rk_stage == 2) {
+                    // lsm_next --> lsm_next
+                    hierarchy_math_ops.axpy(d_phi_lsm_next_id,
+                                            dt,
+                                            d_lse_rhs_id,
+                                            d_phi_lsm_next_id);
+
+                    hierarchy_math_ops.linearSum(d_phi_lsm_next_id,
+                                                 0.75,
+                                                 d_phi_lsm_current_id,
+                                                 0.25,
+                                                 d_phi_lsm_next_id);
+                } else if (rk_stage == 3) {
+                    // lsm_next --> lsm_current
+                    hierarchy_math_ops.axpy(d_phi_lsm_next_id,
+                                            dt,
+                                            d_lse_rhs_id,
+                                            d_phi_lsm_next_id);
+
+                    hierarchy_math_ops.linearSum(d_phi_lsm_current_id,
+                                                 1./3,
+                                                 d_phi_lsm_current_id,
+                                                 2./3,
+                                                 d_phi_lsm_next_id);
+                }
+            }
         }
 
         // --- Update metrics used in stopping criteria
@@ -231,7 +326,9 @@ void Solver::advanceInterface(const double delta_curvature)
                     pi!=patch_level->end(); pi++) {
 
                 boost::shared_ptr<hier::Patch> patch = *pi;
-                Algorithms::computePrescribedCurvatureModelRHS(patch);
+
+                d_pqs_algorithms->computePrescribedCurvatureModelRHS(
+                    patch, d_phi_lsm_current_id);
             }
         }
 
@@ -272,15 +369,19 @@ void Solver::printClassData(ostream& os) const
     os << "PQS::pqs::Solver::printClassData..." << endl;
     os << "(Solver*) this = " << (Solver*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
-    os << "d_gridding_alg = " << d_gridding_alg.get() << endl;
+    os << "d_gridding_algorithm = " << d_gridding_algorithm.get() << endl;
     os << "d_tag_init_and_data_xfer_module = "
        << d_tag_init_and_data_xfer_module.get() << endl;
+    os << "d_pqs_algorithms = " << d_pqs_algorithms.get() << endl;
 
     os << endl;
-    d_gridding_alg->printClassData(os);
+    d_gridding_algorithm->printClassData(os);
 
     os << endl;
     d_tag_init_and_data_xfer_module->printClassData(os);
+
+    os << endl;
+    d_pqs_algorithms->printClassData(os);
 
 } // Solver::printClassData()
 
@@ -303,6 +404,12 @@ void Solver::verifyConfigurationDatabase(
     }
     boost::shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
+
+    // Algorithms database
+    if (!pqs_config_db->isDatabase("Algorithms")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'Algorithms' database missing from 'config_db'");
+    }
 
     // Physical parameters
     if (!pqs_config_db->isDouble("initial_curvature")) {
@@ -404,10 +511,29 @@ void Solver::loadConfiguration(
 
     // Level set method parameters
     d_lsm_t_max = pqs_config_db->getDouble("lsm_t_max");
+    if (d_lsm_t_max <= 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'lsm_t_max' must be positive.");
+    }
+
     d_lsm_max_iterations = pqs_config_db->getInteger("lsm_max_iterations");
+    if (d_lsm_max_iterations <= 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'lsm_max_iterations' must be positive.");
+    }
+
     d_lsm_min_delta_phi = pqs_config_db->getDouble("lsm_min_delta_phi");
+    if (d_lsm_min_delta_phi < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'lsm_min_delta_phi' must be non-negative.");
+    }
+
     d_lsm_min_delta_saturation =
         pqs_config_db->getDouble("lsm_min_delta_saturation");
+    if (d_lsm_min_delta_saturation < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'lsm_min_delta_saturation' must be non-negative.");
+    }
 
     // Numerical set method parameters
     std::string lsm_spatial_derivative_type =
@@ -709,7 +835,7 @@ void Solver::setupGridManagement(
                 *d_max_stencil_width));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
-    d_gridding_alg = boost::shared_ptr<mesh::GriddingAlgorithm> (
+    d_gridding_algorithm = boost::shared_ptr<mesh::GriddingAlgorithm> (
         new mesh::GriddingAlgorithm(
             d_patch_hierarchy,
             "GriddingAlgorithm",
@@ -729,16 +855,17 @@ void Solver::initializeSimulation()
     } else {
         double time = 0.0;  // 0.0 is an arbitrary simulation time
 
-        d_gridding_alg->makeCoarsestLevel(time);
+        d_gridding_algorithm->makeCoarsestLevel(time);
 
         for (int level_num = 0;
                 d_patch_hierarchy->levelCanBeRefined(level_num);
                 level_num++) {
 
-            d_gridding_alg->makeFinerLevel(0, // TODO: do we need tag buffer?
-                                           true, // initial_cycle=true
-                                           d_cycle,
-                                           time);
+            d_gridding_algorithm->makeFinerLevel(
+                    0, // TODO: do we need tag buffer?
+                    true, // initial_cycle=true
+                    d_cycle,
+                    time);
         }
 
         // TODO: synchronize coarser levels with finer levels that didn't
