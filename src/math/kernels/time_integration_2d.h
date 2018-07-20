@@ -1,7 +1,7 @@
-/*! \file kernels_2d.h
+/*! \file time_integration_2d.h
  *
  * \brief
- * Header files for numerical kernels that support PQS algorithm.
+ * Header files for numerical kernels for time integration.
  */
 
 /*
@@ -18,30 +18,331 @@
 #ifndef INCLUDED_PQS_math_kernels_2d_h
 #define INCLUDED_PQS_math_kernels_2d_h
 
+#include "PQS/PQS_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*!
+ * \brief
+ * @ref time_integration_2d.h provides support for time integration of
+ * partial differential equations in two space dimensions. Support is
+ * provided for
+ *
+ * - first-order Runge-Kutta method (i.e., forward Euler method) and
+ *
+ * - second-order and third-order total-variation diminishing (TVD)
+ *   Runge-Kutta methods.
+ */
+
+
 /* Link between C/C++ and Fortran function names
  *
- *      name in                          name in
- *      C/C++ code                       Fortran code
- *      ----------                       ------------
+ *      name in                             name in
+ *      C/C++ code                          Fortran code
+ *      ----------                          ------------
  */
-#define PQS_MATH_2D_COMPUTE_DN           pqsmath2dcomputedn_
+#define PQS_MATH_2D_RK1_STEP                pqsmath2drk1step_
+#define PQS_MATH_2D_TVD_RK2_STAGE1          pqsmath2dtvdrk2stage1_
+#define PQS_MATH_2D_TVD_RK2_STAGE2          pqsmath2dtvdrk2stage2_
+#define PQS_MATH_2D_TVD_RK3_STAGE1          pqsmath2dtvdrk3stage1_
+#define PQS_MATH_2D_TVD_RK3_STAGE2          pqsmath2dtvdrk3stage2_
+#define PQS_MATH_2D_TVD_RK3_STAGE3          pqsmath2dtvdrk3stage3_
+
 
 /*!
- * TODO
+ * Advance the solution 'u' through a single first-order Runge-Kutta
+ * (i.e, forward Euler) step.
+ *
+ * Parameters
+ * ----------
+ * u_next: [output] u(t + dt)
+ *
+ * u_current: u(t)
+ *
+ * rhs: right-hand side of time evolution equation
+ *
+ * dt: step size
+ *
+ * *_gb: index range for ghostbox
+ *
+ * *_fb: index range for fillbox
+ *
+ * Return value
+ * ------------
+ * None
  */
-void PQS_MATH_2D_COMPUTE_DN(
-   const int&, const double *, const double *, const double *,
-   const int&, const int&,
-   const int&, const int&,
-   const int&,
-   const int&,
-   double *,
-   const int&,
-   const double *, const double *);
+void PQS_MATH_2D_RK1_STEP(
+  PQS_REAL *u_next,
+  const int *ilo_u_next_gb,
+  const int *ihi_u_next_gb,
+  const int *jlo_u_next_gb,
+  const int *jhi_u_next_gb,
+  const PQS_REAL *u_current,
+  const int *ilo_u_current_gb,
+  const int *ihi_u_current_gb,
+  const int *jlo_u_current_gb,
+  const int *jhi_u_current_gb,
+  const PQS_REAL *rhs,
+  const int *ilo_rhs_gb,
+  const int *ihi_rhs_gb,
+  const int *jlo_rhs_gb,
+  const int *jhi_rhs_gb,
+  const int *ilo_fb,
+  const int *ihi_fb,
+  const int *jlo_fb,
+  const int *jhi_fb,
+  const PQS_REAL *dt);
+
+/*!
+ * Advance the solution 'u' through the first stage of a second-order
+ * TVD Runge-Kutta method step.
+ *
+ * Parameters
+ * ----------
+ * u_stage1: [output] u_approx(t + dt)
+ *
+ * u_current: u(t)
+ *
+ * rhs: right-hand side of time evolution equation
+ *
+ * dt: step size
+ *
+ * *_gb: index range for ghostbox
+ *
+ * *_fb: index range for fillbox
+ *
+ * Return value
+ * ------------
+ * None
+ *
+ * NOTES:
+ *  - the first stage of TVD RK2 is identical to a single RK1 step
+ *
+ */
+void PQS_MATH_2D_TVD_RK2_STAGE1(
+  PQS_REAL *u_stage1,
+  const int *ilo_u_stage1_gb,
+  const int *ihi_u_stage1_gb,
+  const int *jlo_u_stage1_gb,
+  const int *jhi_u_stage1_gb,
+  const PQS_REAL *u_current,
+  const int *ilo_u_current_gb,
+  const int *ihi_u_current_gb,
+  const int *jlo_u_current_gb,
+  const int *jhi_u_current_gb,
+  const PQS_REAL *rhs,
+  const int *ilo_rhs_gb,
+  const int *ihi_rhs_gb,
+  const int *jlo_rhs_gb,
+  const int *jhi_rhs_gb,
+  const int *ilo_fb,
+  const int *ihi_fb,
+  const int *jlo_fb,
+  const int *jhi_fb,
+  const PQS_REAL *dt);
+
+/*!
+ * Advance the solution 'u' through the second stage of a second-order
+ * TVD Runge-Kutta method step.
+ *
+ * Parameters
+ * ----------
+ * u_next: [output]  u(t + dt)
+ *
+ * u_stage1: u_approx(t + dt)
+ *
+ * u_current: u(t)
+ *
+ * rhs: right-hand side of time evolution equation
+ *
+ * dt: step size
+ *
+ * *_gb: index range for ghostbox
+ *
+ * *_fb: index range for fillbox
+ *
+ * Return value
+ * ------------
+ * None
+ */
+void PQS_MATH_2D_TVD_RK2_STAGE2(
+  PQS_REAL *u_next,
+  const int *ilo_u_next_gb,
+  const int *ihi_u_next_gb,
+  const int *jlo_u_next_gb,
+  const int *jhi_u_next_gb,
+  const PQS_REAL *u_stage1,
+  const int *ilo_u_stage1_gb,
+  const int *ihi_u_stage1_gb,
+  const int *jlo_u_stage1_gb,
+  const int *jhi_u_stage1_gb,
+  const PQS_REAL *u_current,
+  const int *ilo_u_current_gb,
+  const int *ihi_u_current_gb,
+  const int *jlo_u_current_gb,
+  const int *jhi_u_current_gb,
+  const PQS_REAL *rhs,
+  const int *ilo_rhs_gb,
+  const int *ihi_rhs_gb,
+  const int *jlo_rhs_gb,
+  const int *jhi_rhs_gb,
+  const int *ilo_fb,
+  const int *ihi_fb,
+  const int *jlo_fb,
+  const int *jhi_fb,
+  const PQS_REAL *dt);
+
+/*!
+ * Advance the solution 'u' through the first stage of a third-order
+ * TVD Runge-Kutta method step.
+ *
+ * Parameters
+ * ----------
+ * u_stage1: [output] u_approx(t + dt)
+ *
+ * u_current: u(t)
+ *
+ * rhs: right-hand side of time evolution equation
+ *
+ * dt: step size
+ *
+ * *_gb: index range for ghostbox
+ *
+ * *_fb: index range for fillbox
+ *
+ * Return value
+ * ------------
+ * None
+ *
+ * NOTES:
+ *  - the first stage of TVD RK3 is identical to a single RK1 step
+ *
+ */
+void PQS_MATH_2D_TVD_RK3_STAGE1(
+  PQS_REAL *u_stage1,
+  const int *ilo_u_stage1_gb,
+  const int *ihi_u_stage1_gb,
+  const int *jlo_u_stage1_gb,
+  const int *jhi_u_stage1_gb,
+  const PQS_REAL *u_current,
+  const int *ilo_u_current_gb,
+  const int *ihi_u_current_gb,
+  const int *jlo_u_current_gb,
+  const int *jhi_u_current_gb,
+  const PQS_REAL *rhs,
+  const int *ilo_rhs_gb,
+  const int *ihi_rhs_gb,
+  const int *jlo_rhs_gb,
+  const int *jhi_rhs_gb,
+  const int *ilo_fb,
+  const int *ihi_fb,
+  const int *jlo_fb,
+  const int *jhi_fb,
+  const PQS_REAL *dt);
+
+/*!
+ * Advance the solution 'u' through the second stage of a third-order
+ * TVD Runge-Kutta method step.
+ *
+ * Parameters
+ * ----------
+ * u_stage2: [output] u_approx(t + dt/2)
+ *
+ * u_stage1: u_approx(t + dt)
+ *
+ * u_current: u(t)
+ *
+ * rhs: right-hand side of time evolution equation
+ *
+ * dt: step size
+ *
+ * *_gb: index range for ghostbox
+ *
+ * *_fb: index range for fillbox
+ *
+ * Return value
+ * ------------
+ * None
+ */
+void PQS_MATH_2D_TVD_RK3_STAGE2(
+  PQS_REAL *u_stage2,
+  const int *ilo_u_stage2_gb,
+  const int *ihi_u_stage2_gb,
+  const int *jlo_u_stage2_gb,
+  const int *jhi_u_stage2_gb,
+  const PQS_REAL *u_stage1,
+  const int *ilo_u_stage1_gb,
+  const int *ihi_u_stage1_gb,
+  const int *jlo_u_stage1_gb,
+  const int *jhi_u_stage1_gb,
+  const PQS_REAL *u_current,
+  const int *ilo_u_current_gb,
+  const int *ihi_u_current_gb,
+  const int *jlo_u_current_gb,
+  const int *jhi_u_current_gb,
+  const PQS_REAL *rhs,
+  const int *ilo_rhs_gb,
+  const int *ihi_rhs_gb,
+  const int *jlo_rhs_gb,
+  const int *jhi_rhs_gb,
+  const int *ilo_fb,
+  const int *ihi_fb,
+  const int *jlo_fb,
+  const int *jhi_fb,
+  const PQS_REAL *dt);
+
+/*!
+ * Advance the solution 'u' through the third stage of a third-order
+ * TVD Runge-Kutta method step.
+ *
+ * Parameters
+ * ----------
+ * u_next: [output] u(t + dt)
+ *
+ * u_stage2: u_approx(t + dt/2)
+ *
+ * u_current: u(t)
+ *
+ * rhs: right-hand side of time evolution equation
+ *
+ * dt: step size
+ *
+ * *_gb: index range for ghostbox
+ *
+ * *_fb: index range for fillbox
+ *
+ * Return value
+ * ------------
+ * None
+ */
+void PQS_MATH_2D_TVD_RK3_STAGE3(
+  PQS_REAL *u_next,
+  const int *ilo_u_next_gb,
+  const int *ihi_u_next_gb,
+  const int *jlo_u_next_gb,
+  const int *jhi_u_next_gb,
+  const PQS_REAL *u_stage2,
+  const int *ilo_u_stage2_gb,
+  const int *ihi_u_stage2_gb,
+  const int *jlo_u_stage2_gb,
+  const int *jhi_u_stage2_gb,
+  const PQS_REAL *u_current,
+  const int *ilo_u_current_gb,
+  const int *ihi_u_current_gb,
+  const int *jlo_u_current_gb,
+  const int *jhi_u_current_gb,
+  const PQS_REAL *rhs,
+  const int *ilo_rhs_gb,
+  const int *ihi_rhs_gb,
+  const int *jlo_rhs_gb,
+  const int *jhi_rhs_gb,
+  const int *ilo_fb,
+  const int *ihi_fb,
+  const int *jlo_fb,
+  const int *jhi_fb,
+  const PQS_REAL *dt);
 
 #ifdef __cplusplus
 }
