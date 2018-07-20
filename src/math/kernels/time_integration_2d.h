@@ -149,7 +149,7 @@ void PQS_MATH_2D_TVD_RK2_STAGE1(
  *
  * Parameters
  * ----------
- * u_next: [output]  u(t + dt)
+ * u_next: [output] u(t + dt)
  *
  * u_stage1: u_approx(t + dt)
  *
