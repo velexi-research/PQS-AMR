@@ -59,7 +59,7 @@ Algorithms::Algorithms(
     verifyConfigurationDatabase(config_db);
 
     if (psi_id < 0) {
-        PQS_ERROR(this, "Algorithms", "'psi_id' must be positive");
+        PQS_ERROR(this, "Algorithms", "'psi_id' must be non-negative");
     }
 
     // Set data members

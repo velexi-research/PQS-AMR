@@ -102,19 +102,19 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
     }
     if (phi_pqs_id < 0) {
         PQS_ERROR(this, "TagInitAndDataTransferModule",
-                  "'phi_pqs_id' must be positive");
+                  "'phi_pqs_id' must be non-negative");
     }
     if (phi_lsm_current_id < 0) {
         PQS_ERROR(this, "TagInitAndDataTransferModule",
-                  "'phi_lsm_current_id' must be positive");
+                  "'phi_lsm_current_id' must be non-negative");
     }
     if (phi_lsm_next_id < 0) {
         PQS_ERROR(this, "TagInitAndDataTransferModule",
-                  "'phi_lsm_next_id' must be positive");
+                  "'phi_lsm_next_id' must be non-negative");
     }
     if (psi_id < 0) {
         PQS_ERROR(this, "TagInitAndDataTransferModule",
-                  "'psi_id' must be positive");
+                  "'psi_id' must be non-negative");
     }
 
     // Set data members
