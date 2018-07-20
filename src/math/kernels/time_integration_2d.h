@@ -117,9 +117,9 @@ void PQS_MATH_2D_RK1_STEP(
  * ------------
  * None
  *
- * NOTES:
- *  - the first stage of TVD RK2 is identical to a single RK1 step
- *
+ * Notes
+ * -----
+ * - the first stage of TVD RK2 is identical to a single RK1 step
  */
 void PQS_MATH_2D_TVD_RK2_STAGE1(
   PQS_REAL *u_stage1,
@@ -216,9 +216,9 @@ void PQS_MATH_2D_TVD_RK2_STAGE2(
  * ------------
  * None
  *
- * NOTES:
- *  - the first stage of TVD RK3 is identical to a single RK1 step
- *
+ * Notes
+ * -----
+ * - the first stage of TVD RK3 is identical to a single RK1 step
  */
 void PQS_MATH_2D_TVD_RK3_STAGE1(
   PQS_REAL *u_stage1,
