@@ -75,7 +75,7 @@ c { begin subroutine
      &           jlo_rhs_gb:jhi_rhs_gb,
      &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL@ dt
+      real*8 dt
 
 c     { begin loop over grid
       do k=klo_fb,khi_fb
@@ -155,7 +155,7 @@ c { begin subroutine
       @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
      &           jlo_rhs_gb:jhi_rhs_gb,
      &           klo_rhs_gb:khi_rhs_gb)
-      @REAL@ dt
+      real*8 dt
 
 c     use pqsMath3dRK1Step() to compute first stage
       call pqsMath3dRK1Step(u_stage1,
@@ -251,7 +251,7 @@ c { begin subroutine
      &           jlo_rhs_gb:jhi_rhs_gb,
      &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL@ dt
+      real*8 dt
 
 c     { begin loop over grid
       do k=klo_fb,khi_fb
@@ -330,7 +330,7 @@ c { begin subroutine
       @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
      &           jlo_rhs_gb:jhi_rhs_gb,
      &           klo_rhs_gb:khi_rhs_gb)
-      @REAL@ dt
+      real*8 dt
 
 c     use pqsMath3dRK1Step() to compute first stage
       call pqsMath3dRK1Step(u_stage1,
@@ -426,7 +426,7 @@ c { begin subroutine
      &           jlo_rhs_gb:jhi_rhs_gb,
      &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL@ dt
+      real*8 dt
 
 c     { begin loop over grid
       do k=klo_fb,khi_fb
@@ -517,7 +517,7 @@ c { begin subroutine
      &           jlo_rhs_gb:jhi_rhs_gb,
      &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL@ dt
+      real*8 dt
       @REAL@ one_third, two_thirds
       parameter (one_third = 1.d0/3.d0)
       parameter (two_thirds = 2.d0/3.d0)

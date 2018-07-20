@@ -75,21 +75,21 @@ extern "C" {
  * None
  */
 void PQS_MATH_3D_RK1_STEP(
-  LSMLIB_REAL *u_next,
+  PQS_REAL *u_next,
   const int *ilo_u_next_gb,
   const int *ihi_u_next_gb,
   const int *jlo_u_next_gb,
   const int *jhi_u_next_gb,
   const int *klo_u_next_gb,
   const int *khi_u_next_gb,
-  const LSMLIB_REAL *u_current,
+  const PQS_REAL *u_current,
   const int *ilo_u_current_gb,
   const int *ihi_u_current_gb,
   const int *jlo_u_current_gb,
   const int *jhi_u_current_gb,
   const int *klo_u_current_gb,
   const int *khi_u_current_gb,
-  const LSMLIB_REAL *rhs,
+  const PQS_REAL *rhs,
   const int *ilo_rhs_gb,
   const int *ihi_rhs_gb,
   const int *jlo_rhs_gb,
@@ -102,7 +102,7 @@ void PQS_MATH_3D_RK1_STEP(
   const int *jhi_fb,
   const int *klo_fb,
   const int *khi_fb,
-  const LSMLIB_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the first stage of a second-order
@@ -131,21 +131,21 @@ void PQS_MATH_3D_RK1_STEP(
  * - the first stage of TVD RK2 is identical to a single RK1 step
  */
 void PQS_MATH_3D_TVD_RK2_STAGE1(
-  LSMLIB_REAL *u_stage1,
+  PQS_REAL *u_stage1,
   const int *ilo_u_stage1_gb,
   const int *ihi_u_stage1_gb,
   const int *jlo_u_stage1_gb,
   const int *jhi_u_stage1_gb,
   const int *klo_u_stage1_gb,
   const int *khi_u_stage1_gb,
-  const LSMLIB_REAL *u_current,
+  const PQS_REAL *u_current,
   const int *ilo_u_current_gb,
   const int *ihi_u_current_gb,
   const int *jlo_u_current_gb,
   const int *jhi_u_current_gb,
   const int *klo_u_current_gb,
   const int *khi_u_current_gb,
-  const LSMLIB_REAL *rhs,
+  const PQS_REAL *rhs,
   const int *ilo_rhs_gb,
   const int *ihi_rhs_gb,
   const int *jlo_rhs_gb,
@@ -158,7 +158,7 @@ void PQS_MATH_3D_TVD_RK2_STAGE1(
   const int *jhi_fb,
   const int *klo_fb,
   const int *khi_fb,
-  const LSMLIB_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the second stage of a second-order
@@ -185,28 +185,28 @@ void PQS_MATH_3D_TVD_RK2_STAGE1(
  * None
  */
 void PQS_MATH_3D_TVD_RK2_STAGE2(
-  LSMLIB_REAL *u_next,
+  PQS_REAL *u_next,
   const int *ilo_u_next_gb,
   const int *ihi_u_next_gb,
   const int *jlo_u_next_gb,
   const int *jhi_u_next_gb,
   const int *klo_u_next_gb,
   const int *khi_u_next_gb,
-  const LSMLIB_REAL *u_stage1,
+  const PQS_REAL *u_stage1,
   const int *ilo_u_stage1_gb,
   const int *ihi_u_stage1_gb,
   const int *jlo_u_stage1_gb,
   const int *jhi_u_stage1_gb,
   const int *klo_u_stage1_gb,
   const int *khi_u_stage1_gb,
-  const LSMLIB_REAL *u_current,
+  const PQS_REAL *u_current,
   const int *ilo_u_current_gb,
   const int *ihi_u_current_gb,
   const int *jlo_u_current_gb,
   const int *jhi_u_current_gb,
   const int *klo_u_current_gb,
   const int *khi_u_current_gb,
-  const LSMLIB_REAL *rhs,
+  const PQS_REAL *rhs,
   const int *ilo_rhs_gb,
   const int *ihi_rhs_gb,
   const int *jlo_rhs_gb,
@@ -219,7 +219,7 @@ void PQS_MATH_3D_TVD_RK2_STAGE2(
   const int *jhi_fb,
   const int *klo_fb,
   const int *khi_fb,
-  const LSMLIB_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the first stage of a third-order
@@ -248,21 +248,21 @@ void PQS_MATH_3D_TVD_RK2_STAGE2(
  * - the first stage of TVD RK3 is identical to a single RK1 step
  */
 void PQS_MATH_3D_TVD_RK3_STAGE1(
-  LSMLIB_REAL *u_stage1,
+  PQS_REAL *u_stage1,
   const int *ilo_u_stage1_gb,
   const int *ihi_u_stage1_gb,
   const int *jlo_u_stage1_gb,
   const int *jhi_u_stage1_gb,
   const int *klo_u_stage1_gb,
   const int *khi_u_stage1_gb,
-  const LSMLIB_REAL *u_current,
+  const PQS_REAL *u_current,
   const int *ilo_u_current_gb,
   const int *ihi_u_current_gb,
   const int *jlo_u_current_gb,
   const int *jhi_u_current_gb,
   const int *klo_u_current_gb,
   const int *khi_u_current_gb,
-  const LSMLIB_REAL *rhs,
+  const PQS_REAL *rhs,
   const int *ilo_rhs_gb,
   const int *ihi_rhs_gb,
   const int *jlo_rhs_gb,
@@ -275,7 +275,7 @@ void PQS_MATH_3D_TVD_RK3_STAGE1(
   const int *jhi_fb,
   const int *klo_fb,
   const int *khi_fb,
-  const LSMLIB_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the second stage of a third-order
@@ -302,28 +302,28 @@ void PQS_MATH_3D_TVD_RK3_STAGE1(
  * None
  */
 void PQS_MATH_3D_TVD_RK3_STAGE2(
-  LSMLIB_REAL *u_stage2,
+  PQS_REAL *u_stage2,
   const int *ilo_u_stage2_gb,
   const int *ihi_u_stage2_gb,
   const int *jlo_u_stage2_gb,
   const int *jhi_u_stage2_gb,
   const int *klo_u_stage2_gb,
   const int *khi_u_stage2_gb,
-  const LSMLIB_REAL *u_stage1,
+  const PQS_REAL *u_stage1,
   const int *ilo_u_stage1_gb,
   const int *ihi_u_stage1_gb,
   const int *jlo_u_stage1_gb,
   const int *jhi_u_stage1_gb,
   const int *klo_u_stage1_gb,
   const int *khi_u_stage1_gb,
-  const LSMLIB_REAL *u_current,
+  const PQS_REAL *u_current,
   const int *ilo_u_current_gb,
   const int *ihi_u_current_gb,
   const int *jlo_u_current_gb,
   const int *jhi_u_current_gb,
   const int *klo_u_current_gb,
   const int *khi_u_current_gb,
-  const LSMLIB_REAL *rhs,
+  const PQS_REAL *rhs,
   const int *ilo_rhs_gb,
   const int *ihi_rhs_gb,
   const int *jlo_rhs_gb,
@@ -336,7 +336,7 @@ void PQS_MATH_3D_TVD_RK3_STAGE2(
   const int *jhi_fb,
   const int *klo_fb,
   const int *khi_fb,
-  const LSMLIB_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the third stage of a third-order
@@ -363,28 +363,28 @@ void PQS_MATH_3D_TVD_RK3_STAGE2(
  * None
  */
 void PQS_MATH_3D_TVD_RK3_STAGE3(
-  LSMLIB_REAL *u_next,
+  PQS_REAL *u_next,
   const int *ilo_u_next_gb,
   const int *ihi_u_next_gb,
   const int *jlo_u_next_gb,
   const int *jhi_u_next_gb,
   const int *klo_u_next_gb,
   const int *khi_u_next_gb,
-  const LSMLIB_REAL *u_stage2,
+  const PQS_REAL *u_stage2,
   const int *ilo_u_stage2_gb,
   const int *ihi_u_stage2_gb,
   const int *jlo_u_stage2_gb,
   const int *jhi_u_stage2_gb,
   const int *klo_u_stage2_gb,
   const int *khi_u_stage2_gb,
-  const LSMLIB_REAL *u_current,
+  const PQS_REAL *u_current,
   const int *ilo_u_current_gb,
   const int *ihi_u_current_gb,
   const int *jlo_u_current_gb,
   const int *jhi_u_current_gb,
   const int *klo_u_current_gb,
   const int *khi_u_current_gb,
-  const LSMLIB_REAL *rhs,
+  const PQS_REAL *rhs,
   const int *ilo_rhs_gb,
   const int *ihi_rhs_gb,
   const int *jlo_rhs_gb,
@@ -397,7 +397,7 @@ void PQS_MATH_3D_TVD_RK3_STAGE3(
   const int *jhi_fb,
   const int *klo_fb,
   const int *khi_fb,
-  const LSMLIB_REAL *dt);
+  const double *dt);
 
 #ifdef __cplusplus
 }

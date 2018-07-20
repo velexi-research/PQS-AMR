@@ -93,7 +93,7 @@ void PQS_MATH_2D_RK1_STEP(
   const int *ihi_fb,
   const int *jlo_fb,
   const int *jhi_fb,
-  const PQS_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the first stage of a second-order
@@ -141,7 +141,7 @@ void PQS_MATH_2D_TVD_RK2_STAGE1(
   const int *ihi_fb,
   const int *jlo_fb,
   const int *jhi_fb,
-  const PQS_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the second stage of a second-order
@@ -192,7 +192,7 @@ void PQS_MATH_2D_TVD_RK2_STAGE2(
   const int *ihi_fb,
   const int *jlo_fb,
   const int *jhi_fb,
-  const PQS_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the first stage of a third-order
@@ -240,7 +240,7 @@ void PQS_MATH_2D_TVD_RK3_STAGE1(
   const int *ihi_fb,
   const int *jlo_fb,
   const int *jhi_fb,
-  const PQS_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the second stage of a third-order
@@ -291,7 +291,7 @@ void PQS_MATH_2D_TVD_RK3_STAGE2(
   const int *ihi_fb,
   const int *jlo_fb,
   const int *jhi_fb,
-  const PQS_REAL *dt);
+  const double *dt);
 
 /*!
  * Advance the solution 'u' through the third stage of a third-order
@@ -342,7 +342,7 @@ void PQS_MATH_2D_TVD_RK3_STAGE3(
   const int *ihi_fb,
   const int *jlo_fb,
   const int *jhi_fb,
-  const PQS_REAL *dt);
+  const double *dt);
 
 #ifdef __cplusplus
 }
