@@ -30,16 +30,30 @@
 // --- Utility functions and macros
 
 /*!
- * Macro for handling errors that arise in the pqs library.
+ * Macro for handling errors that arise in the PQS library.
  *
  * Parameters
  * ----------
  * obj: pointer to object that the error originates in
+ *
+ * method: name of method that error originates in
  *
  * message: error message
  */
 #define PQS_ERROR(obj, method, message) \
     throw "PQS_ERROR::" + string(typeid(obj).name()) + "::" + \
           string(method) + "::" + string(message)
+
+/*!
+ * Macro for handling errors in static methods that arise in the PQS library.
+ *
+ * Parameters
+ * ----------
+ * method: name of method that error originates in
+ *
+ * message: error message
+ */
+#define PQS_ERROR_STATIC(method, message) \
+    throw "PQS_ERROR::" + string(method) + "::" + string(message)
 
 #endif

@@ -32,7 +32,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/utilities.h"
+#include "PQS/utilities.h"
 #include "PQS/pqs/Algorithms.h"
 
 // Class/type declarations

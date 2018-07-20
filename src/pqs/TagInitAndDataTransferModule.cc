@@ -42,11 +42,11 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/utilities.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/Solver.h"
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
-#include "PQS/pqs/utilities.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class BoxContainer; } }
