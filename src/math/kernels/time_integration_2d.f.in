@@ -2,7 +2,7 @@ c***********************************************************************
 c
 c  time_integration_2d.f
 c
-c  F77 routines for 2D time integration subroutines
+c  F77 routines for time integration subroutines for 2D spatial domains
 c
 c***********************************************************************
 
