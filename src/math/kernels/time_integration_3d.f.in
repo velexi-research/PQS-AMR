@@ -65,17 +65,17 @@ c { begin subroutine
       integer jlo_rhs_gb, jhi_rhs_gb
       integer klo_rhs_gb, khi_rhs_gb
       integer ilo_fb, ihi_fb, jlo_fb, jhi_fb, klo_fb, khi_fb
-      @REAL u_next(ilo_u_next_gb:ihi_u_next_gb,
-     &             jlo_u_next_gb:jhi_u_next_gb,
-     &             klo_u_next_gb:khi_u_next_gb)
-      @REAL u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                jlo_u_current_gb:jhi_u_current_gb,
-     &                klo_u_current_gb:khi_u_current_gb)
-      @REAL rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &          jlo_rhs_gb:jhi_rhs_gb,
-     &          klo_rhs_gb:khi_rhs_gb)
+      @REAL@ u_next(ilo_u_next_gb:ihi_u_next_gb,
+     &              jlo_u_next_gb:jhi_u_next_gb,
+     &              klo_u_next_gb:khi_u_next_gb)
+      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
+     &                 jlo_u_current_gb:jhi_u_current_gb,
+     &                 klo_u_current_gb:khi_u_current_gb)
+      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
+     &           jlo_rhs_gb:jhi_rhs_gb,
+     &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL dt
+      @REAL@ dt
 
 c     { begin loop over grid
       do k=klo_fb,khi_fb
@@ -146,16 +146,16 @@ c { begin subroutine
       integer jlo_rhs_gb, jhi_rhs_gb
       integer klo_rhs_gb, khi_rhs_gb
       integer ilo_fb, ihi_fb, jlo_fb, jhi_fb, klo_fb, khi_fb
-      @REAL u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &               jlo_u_stage1_gb:jhi_u_stage1_gb,
-     &               klo_u_stage1_gb:khi_u_stage1_gb)
-      @REAL u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                jlo_u_current_gb:jhi_u_current_gb,
-     &                klo_u_current_gb:khi_u_current_gb)
-      @REAL rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &          jlo_rhs_gb:jhi_rhs_gb,
-     &          klo_rhs_gb:khi_rhs_gb)
-      @REAL dt
+      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
+     &                jlo_u_stage1_gb:jhi_u_stage1_gb,
+     &                klo_u_stage1_gb:khi_u_stage1_gb)
+      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
+     &                 jlo_u_current_gb:jhi_u_current_gb,
+     &                 klo_u_current_gb:khi_u_current_gb)
+      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
+     &           jlo_rhs_gb:jhi_rhs_gb,
+     &           klo_rhs_gb:khi_rhs_gb)
+      @REAL@ dt
 
 c     use pqsMath3dRK1Step() to compute first stage
       call pqsMath3dRK1Step(u_stage1,
@@ -238,20 +238,20 @@ c { begin subroutine
       integer jlo_rhs_gb, jhi_rhs_gb
       integer klo_rhs_gb, khi_rhs_gb
       integer ilo_fb, ihi_fb, jlo_fb, jhi_fb, klo_fb, khi_fb
-      @REAL u_next(ilo_u_next_gb:ihi_u_next_gb,
-     &             jlo_u_next_gb:jhi_u_next_gb,
-     &             klo_u_next_gb:khi_u_next_gb)
-      @REAL u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &               jlo_u_stage1_gb:jhi_u_stage1_gb,
-     &               klo_u_stage1_gb:khi_u_stage1_gb)
-      @REAL u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                jlo_u_current_gb:jhi_u_current_gb,
-     &                klo_u_current_gb:khi_u_current_gb)
-      @REAL rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &          jlo_rhs_gb:jhi_rhs_gb,
-     &          klo_rhs_gb:khi_rhs_gb)
+      @REAL@ u_next(ilo_u_next_gb:ihi_u_next_gb,
+     &              jlo_u_next_gb:jhi_u_next_gb,
+     &              klo_u_next_gb:khi_u_next_gb)
+      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
+     &                jlo_u_stage1_gb:jhi_u_stage1_gb,
+     &                klo_u_stage1_gb:khi_u_stage1_gb)
+      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
+     &                 jlo_u_current_gb:jhi_u_current_gb,
+     &                 klo_u_current_gb:khi_u_current_gb)
+      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
+     &           jlo_rhs_gb:jhi_rhs_gb,
+     &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL dt
+      @REAL@ dt
 
 c     { begin loop over grid
       do k=klo_fb,khi_fb
@@ -321,16 +321,16 @@ c { begin subroutine
       integer jlo_rhs_gb, jhi_rhs_gb
       integer klo_rhs_gb, khi_rhs_gb
       integer ilo_fb, ihi_fb, jlo_fb, jhi_fb, klo_fb, khi_fb
-      @REAL u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &               jlo_u_stage1_gb:jhi_u_stage1_gb,
-     &               klo_u_stage1_gb:khi_u_stage1_gb)
-      @REAL u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                jlo_u_current_gb:jhi_u_current_gb,
-     &                klo_u_current_gb:khi_u_current_gb)
-      @REAL rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &          jlo_rhs_gb:jhi_rhs_gb,
-     &          klo_rhs_gb:khi_rhs_gb)
-      @REAL dt
+      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
+     &                jlo_u_stage1_gb:jhi_u_stage1_gb,
+     &                klo_u_stage1_gb:khi_u_stage1_gb)
+      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
+     &                 jlo_u_current_gb:jhi_u_current_gb,
+     &                 klo_u_current_gb:khi_u_current_gb)
+      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
+     &           jlo_rhs_gb:jhi_rhs_gb,
+     &           klo_rhs_gb:khi_rhs_gb)
+      @REAL@ dt
 
 c     use pqsMath3dRK1Step() to compute first stage
       call pqsMath3dRK1Step(u_stage1,
@@ -413,20 +413,20 @@ c { begin subroutine
       integer jlo_rhs_gb, jhi_rhs_gb
       integer klo_rhs_gb, khi_rhs_gb
       integer ilo_fb, ihi_fb, jlo_fb, jhi_fb, klo_fb, khi_fb
-      @REAL u_stage2(ilo_u_stage2_gb:ihi_u_stage2_gb,
-     &               jlo_u_stage2_gb:jhi_u_stage2_gb,
-     &               klo_u_stage2_gb:khi_u_stage2_gb)
-      @REAL u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &               jlo_u_stage1_gb:jhi_u_stage1_gb,
-     &               klo_u_stage1_gb:khi_u_stage1_gb)
-      @REAL u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                jlo_u_current_gb:jhi_u_current_gb,
-     &                klo_u_current_gb:khi_u_current_gb)
-      @REAL rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &          jlo_rhs_gb:jhi_rhs_gb,
-     &          klo_rhs_gb:khi_rhs_gb)
+      @REAL@ u_stage2(ilo_u_stage2_gb:ihi_u_stage2_gb,
+     &                jlo_u_stage2_gb:jhi_u_stage2_gb,
+     &                klo_u_stage2_gb:khi_u_stage2_gb)
+      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
+     &                jlo_u_stage1_gb:jhi_u_stage1_gb,
+     &                klo_u_stage1_gb:khi_u_stage1_gb)
+      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
+     &                 jlo_u_current_gb:jhi_u_current_gb,
+     &                 klo_u_current_gb:khi_u_current_gb)
+      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
+     &           jlo_rhs_gb:jhi_rhs_gb,
+     &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL dt
+      @REAL@ dt
 
 c     { begin loop over grid
       do k=klo_fb,khi_fb
@@ -504,21 +504,21 @@ c { begin subroutine
       integer jlo_rhs_gb, jhi_rhs_gb
       integer klo_rhs_gb, khi_rhs_gb
       integer ilo_fb, ihi_fb, jlo_fb, jhi_fb, klo_fb, khi_fb
-      @REAL u_next(ilo_u_next_gb:ihi_u_next_gb,
-     &             jlo_u_next_gb:jhi_u_next_gb,
-     &             klo_u_next_gb:khi_u_next_gb)
-      @REAL u_stage2(ilo_u_stage2_gb:ihi_u_stage2_gb,
-     &               jlo_u_stage2_gb:jhi_u_stage2_gb,
-     &               klo_u_stage2_gb:khi_u_stage2_gb)
-      @REAL u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                jlo_u_current_gb:jhi_u_current_gb,
-     &                klo_u_current_gb:khi_u_current_gb)
-      @REAL rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &          jlo_rhs_gb:jhi_rhs_gb,
-     &          klo_rhs_gb:khi_rhs_gb)
+      @REAL@ u_next(ilo_u_next_gb:ihi_u_next_gb,
+     &              jlo_u_next_gb:jhi_u_next_gb,
+     &              klo_u_next_gb:khi_u_next_gb)
+      @REAL@ u_stage2(ilo_u_stage2_gb:ihi_u_stage2_gb,
+     &                jlo_u_stage2_gb:jhi_u_stage2_gb,
+     &                klo_u_stage2_gb:khi_u_stage2_gb)
+      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
+     &                 jlo_u_current_gb:jhi_u_current_gb,
+     &                 klo_u_current_gb:khi_u_current_gb)
+      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
+     &           jlo_rhs_gb:jhi_rhs_gb,
+     &           klo_rhs_gb:khi_rhs_gb)
       integer i, j, k
-      @REAL dt
-      @REAL one_third, two_thirds
+      @REAL@ dt
+      @REAL@ one_third, two_thirds
       parameter (one_third = 1.d0/3.d0)
       parameter (two_thirds = 2.d0/3.d0)
 
