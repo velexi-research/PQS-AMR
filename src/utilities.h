@@ -1,7 +1,7 @@
 /*! \file utilities.h
  *
  * \brief
- * Header file for pqs library utility functions and macros.
+ * Header file for PQS utility functions and macros.
  */
 
 /*
@@ -15,14 +15,19 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_utilities_h
-#define INCLUDED_PQS_pqs_utilities_h
+#ifndef INCLUDED_PQS_utilities_h
+#define INCLUDED_PQS_utilities_h
 
 // --- Headers, namespaces, and type declarations
 
 // Standard library
 
+// SAMRAI
+#include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/hier/IntVector.h"
+
 // Namespaces
+using namespace std;
 
 // Class/type declarations
 
@@ -49,11 +54,30 @@
  *
  * Parameters
  * ----------
+ * class_name: name of class
+ *
  * method: name of method that error originates in
  *
  * message: error message
  */
-#define PQS_ERROR_STATIC(method, message) \
-    throw "PQS_ERROR::" + string(method) + "::" + string(message)
+#define PQS_ERROR_STATIC(class_name, method, message) \
+    throw "PQS_ERROR::" + string(class_name) + "::" + \
+          string(method) + "::" + string(message)
 
-#endif
+/*!
+ * Macro for creating local int array copy of IntVector.
+ *
+ * Parameters
+ * ----------
+ * int_array: variable name for integer array
+ *
+ * int_vector: IntVector to copy
+ */
+#define PQS_INT_VECT_TO_INT_ARRAY(int_array, int_vector) \
+    int int_array[3]; \
+    for (int int_array_i=0; int_array_i < int_vector.getDim().getValue(); \
+            int_array_i++) { \
+        int_array[int_array_i] = int_vector[int_array_i]; \
+    }
+
+#endif  // INCLUDED_PQS_utilities_h
