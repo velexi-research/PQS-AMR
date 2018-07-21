@@ -117,79 +117,70 @@ void TimeIntegration::RK1Step(
                 u_next_ghostbox.lower();
             const hier::IntVector u_next_ghostbox_upper =
                 u_next_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_lo,
+                                      u_next_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_hi,
+                                      u_next_ghostbox_upper);
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
                 u_current_ghostbox.lower();
             const hier::IntVector u_current_ghostbox_upper =
                 u_current_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_lo,
+                                      u_current_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
+                                      u_current_ghostbox_upper);
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
+                                      rhs_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
+                                      rhs_ghostbox_upper);
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
             const hier::IntVector fillbox_lower = fillbox.lower();
             const hier::IntVector fillbox_upper = fillbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo,
+                                      fillbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
+                                      fillbox_upper);
 
             // pointers to data
             PQS_REAL* u_next = u_next_data->getPointer();
             PQS_REAL* u_current = u_current_data->getPointer();
             PQS_REAL* rhs = rhs_data->getPointer();
 
-
             if (dim == 2) {
                 PQS_MATH_2D_RK1_STEP(
                     u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
+                    u_next_ghostbox_lo,
+                    u_next_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             } else if (dim == 3) {
                 PQS_MATH_3D_RK1_STEP(
                     u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
-                    &u_next_ghostbox_lower[2],
-                    &u_next_ghostbox_upper[2],
+                    u_next_ghostbox_lo,
+                    u_next_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
-                    &u_current_ghostbox_lower[2],
-                    &u_current_ghostbox_upper[2],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &rhs_ghostbox_lower[2],
-                    &rhs_ghostbox_upper[2],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
-                    &fillbox_lower[2],
-                    &fillbox_upper[2],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             }
 
@@ -263,79 +254,70 @@ void TimeIntegration::TVDRK2Stage1(
                 u_stage1_ghostbox.lower();
             const hier::IntVector u_stage1_ghostbox_upper =
                 u_stage1_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_lo,
+                                      u_stage1_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_hi,
+                                      u_stage1_ghostbox_upper);
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
                 u_current_ghostbox.lower();
             const hier::IntVector u_current_ghostbox_upper =
                 u_current_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_lo,
+                                      u_current_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
+                                      u_current_ghostbox_upper);
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
+                                      rhs_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
+                                      rhs_ghostbox_upper);
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
             const hier::IntVector fillbox_lower = fillbox.lower();
             const hier::IntVector fillbox_upper = fillbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo,
+                                      fillbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
+                                      fillbox_upper);
 
             // pointers to data
             PQS_REAL* u_stage1 = u_stage1_data->getPointer();
             PQS_REAL* u_current = u_current_data->getPointer();
             PQS_REAL* rhs = rhs_data->getPointer();
 
-
             if (dim == 2) {
                 PQS_MATH_2D_TVD_RK2_STAGE1(
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             } else if (dim == 3) {
                 PQS_MATH_3D_TVD_RK2_STAGE1(
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
-                    &u_stage1_ghostbox_lower[2],
-                    &u_stage1_ghostbox_upper[2],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
-                    &u_current_ghostbox_lower[2],
-                    &u_current_ghostbox_upper[2],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &rhs_ghostbox_lower[2],
-                    &rhs_ghostbox_upper[2],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
-                    &fillbox_lower[2],
-                    &fillbox_upper[2],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             }
 
@@ -417,27 +399,47 @@ void TimeIntegration::TVDRK2Stage2(
                 u_next_ghostbox.lower();
             const hier::IntVector u_next_ghostbox_upper =
                 u_next_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_lo,
+                                      u_next_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_hi,
+                                      u_next_ghostbox_upper);
 
             hier::Box u_stage1_ghostbox = u_stage1_data->getGhostBox();
             const hier::IntVector u_stage1_ghostbox_lower =
                 u_stage1_ghostbox.lower();
             const hier::IntVector u_stage1_ghostbox_upper =
                 u_stage1_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_lo,
+                                      u_stage1_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_hi,
+                                      u_stage1_ghostbox_upper);
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
                 u_current_ghostbox.lower();
             const hier::IntVector u_current_ghostbox_upper =
                 u_current_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_lo,
+                                      u_current_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
+                                      u_current_ghostbox_upper);
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
+                                      rhs_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
+                                      rhs_ghostbox_upper);
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
             const hier::IntVector fillbox_lower = fillbox.lower();
             const hier::IntVector fillbox_upper = fillbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo,
+                                      fillbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
+                                      fillbox_upper);
 
             // pointers to data
             PQS_REAL* u_next = u_next_data->getPointer();
@@ -445,70 +447,39 @@ void TimeIntegration::TVDRK2Stage2(
             PQS_REAL* u_current = u_current_data->getPointer();
             PQS_REAL* rhs = rhs_data->getPointer();
 
-
             if (dim == 2) {
                 PQS_MATH_2D_TVD_RK2_STAGE2(
                     u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
+                    u_next_ghostbox_lo,
+                    u_next_ghostbox_hi,
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             } else if (dim == 3) {
                 PQS_MATH_3D_TVD_RK2_STAGE2(
                     u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
-                    &u_next_ghostbox_lower[2],
-                    &u_next_ghostbox_upper[2],
+                    u_next_ghostbox_lo,
+                    u_next_ghostbox_hi,
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
-                    &u_stage1_ghostbox_lower[2],
-                    &u_stage1_ghostbox_upper[2],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
-                    &u_current_ghostbox_lower[2],
-                    &u_current_ghostbox_upper[2],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &rhs_ghostbox_lower[2],
-                    &rhs_ghostbox_upper[2],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
-                    &fillbox_lower[2],
-                    &fillbox_upper[2],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             }
 
@@ -582,79 +553,70 @@ void TimeIntegration::TVDRK3Stage1(
                 u_stage1_ghostbox.lower();
             const hier::IntVector u_stage1_ghostbox_upper =
                 u_stage1_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_lo,
+                                      u_stage1_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_hi,
+                                      u_stage1_ghostbox_upper);
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
                 u_current_ghostbox.lower();
             const hier::IntVector u_current_ghostbox_upper =
                 u_current_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_lo,
+                                      u_current_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
+                                      u_current_ghostbox_upper);
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
+                                      rhs_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
+                                      rhs_ghostbox_upper);
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
             const hier::IntVector fillbox_lower = fillbox.lower();
             const hier::IntVector fillbox_upper = fillbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo,
+                                      fillbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
+                                      fillbox_upper);
 
             // pointers to data
             PQS_REAL* u_stage1 = u_stage1_data->getPointer();
             PQS_REAL* u_current = u_current_data->getPointer();
             PQS_REAL* rhs = rhs_data->getPointer();
 
-
             if (dim == 2) {
                 PQS_MATH_2D_TVD_RK3_STAGE1(
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             } else if (dim == 3) {
                 PQS_MATH_3D_TVD_RK3_STAGE1(
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
-                    &u_stage1_ghostbox_lower[2],
-                    &u_stage1_ghostbox_upper[2],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
-                    &u_current_ghostbox_lower[2],
-                    &u_current_ghostbox_upper[2],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &rhs_ghostbox_lower[2],
-                    &rhs_ghostbox_upper[2],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
-                    &fillbox_lower[2],
-                    &fillbox_upper[2],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             }
 
@@ -664,7 +626,7 @@ void TimeIntegration::TVDRK3Stage1(
 
 void TimeIntegration::TVDRK3Stage2(
             boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
-            const int u_next_id,
+            const int u_stage2_id,
             const int u_stage1_id,
             const int u_current_id,
             const int rhs_id,
@@ -676,9 +638,9 @@ void TimeIntegration::TVDRK3Stage2(
         PQS_ERROR_STATIC("TimeIntegration", "TVDRK3Stage2",
                          "'patch_hierarchy' must not be NULL");
     }
-    if (u_next_id < 0) {
+    if (u_stage2_id < 0) {
         PQS_ERROR_STATIC("TimeIntegration", "TVDRK3Stage2",
-                         "'u_next_id' must be non-negative");
+                         "'u_stage2_id' must be non-negative");
     }
     if (u_stage1_id < 0) {
         PQS_ERROR_STATIC("TimeIntegration", "TVDRK3Stage2",
@@ -717,9 +679,9 @@ void TimeIntegration::TVDRK3Stage2(
 
             // --- Get pointers to data and index space ranges
 
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
+            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage2_data =
                 BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
-                    patch->getPatchData(u_next_id));
+                    patch->getPatchData(u_stage2_id));
             boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
                 BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
                     patch->getPatchData(u_stage1_id));
@@ -731,103 +693,92 @@ void TimeIntegration::TVDRK3Stage2(
                     patch->getPatchData(rhs_id));
 
             // ghost box
-            hier::Box u_next_ghostbox = u_next_data->getGhostBox();
-            const hier::IntVector u_next_ghostbox_lower =
-                u_next_ghostbox.lower();
-            const hier::IntVector u_next_ghostbox_upper =
-                u_next_ghostbox.upper();
+            hier::Box u_stage2_ghostbox = u_stage2_data->getGhostBox();
+            const hier::IntVector u_stage2_ghostbox_lower =
+                u_stage2_ghostbox.lower();
+            const hier::IntVector u_stage2_ghostbox_upper =
+                u_stage2_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage2_ghostbox_lo,
+                                      u_stage2_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage2_ghostbox_hi,
+                                      u_stage2_ghostbox_upper);
 
             hier::Box u_stage1_ghostbox = u_stage1_data->getGhostBox();
             const hier::IntVector u_stage1_ghostbox_lower =
                 u_stage1_ghostbox.lower();
             const hier::IntVector u_stage1_ghostbox_upper =
                 u_stage1_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_lo,
+                                      u_stage1_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage1_ghostbox_hi,
+                                      u_stage1_ghostbox_upper);
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
                 u_current_ghostbox.lower();
             const hier::IntVector u_current_ghostbox_upper =
                 u_current_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_lo,
+                                      u_current_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
+                                      u_current_ghostbox_upper);
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
+                                      rhs_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
+                                      rhs_ghostbox_upper);
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
             const hier::IntVector fillbox_lower = fillbox.lower();
             const hier::IntVector fillbox_upper = fillbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo,
+                                      fillbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
+                                      fillbox_upper);
 
             // pointers to data
-            PQS_REAL* u_next = u_next_data->getPointer();
+            PQS_REAL* u_stage2 = u_stage2_data->getPointer();
             PQS_REAL* u_stage1 = u_stage1_data->getPointer();
             PQS_REAL* u_current = u_current_data->getPointer();
             PQS_REAL* rhs = rhs_data->getPointer();
 
-
             if (dim == 2) {
                 PQS_MATH_2D_TVD_RK3_STAGE2(
-                    u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
+                    u_stage2,
+                    u_stage2_ghostbox_lo,
+                    u_stage2_ghostbox_hi,
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             } else if (dim == 3) {
                 PQS_MATH_3D_TVD_RK3_STAGE2(
-                    u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
-                    &u_next_ghostbox_lower[2],
-                    &u_next_ghostbox_upper[2],
+                    u_stage2,
+                    u_stage2_ghostbox_lo,
+                    u_stage2_ghostbox_hi,
                     u_stage1,
-                    &u_stage1_ghostbox_lower[0],
-                    &u_stage1_ghostbox_upper[0],
-                    &u_stage1_ghostbox_lower[1],
-                    &u_stage1_ghostbox_upper[1],
-                    &u_stage1_ghostbox_lower[2],
-                    &u_stage1_ghostbox_upper[2],
+                    u_stage1_ghostbox_lo,
+                    u_stage1_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
-                    &u_current_ghostbox_lower[2],
-                    &u_current_ghostbox_upper[2],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &rhs_ghostbox_lower[2],
-                    &rhs_ghostbox_upper[2],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
-                    &fillbox_lower[2],
-                    &fillbox_upper[2],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             }
 
@@ -909,27 +860,47 @@ void TimeIntegration::TVDRK3Stage3(
                 u_next_ghostbox.lower();
             const hier::IntVector u_next_ghostbox_upper =
                 u_next_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_lo,
+                                      u_next_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_hi,
+                                      u_next_ghostbox_upper);
 
             hier::Box u_stage2_ghostbox = u_stage2_data->getGhostBox();
             const hier::IntVector u_stage2_ghostbox_lower =
                 u_stage2_ghostbox.lower();
             const hier::IntVector u_stage2_ghostbox_upper =
                 u_stage2_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage2_ghostbox_lo,
+                                      u_stage2_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_stage2_ghostbox_hi,
+                                      u_stage2_ghostbox_upper);
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
                 u_current_ghostbox.lower();
             const hier::IntVector u_current_ghostbox_upper =
                 u_current_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_lo,
+                                      u_current_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
+                                      u_current_ghostbox_upper);
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
+                                      rhs_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
+                                      rhs_ghostbox_upper);
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
             const hier::IntVector fillbox_lower = fillbox.lower();
             const hier::IntVector fillbox_upper = fillbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo,
+                                      fillbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
+                                      fillbox_upper);
 
             // pointers to data
             PQS_REAL* u_next = u_next_data->getPointer();
@@ -937,70 +908,39 @@ void TimeIntegration::TVDRK3Stage3(
             PQS_REAL* u_current = u_current_data->getPointer();
             PQS_REAL* rhs = rhs_data->getPointer();
 
-
             if (dim == 2) {
                 PQS_MATH_2D_TVD_RK3_STAGE3(
                     u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
+                    u_next_ghostbox_lo,
+                    u_next_ghostbox_hi,
                     u_stage2,
-                    &u_stage2_ghostbox_lower[0],
-                    &u_stage2_ghostbox_upper[0],
-                    &u_stage2_ghostbox_lower[1],
-                    &u_stage2_ghostbox_upper[1],
+                    u_stage2_ghostbox_lo,
+                    u_stage2_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             } else if (dim == 3) {
                 PQS_MATH_3D_TVD_RK3_STAGE3(
                     u_next,
-                    &u_next_ghostbox_lower[0],
-                    &u_next_ghostbox_upper[0],
-                    &u_next_ghostbox_lower[1],
-                    &u_next_ghostbox_upper[1],
-                    &u_next_ghostbox_lower[2],
-                    &u_next_ghostbox_upper[2],
+                    u_next_ghostbox_lo,
+                    u_next_ghostbox_hi,
                     u_stage2,
-                    &u_stage2_ghostbox_lower[0],
-                    &u_stage2_ghostbox_upper[0],
-                    &u_stage2_ghostbox_lower[1],
-                    &u_stage2_ghostbox_upper[1],
-                    &u_stage2_ghostbox_lower[2],
-                    &u_stage2_ghostbox_upper[2],
+                    u_stage2_ghostbox_lo,
+                    u_stage2_ghostbox_hi,
                     u_current,
-                    &u_current_ghostbox_lower[0],
-                    &u_current_ghostbox_upper[0],
-                    &u_current_ghostbox_lower[1],
-                    &u_current_ghostbox_upper[1],
-                    &u_current_ghostbox_lower[2],
-                    &u_current_ghostbox_upper[2],
+                    u_current_ghostbox_lo,
+                    u_current_ghostbox_hi,
                     rhs,
-                    &rhs_ghostbox_lower[0],
-                    &rhs_ghostbox_upper[0],
-                    &rhs_ghostbox_lower[1],
-                    &rhs_ghostbox_upper[1],
-                    &rhs_ghostbox_lower[2],
-                    &rhs_ghostbox_upper[2],
-                    &fillbox_lower[0],
-                    &fillbox_upper[0],
-                    &fillbox_lower[1],
-                    &fillbox_upper[1],
-                    &fillbox_lower[2],
-                    &fillbox_upper[2],
+                    rhs_ghostbox_lo,
+                    rhs_ghostbox_hi,
+                    fillbox_lo,
+                    fillbox_hi,
                     &dt);
             }
 
@@ -1008,5 +948,5 @@ void TimeIntegration::TVDRK3Stage3(
     }  // loop over PatchLevels
 }  // TimeIntegration::TVDRK3Stage3(
 
-} // PQS::math namespace
-} // PQS namespace
+}  // PQS::math namespace
+}  // PQS namespace

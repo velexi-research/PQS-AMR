@@ -26,9 +26,13 @@ c  rhs: right-hand side of time evolution equation
 c
 c  dt: step size
 c
-c  *_gb: index range for ghostbox
+c  *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c  *_gb_hi: upper corner of index range for ghostbox
+c
+c  fb_lo: lower corner of index range for fillbox
+c
+c  fb_hi: upper corner of index range for fillbox
 c
 c  Notes
 c  -----
@@ -38,39 +42,37 @@ c
 c***********************************************************************
       subroutine pqsMath2dRK1Step(
      &  u_next,
-     &  ilo_u_next_gb, ihi_u_next_gb,
-     &  jlo_u_next_gb, jhi_u_next_gb,
+     &  u_next_gb_lo, u_next_gb_hi,
      &  u_current,
-     &  ilo_u_current_gb, ihi_u_current_gb,
-     &  jlo_u_current_gb, jhi_u_current_gb,
+     &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb,
-     &  jlo_rhs_gb, jhi_rhs_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  fb_lo, fb_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_u_next_gb, ihi_u_next_gb
-      integer jlo_u_next_gb, jhi_u_next_gb
-      integer ilo_u_current_gb, ihi_u_current_gb
-      integer jlo_u_current_gb, jhi_u_current_gb
-      integer ilo_rhs_gb, ihi_rhs_gb
-      integer jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ u_next(ilo_u_next_gb:ihi_u_next_gb,
-     &              jlo_u_next_gb:jhi_u_next_gb)
-      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                 jlo_u_current_gb:jhi_u_current_gb)
-      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &           jlo_rhs_gb:jhi_rhs_gb)
+      integer u_next_gb_lo(1:2), u_next_gb_hi(1:2)
+      @REAL@ u_next(u_next_gb_lo(1):u_next_gb_hi(1),
+     &              u_next_gb_lo(2):u_next_gb_hi(2))
+
+      integer u_current_gb_lo(1:2), u_current_gb_hi(1:2)
+      @REAL@ u_current(u_current_gb_lo(1):u_current_gb_hi(1),
+     &                 u_current_gb_lo(2):u_current_gb_hi(2))
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
       integer i, j
       real*8 dt
 
 c     { begin loop over grid
-      do j=jlo_fb,jhi_fb
-        do i=ilo_fb,ihi_fb
+      do j=fb_lo(2),fb_hi(2)
+        do i=fb_lo(1),fb_hi(1)
 
           u_next(i,j) = u_current(i,j) + dt*rhs(i,j)
 
@@ -98,56 +100,56 @@ c  rhs: right-hand side of time evolution equation
 c
 c  dt: step size
 c
-c  *_gb: index range for ghostbox
+c  *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c  *_gb_hi: upper corner of index range for ghostbox
 c
-c  NOTES:
-c   - the first stage of TVD RK2 is identical to a single RK1 step
+c  fb_lo: lower corner of index range for fillbox
+c
+c  fb_hi: upper corner of index range for fillbox
+c
+c  Notes
+c  -----
+c  - the first stage of TVD RK2 is identical to a single RK1 step
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK2Stage1(
      &  u_stage1,
-     &  ilo_u_stage1_gb, ihi_u_stage1_gb,
-     &  jlo_u_stage1_gb, jhi_u_stage1_gb,
+     &  u_stage1_gb_lo, u_stage1_gb_hi,
      &  u_current,
-     &  ilo_u_current_gb, ihi_u_current_gb,
-     &  jlo_u_current_gb, jhi_u_current_gb,
+     &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb,
-     &  jlo_rhs_gb, jhi_rhs_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  fb_lo, fb_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_u_stage1_gb, ihi_u_stage1_gb
-      integer jlo_u_stage1_gb, jhi_u_stage1_gb
-      integer ilo_u_current_gb, ihi_u_current_gb
-      integer jlo_u_current_gb, jhi_u_current_gb
-      integer ilo_rhs_gb, ihi_rhs_gb
-      integer jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &                jlo_u_stage1_gb:jhi_u_stage1_gb)
-      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                 jlo_u_current_gb:jhi_u_current_gb)
-      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &           jlo_rhs_gb:jhi_rhs_gb)
+      integer u_stage1_gb_lo(1:2), u_stage1_gb_hi(1:2)
+      @REAL@ u_stage1(u_stage1_gb_lo(1):u_stage1_gb_hi(1),
+     &                u_stage1_gb_lo(2):u_stage1_gb_hi(2))
+
+      integer u_current_gb_lo(1:2), u_current_gb_hi(1:2)
+      @REAL@ u_current(u_current_gb_lo(1):u_current_gb_hi(1),
+     &                 u_current_gb_lo(2):u_current_gb_hi(2))
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
       real*8 dt
 
 c     use pqsMath2dRK1Step() to compute first stage
       call pqsMath2dRK1Step(u_stage1,
-     &                      ilo_u_stage1_gb, ihi_u_stage1_gb,
-     &                      jlo_u_stage1_gb, jhi_u_stage1_gb,
+     &                      u_stage1_gb_lo, u_stage1_gb_hi,
      &                      u_current,
-     &                      ilo_u_current_gb, ihi_u_current_gb,
-     &                      jlo_u_current_gb, jhi_u_current_gb,
+     &                      u_current_gb_lo, u_current_gb_hi,
      &                      rhs,
-     &                      ilo_rhs_gb, ihi_rhs_gb,
-     &                      jlo_rhs_gb, jhi_rhs_gb,
-     &                      ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &                      rhs_gb_lo, rhs_gb_hi,
+     &                      fb_lo, fb_hi,
      &                      dt)
 
       return
@@ -172,53 +174,54 @@ c  rhs: right-hand side of time evolution equation
 c
 c  dt: step size
 c
-c  *_gb: index range for ghostbox
+c  *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c  *_gb_hi: upper corner of index range for ghostbox
+c
+c  fb_lo: lower corner of index range for fillbox
+c
+c  fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK2Stage2(
      &  u_next,
-     &  ilo_u_next_gb, ihi_u_next_gb,
-     &  jlo_u_next_gb, jhi_u_next_gb,
+     &  u_next_gb_lo, u_next_gb_hi,
      &  u_stage1,
-     &  ilo_u_stage1_gb, ihi_u_stage1_gb,
-     &  jlo_u_stage1_gb, jhi_u_stage1_gb,
+     &  u_stage1_gb_lo, u_stage1_gb_hi,
      &  u_current,
-     &  ilo_u_current_gb, ihi_u_current_gb,
-     &  jlo_u_current_gb, jhi_u_current_gb,
+     &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb,
-     &  jlo_rhs_gb, jhi_rhs_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  fb_lo, fb_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_u_next_gb, ihi_u_next_gb
-      integer jlo_u_next_gb, jhi_u_next_gb
-      integer ilo_u_stage1_gb, ihi_u_stage1_gb
-      integer jlo_u_stage1_gb, jhi_u_stage1_gb
-      integer ilo_u_current_gb, ihi_u_current_gb
-      integer jlo_u_current_gb, jhi_u_current_gb
-      integer ilo_rhs_gb, ihi_rhs_gb
-      integer jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ u_next(ilo_u_next_gb:ihi_u_next_gb,
-     &              jlo_u_next_gb:jhi_u_next_gb)
-      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &                jlo_u_stage1_gb:jhi_u_stage1_gb)
-      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                 jlo_u_current_gb:jhi_u_current_gb)
-      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &               jlo_rhs_gb:jhi_rhs_gb)
+      integer u_next_gb_lo(1:2), u_next_gb_hi(1:2)
+      @REAL@ u_next(u_next_gb_lo(1):u_next_gb_hi(1),
+     &              u_next_gb_lo(2):u_next_gb_hi(2))
+
+      integer u_stage1_gb_lo(1:2), u_stage1_gb_hi(1:2)
+      @REAL@ u_stage1(u_stage1_gb_lo(1):u_stage1_gb_hi(1),
+     &                u_stage1_gb_lo(2):u_stage1_gb_hi(2))
+
+      integer u_current_gb_lo(1:2), u_current_gb_hi(1:2)
+      @REAL@ u_current(u_current_gb_lo(1):u_current_gb_hi(1),
+     &                 u_current_gb_lo(2):u_current_gb_hi(2))
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
       integer i, j
       real*8 dt
 
 c     { begin loop over grid
-      do j=jlo_fb,jhi_fb
-        do i=ilo_fb,ihi_fb
+      do j=fb_lo(2),fb_hi(2)
+        do i=fb_lo(1),fb_hi(1)
 
           u_next(i,j) = 0.5d0*( u_current(i,j)
      &                        + u_stage1(i,j) + dt*rhs(i,j) )
@@ -247,56 +250,56 @@ c  rhs: right-hand side of time evolution equation
 c
 c  dt: step size
 c
-c  *_gb: index range for ghostbox
+c  *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c  *_gb_hi: upper corner of index range for ghostbox
 c
-c  NOTES:
-c   - the first stage of TVD RK3 is identical to a single RK1 step
+c  fb_lo: lower corner of index range for fillbox
+c
+c  fb_hi: upper corner of index range for fillbox
+c
+c  Notes
+c  -----
+c  - the first stage of TVD RK3 is identical to a single RK1 step
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage1(
      &  u_stage1,
-     &  ilo_u_stage1_gb, ihi_u_stage1_gb,
-     &  jlo_u_stage1_gb, jhi_u_stage1_gb,
+     &  u_stage1_gb_lo, u_stage1_gb_hi,
      &  u_current,
-     &  ilo_u_current_gb, ihi_u_current_gb,
-     &  jlo_u_current_gb, jhi_u_current_gb,
+     &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb,
-     &  jlo_rhs_gb, jhi_rhs_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  fb_lo, fb_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_u_stage1_gb, ihi_u_stage1_gb
-      integer jlo_u_stage1_gb, jhi_u_stage1_gb
-      integer ilo_u_current_gb, ihi_u_current_gb
-      integer jlo_u_current_gb, jhi_u_current_gb
-      integer ilo_rhs_gb, ihi_rhs_gb
-      integer jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &                jlo_u_stage1_gb:jhi_u_stage1_gb)
-      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &             jlo_u_current_gb:jhi_u_current_gb)
-      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &           jlo_rhs_gb:jhi_rhs_gb)
+      integer u_stage1_gb_lo(1:2), u_stage1_gb_hi(1:2)
+      @REAL@ u_stage1(u_stage1_gb_lo(1):u_stage1_gb_hi(1),
+     &                u_stage1_gb_lo(2):u_stage1_gb_hi(2))
+
+      integer u_current_gb_lo(1:2), u_current_gb_hi(1:2)
+      @REAL@ u_current(u_current_gb_lo(1):u_current_gb_hi(1),
+     &                 u_current_gb_lo(2):u_current_gb_hi(2))
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
       real*8 dt
 
 c     use pqsMath2dRK1Step() to compute first stage
       call pqsMath2dRK1Step(u_stage1,
-     &                      ilo_u_stage1_gb, ihi_u_stage1_gb,
-     &                      jlo_u_stage1_gb, jhi_u_stage1_gb,
+     &                      u_stage1_gb_lo, u_stage1_gb_hi,
      &                      u_current,
-     &                      ilo_u_current_gb, ihi_u_current_gb,
-     &                      jlo_u_current_gb, jhi_u_current_gb,
+     &                      u_current_gb_lo, u_current_gb_hi,
      &                      rhs,
-     &                      ilo_rhs_gb, ihi_rhs_gb,
-     &                      jlo_rhs_gb, jhi_rhs_gb,
-     &                      ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &                      rhs_gb_lo, rhs_gb_hi,
+     &                      fb_lo, fb_hi,
      &                      dt)
 
       return
@@ -321,53 +324,54 @@ c  rhs: right-hand side of time evolution equation
 c
 c  dt: step size
 c
-c  *_gb: index range for ghostbox
+c  *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c  *_gb_hi: upper corner of index range for ghostbox
+c
+c  fb_lo: lower corner of index range for fillbox
+c
+c  fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage2(
      &  u_stage2,
-     &  ilo_u_stage2_gb, ihi_u_stage2_gb,
-     &  jlo_u_stage2_gb, jhi_u_stage2_gb,
+     &  u_stage2_gb_lo, u_stage2_gb_hi,
      &  u_stage1,
-     &  ilo_u_stage1_gb, ihi_u_stage1_gb,
-     &  jlo_u_stage1_gb, jhi_u_stage1_gb,
+     &  u_stage1_gb_lo, u_stage1_gb_hi,
      &  u_current,
-     &  ilo_u_current_gb, ihi_u_current_gb,
-     &  jlo_u_current_gb, jhi_u_current_gb,
+     &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb,
-     &  jlo_rhs_gb, jhi_rhs_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  fb_lo, fb_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_u_stage2_gb, ihi_u_stage2_gb
-      integer jlo_u_stage2_gb, jhi_u_stage2_gb
-      integer ilo_u_stage1_gb, ihi_u_stage1_gb
-      integer jlo_u_stage1_gb, jhi_u_stage1_gb
-      integer ilo_u_current_gb, ihi_u_current_gb
-      integer jlo_u_current_gb, jhi_u_current_gb
-      integer ilo_rhs_gb, ihi_rhs_gb
-      integer jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ u_stage2(ilo_u_stage2_gb:ihi_u_stage2_gb,
-     &                jlo_u_stage2_gb:jhi_u_stage2_gb)
-      @REAL@ u_stage1(ilo_u_stage1_gb:ihi_u_stage1_gb,
-     &                jlo_u_stage1_gb:jhi_u_stage1_gb)
-      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                 jlo_u_current_gb:jhi_u_current_gb)
-      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &           jlo_rhs_gb:jhi_rhs_gb)
+      integer u_stage2_gb_lo(1:2), u_stage2_gb_hi(1:2)
+      @REAL@ u_stage2(u_stage2_gb_lo(1):u_stage2_gb_hi(1),
+     &                u_stage2_gb_lo(2):u_stage2_gb_hi(2))
+
+      integer u_stage1_gb_lo(1:2), u_stage1_gb_hi(1:2)
+      @REAL@ u_stage1(u_stage1_gb_lo(1):u_stage1_gb_hi(1),
+     &                u_stage1_gb_lo(2):u_stage1_gb_hi(2))
+
+      integer u_current_gb_lo(1:2), u_current_gb_hi(1:2)
+      @REAL@ u_current(u_current_gb_lo(1):u_current_gb_hi(1),
+     &                 u_current_gb_lo(2):u_current_gb_hi(2))
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
       integer i, j
       real*8 dt
 
 c     { begin loop over grid
-      do j=jlo_fb,jhi_fb
-        do i=ilo_fb,ihi_fb
+      do j=fb_lo(2),fb_hi(2)
+        do i=fb_lo(1),fb_hi(1)
 
           u_stage2(i,j) = 0.75d0*u_current(i,j)
      &                  + 0.25d0*( u_stage1(i,j) + dt*rhs(i,j) )
@@ -398,47 +402,48 @@ c  rhs: right-hand side of time evolution equation
 c
 c  dt: step size
 c
-c  *_gb: index range for ghostbox
+c  *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c  *_gb_hi: upper corner of index range for ghostbox
+c
+c  fb_lo: lower corner of index range for fillbox
+c
+c  fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage3(
      &  u_next,
-     &  ilo_u_next_gb, ihi_u_next_gb,
-     &  jlo_u_next_gb, jhi_u_next_gb,
+     &  u_next_gb_lo, u_next_gb_hi,
      &  u_stage2,
-     &  ilo_u_stage2_gb, ihi_u_stage2_gb,
-     &  jlo_u_stage2_gb, jhi_u_stage2_gb,
+     &  u_stage2_gb_lo, u_stage2_gb_hi,
      &  u_current,
-     &  ilo_u_current_gb, ihi_u_current_gb,
-     &  jlo_u_current_gb, jhi_u_current_gb,
+     &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb,
-     &  jlo_rhs_gb, jhi_rhs_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  fb_lo, fb_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_u_next_gb, ihi_u_next_gb
-      integer jlo_u_next_gb, jhi_u_next_gb
-      integer ilo_u_stage2_gb, ihi_u_stage2_gb
-      integer jlo_u_stage2_gb, jhi_u_stage2_gb
-      integer ilo_u_current_gb, ihi_u_current_gb
-      integer jlo_u_current_gb, jhi_u_current_gb
-      integer ilo_rhs_gb, ihi_rhs_gb
-      integer jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ u_next(ilo_u_next_gb:ihi_u_next_gb,
-     &              jlo_u_next_gb:jhi_u_next_gb)
-      @REAL@ u_stage2(ilo_u_stage2_gb:ihi_u_stage2_gb,
-     &                jlo_u_stage2_gb:jhi_u_stage2_gb)
-      @REAL@ u_current(ilo_u_current_gb:ihi_u_current_gb,
-     &                 jlo_u_current_gb:jhi_u_current_gb)
-      @REAL@ rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &           jlo_rhs_gb:jhi_rhs_gb)
+      integer u_next_gb_lo(1:2), u_next_gb_hi(1:2)
+      @REAL@ u_next(u_next_gb_lo(1):u_next_gb_hi(1),
+     &              u_next_gb_lo(2):u_next_gb_hi(2))
+
+      integer u_stage2_gb_lo(1:2), u_stage2_gb_hi(1:2)
+      @REAL@ u_stage2(u_stage2_gb_lo(1):u_stage2_gb_hi(1),
+     &                u_stage2_gb_lo(2):u_stage2_gb_hi(2))
+
+      integer u_current_gb_lo(1:2), u_current_gb_hi(1:2)
+      @REAL@ u_current(u_current_gb_lo(1):u_current_gb_hi(1),
+     &                 u_current_gb_lo(2):u_current_gb_hi(2))
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
       integer i, j
       real*8 dt
       @REAL@ one_third, two_thirds
@@ -446,8 +451,8 @@ c { begin subroutine
       parameter (two_thirds = 2.d0/3.d0)
 
 c     { begin loop over grid
-      do j=jlo_fb,jhi_fb
-        do i=ilo_fb,ihi_fb
+      do j=fb_lo(2),fb_hi(2)
+        do i=fb_lo(1),fb_hi(1)
 
           u_next(i,j) = one_third*u_current(i,j)
      &                + two_thirds*( u_stage2(i,j) + dt*rhs(i,j) )
