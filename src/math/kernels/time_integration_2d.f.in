@@ -7,8 +7,8 @@ c
 c***********************************************************************
 
 c***********************************************************************
-c The TVD Runge-Kutta methods used in these subroutines are discussed
-c in Osher & Fedkiw (2003).
+c The TVD Runge-Kutta methods implemented in these subroutines are
+c discussed in Osher & Fedkiw (2003).
 c***********************************************************************
 
 c***********************************************************************
