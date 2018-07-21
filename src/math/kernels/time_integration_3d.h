@@ -15,8 +15,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_math_kernels_3d_h
-#define INCLUDED_PQS_math_kernels_3d_h
+#ifndef INCLUDED_PQS_math_time_integration_3d_h
+#define INCLUDED_PQS_math_time_integration_3d_h
 
 #include "PQS/PQS_config.h"
 
