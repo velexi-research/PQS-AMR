@@ -1,0 +1,91 @@
+c***********************************************************************
+c
+c  spatial_derivatives_2d.f
+c
+c  F77 routines for spatial derivative subroutines in 2D spatial domains
+c
+c***********************************************************************
+
+c***********************************************************************
+c The ENO/WENO methods implemented in these subroutines are discussed
+c in Osher & Fedkiw (2003).
+c***********************************************************************
+
+c***********************************************************************
+c
+c  Compute the mean curvature from \f$ \nabla \phi \f$ and Hessian of
+c  \phi using the following equation:
+c
+c    curvature = ( phi_xx * phi_y^2
+c                - 2 * phi_xy * phi_x * phi_y
+c                + phi_yy * phi_x^2 )
+c              / |\nabla phi|^3
+c
+c  Parameters
+c  ----------
+c  phi: function to compute mean curvature of
+c
+c  idx: array containing index of grid point to compute curvature at
+c
+c  dx: array containing grid spacing in each coordinate direction
+c
+c  *_gb_lo: lower corner of index range for ghostbox
+c
+c  *_gb_hi: upper corner of index range for ghostbox
+c
+c***********************************************************************
+      @REAL@ function mean_curvature(
+     &  idx,
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  dx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer idx(1:2)
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2))
+
+      @REAL@ dx(1:2)
+
+      @REAL@ phi_x, phi_y
+      @REAL@ phi_xx, phi_xy, phi_yy
+      @REAL@ norm_grad_phi_sq
+      integer i, j
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+
+c     Preparations
+      i = idx(1)
+      j = idx(2)
+
+c     Compute gradients and Hessian
+      phi_x = 0.5 * (phi(i+1,j) - phi(i-1,j)) / dx(1)
+      phi_y = 0.5 * (phi(i,j+1) - phi(i,j-1)) / dx(2)
+
+      phi_xx = (phi(i+1,j) + phi(i-1,j) - 2*phi(i,j)) / dx(1)**2
+      phi_yy = (phi(i,j+1) + phi(i,j-1) - 2*phi(i,j)) / dx(2)**2
+      phi_xy = (phi(i+1,j+1) + phi(i-1,j-1) -
+     &          phi(i-1,j+1) - phi(i+1,j-1)) / (dx(1) * dx(2))
+
+c     Compute mean curvature
+      norm_grad_phi_sq = phi_x*phi_x + phi_y*phi_y
+
+      if (norm_grad_phi_sq .lt. zero_tol) then
+          mean_curvature = 0.d0
+      else
+          mean_curvature = ( phi_xx * phi_y**2
+     &                     - 2 * phi_xy * phi_x * phi_y
+     &                     + phi_yy * phi_x**2 )
+     &                   / norm_grad_phi_sq**(1.5)
+
+      endif
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
