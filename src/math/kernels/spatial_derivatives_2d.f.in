@@ -35,7 +35,7 @@ c
 c *_gb_hi: upper corner of index range for ghostbox
 c
 c***********************************************************************
-      @REAL@ function mean_curvature(
+      @REAL@ function mean_curvature_2d(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  dx,
@@ -77,12 +77,12 @@ c     Compute mean curvature
       norm_grad_phi_sq = phi_x*phi_x + phi_y*phi_y
 
       if (norm_grad_phi_sq .lt. zero_tol) then
-          mean_curvature = 0.d0
+          mean_curvature_2d = 0.d0
       else
-          mean_curvature = ( phi_xx * phi_y**2
-     &                     - 2 * phi_xy * phi_x * phi_y
-     &                     + phi_yy * phi_x**2 )
-     &                   / norm_grad_phi_sq**(1.5)
+          mean_curvature_2d = ( phi_xx * phi_y**2
+     &                        - 2 * phi_xy * phi_x * phi_y
+     &                        + phi_yy * phi_x**2 )
+     &                      / norm_grad_phi_sq**(1.5)
 
       endif
 
