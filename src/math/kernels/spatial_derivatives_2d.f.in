@@ -1,8 +1,9 @@
 c***********************************************************************
 c
-c  spatial_derivatives_2d.f
+c spatial_derivatives_2d.f
 c
-c  F77 routines for spatial derivative subroutines in 2D spatial domains
+c Spatial derivative functions/subroutines for mathematical functions
+c of two space variables
 c
 c***********************************************************************
 
@@ -13,32 +14,32 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Compute the mean curvature from \f$ \nabla \phi \f$ and Hessian of
-c  \phi using the following equation:
+c Compute the mean curvature from \f$ \nabla \phi \f$ and Hessian of
+c \phi using the following equation:
 c
-c    curvature = ( phi_xx * phi_y^2
-c                - 2 * phi_xy * phi_x * phi_y
-c                + phi_yy * phi_x^2 )
-c              / |\nabla phi|^3
+c   curvature = ( phi_xx * phi_y^2
+c               - 2 * phi_xy * phi_x * phi_y
+c               + phi_yy * phi_x^2 )
+c             / |\nabla phi|^3
 c
-c  Parameters
-c  ----------
-c  phi: function to compute mean curvature of
+c Parameters
+c ----------
+c phi: function to compute mean curvature of
 c
-c  idx: array containing index of grid point to compute curvature at
+c dx: array containing grid spacing in each coordinate direction
 c
-c  dx: array containing grid spacing in each coordinate direction
+c idx: array containing index of grid point to compute curvature at
 c
-c  *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghostbox
 c
-c  *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghostbox
 c
 c***********************************************************************
       @REAL@ function mean_curvature(
-     &  idx,
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
-     &  dx)
+     &  dx,
+     &  idx)
 c***********************************************************************
 c { begin subroutine
       implicit none
