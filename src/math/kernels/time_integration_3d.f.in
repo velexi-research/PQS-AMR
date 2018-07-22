@@ -1,8 +1,8 @@
 c***********************************************************************
 c
-c  time_integration_3d.f
+c time_integration_3d.f
 c
-c  F77 routines for time integration subroutines for 3D spatial domains
+c Time integration subroutines for problems in three space dimensions
 c
 c***********************************************************************
 
@@ -13,27 +13,27 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Advance the solution 'u' through a single first-order Runge-Kutta
-c  (i.e, forward Euler) step.
+c Advance the solution 'u' through a single first-order Runge-Kutta
+c (i.e, forward Euler) step.
 c
-c  Parameters
-c  ----------
-c  u_next: [output] u(t + dt)
+c Parameters
+c ----------
+c u_next: [output] u(t + dt)
 c
-c  u_currentrent: u(t)
+c u_currentrent: u(t)
 c
-c  rhs: right-hand side of time evolution equation
+c rhs: right-hand side of time evolution equation
 c
-c  dt: step size
+c dt: step size
 c
-c  *_gb: index range for ghostbox
+c *_gb: index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c *_fb: index range for fillbox
 c
-c  Notes
-c  -----
-c  * This is also the first step of all of the TVD Runge-Kutta schemes
-c    implemented in this library.
+c Notes
+c -----
+c * This is also the first step of all of the TVD Runge-Kutta schemes
+c   implemented in this library.
 c
 c***********************************************************************
       subroutine pqsMath3dRK1Step(
@@ -88,25 +88,25 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Advance the solution 'u' by through first stage of a second-order
-c  TVD Runge-Kutta step.
+c Advance the solution 'u' by through first stage of a second-order
+c TVD Runge-Kutta step.
 c
-c  Parameters
-c  ----------
-c  u_stage1: [output] u_approx(t + dt)
+c Parameters
+c ----------
+c u_stage1: [output] u_approx(t + dt)
 c
-c  u_cur: u(t)
+c u_cur: u(t)
 c
-c  rhs: right-hand side of time evolution equation
+c rhs: right-hand side of time evolution equation
 c
-c  dt: step size
+c dt: step size
 c
-c  *_gb: index range for ghostbox
+c *_gb: index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c *_fb: index range for fillbox
 c
-c  NOTES:
-c   - the first stage of TVD RK2 is identical to a single RK1 step
+c NOTES:
+c  - the first stage of TVD RK2 is identical to a single RK1 step
 c
 c***********************************************************************
       subroutine pqsMath3dTVDRK2Stage1(
@@ -158,24 +158,24 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Advance the solution 'u' by through second stage of a second-order
-c  TVD Runge-Kutta step.
+c Advance the solution 'u' by through second stage of a second-order
+c TVD Runge-Kutta step.
 c
-c  Parameters
-c  ----------
-c  u_next: [output] u(t + dt)
+c Parameters
+c ----------
+c u_next: [output] u(t + dt)
 c
-c  u_stage1: u_approx(t + dt)
+c u_stage1: u_approx(t + dt)
 c
-c  u_cur: u(t)
+c u_cur: u(t)
 c
-c  rhs: right-hand side of time evolution equation
+c rhs: right-hand side of time evolution equation
 c
-c  dt: step size
+c dt: step size
 c
-c  *_gb: index range for ghostbox
+c *_gb: index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c *_fb: index range for fillbox
 c
 c***********************************************************************
       subroutine pqsMath3dTVDRK2Stage2(
@@ -237,25 +237,25 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Advance the solution 'u' by through first stage of a third-order
-c  TVD Runge-Kutta step.
+c Advance the solution 'u' by through first stage of a third-order
+c TVD Runge-Kutta step.
 c
-c  Parameters
-c  ----------
-c  u_stage1: [output] u_approx(t + dt)
+c Parameters
+c ----------
+c u_stage1: [output] u_approx(t + dt)
 c
-c  u_cur: u(t)
+c u_cur: u(t)
 c
-c  rhs: right-hand side of time evolution equation
+c rhs: right-hand side of time evolution equation
 c
-c  dt: step size
+c dt: step size
 c
-c  *_gb: index range for ghostbox
+c *_gb: index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c *_fb: index range for fillbox
 c
-c  NOTES:
-c   - the first stage of TVD RK3 is identical to a single RK1 step
+c NOTES:
+c  - the first stage of TVD RK3 is identical to a single RK1 step
 c
 c***********************************************************************
       subroutine pqsMath3dTVDRK3Stage1(
@@ -307,24 +307,24 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Advance the solution 'u' by through second stage of a third-order
-c  TVD Runge-Kutta step.
+c Advance the solution 'u' by through second stage of a third-order
+c TVD Runge-Kutta step.
 c
-c  Parameters
-c  ----------
-c  u_stage2: [output] u_approx(t + dt/2)
+c Parameters
+c ----------
+c u_stage2: [output] u_approx(t + dt/2)
 c
-c  u_stage1: u_approx(t + dt)
+c u_stage1: u_approx(t + dt)
 c
-c  u_cur: u(t)
+c u_cur: u(t)
 c
-c  rhs: right-hand side of time evolution equation
+c rhs: right-hand side of time evolution equation
 c
-c  dt: step size
+c dt: step size
 c
-c  *_gb: index range for ghostbox
+c *_gb: index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c *_fb: index range for fillbox
 c
 c***********************************************************************
       subroutine pqsMath3dTVDRK3Stage2(
@@ -387,24 +387,24 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c  Advance the solution 'u' by through third stage of a third-order
-c  TVD Runge-Kutta step.
+c Advance the solution 'u' by through third stage of a third-order
+c TVD Runge-Kutta step.
 c
-c  Parameters
-c  ----------
-c  u_next: [output] u(t + dt)
+c Parameters
+c ----------
+c u_next: [output] u(t + dt)
 c
-c  u_stage2: u_approx(t + dt/2)
+c u_stage2: u_approx(t + dt/2)
 c
-c  u_cur: u(t)
+c u_cur: u(t)
 c
-c  rhs: right-hand side of time evolution equation
+c rhs: right-hand side of time evolution equation
 c
-c  dt: step size
+c dt: step size
 c
-c  *_gb: index range for ghostbox
+c *_gb: index range for ghostbox
 c
-c  *_fb: index range for fillbox
+c *_fb: index range for fillbox
 c
 c***********************************************************************
       subroutine pqsMath3dTVDRK3Stage3(
