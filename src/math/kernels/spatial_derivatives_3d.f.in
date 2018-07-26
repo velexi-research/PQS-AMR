@@ -1,0 +1,182 @@
+c***********************************************************************
+c
+c spatial_derivatives_3d.f
+c
+c Spatial derivative functions/subroutines for mathematical functions
+c of three space variables
+c
+c***********************************************************************
+
+c***********************************************************************
+c The ENO/WENO methods implemented in these subroutines are discussed
+c in Osher & Fedkiw (2003).
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute the forward (plus) and backward (minus) ENO1 difference
+c approximations for the gradient of phi. For instance, the ENO1
+c difference approximation in the x-direction are given by
+c
+c   phi_x_plus = ( phi(i+1,j,k) - phi(i,j,k) ) / dx(1)
+c
+c   phi_x_minus = ( phi(i,j,k) - phi(i-1,j,k) ) / dx(1)
+c
+c Parameters
+c ----------
+c grad_phi_*_plus: [output] components of grad(phi) in plus direction
+c
+c grad_phi_*_minus: [output] components of grad(phi) in minus direction
+c
+c phi: function to compute gradient of
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c idx: array containing index of grid point to compute curvature at
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c***********************************************************************
+      subroutine computeGradENO1(
+     &  grad_phi_x_plus, grad_phi_x_minus,
+     &  grad_phi_y_plus, grad_phi_y_minus,
+     &  phi_gb_lo, phi_gb_hi,
+     &  dx,
+     &  idx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer idx(1:3)
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      @REAL@ dx(1:3)
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+      @REAL@ grad_phi_z_plus, grad_phi_z_minus
+      integer i, j, k
+
+c     Preparations
+      i = idx(1)
+      j = idx(2)
+      k = idx(3)
+
+c     Compute gradients
+      grad_phi_x_plus = (phi(i+1,j,k) - phi(i,j,k)) / dx(1)
+      grad_phi_x_minus = (phi(i,j,k) - phi(i-1,j),k) / dx(1)
+
+      grad_phi_y_plus = (phi(i,j+1,k) - phi(i,j,k)) / dx(2)
+      grad_phi_y_minus = (phi(i,j,k) - phi(i,j-1,k)) / dx(2)
+
+      grad_phi_z_plus = (phi(i,j,k+1) - phi(i,j,k)) / dx(3)
+      grad_phi_z_minus = (phi(i,j,k) - phi(i,j,k-1)) / dx(3)
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute the mean curvature of phi.
+c
+c   curvature = ( phi_xx * phi_y^2
+c               - 2 * phi_xy * phi_x * phi_y
+c               + phi_yy * phi_x^2
+c               + phi_xx * phi_z^2
+c               - 2 * phi_xz * phi_x * phi_z
+c               + phi_zz * phi_x^2
+c               + phi_yy * phi_z^2
+c               - 2 * phi_yz * phi_y * phi_z
+c               + phi_zz * phi_y^2 )
+c             / |\nabla phi|^3
+c
+c Parameters
+c ----------
+c phi: function to compute mean curvature of
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c idx: array containing index of grid point to compute curvature at
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c***********************************************************************
+      @REAL@ function pqsMath3dMeanCurvature(
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  dx,
+     &  idx)
+c***********************************************************************
+c { begin function
+      implicit none
+
+      integer idx(1:3)
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      @REAL@ dx(1:3)
+
+      @REAL@ phi_x, phi_y, phi_z
+      @REAL@ phi_xx, phi_xy, phi_xz, phi_yy, phi_yz, phi_zz
+      @REAL@ norm_grad_phi_sq
+      integer i, j, k
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+
+c     Preparations
+      i = idx(1)
+      j = idx(2)
+      k = idx(3)
+
+c     Compute gradients and Hessian
+      phi_x = 0.5 * (phi(i+1,j,k) - phi(i-1,j,k)) / dx(1)
+      phi_y = 0.5 * (phi(i,j+1,k) - phi(i,j-1,k)) / dx(2)
+      phi_z = 0.5 * (phi(i,j,k+1) - phi(i,j,k-1)) / dx(3)
+
+      phi_xx = (phi(i+1,j,k) + phi(i-1,j,k) - 2*phi(i,j,k)) / dx(1)**2
+      phi_yy = (phi(i,j+1,k) + phi(i,j-1,k) - 2*phi(i,j,k)) / dx(2)**2
+      phi_zz = (phi(i,j+1,k) + phi(i,j-1,k) - 2*phi(i,j,k)) / dx(3)**2
+
+      phi_xy = ( phi(i+1,j+1,k) - phi(i-1,j+1,k)
+     &         - phi(i+1,j-1,k) + phi(i-1,j-1,k) ) / (dx(1) * dx(2))
+      phi_xz = ( phi(i+1,j,k+1) - phi(i-1,j,k+1)
+     &         - phi(i+1,j,k-1) + phi(i-1,j,k-1) ) / (dx(1) * dx(3))
+      phi_yz = ( phi(i,j+1,k+1) - phi(i,j-1,k+1)
+     &         - phi(i,j+1,k-1) + phi(i,j-1,k-1) ) / (dx(2) * dx(3))
+
+c     Compute mean curvature
+      norm_grad_phi_sq = phi_x**2 + phi_y**2 + phi_z**2
+
+      if (norm_grad_phi_sq .lt. zero_tol) then
+          pqsMath3dMeanCurvature = 0.d0
+      else
+          pqsMath3dMeanCurvature = ( phi_xx * phi_y**2
+     &                             - 2 * phi_xy * phi_x * phi_y
+     &                             + phi_yy * phi_x**2
+     &                             + phi_xx * phi_z**2
+     &                             - 2 * phi_xz * phi_x * phi_z
+     &                             + phi_zz * phi_x**2
+     &                             + phi_yy * phi_z**2
+     &                             - 2 * phi_yz * phi_y * phi_z
+     &                             + phi_zz * phi_y**2 )
+     &                           / norm_grad_phi_sq**(1.5)
+
+      endif
+
+      return
+      end
+c } end function
+c***********************************************************************
