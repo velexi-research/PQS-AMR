@@ -101,17 +101,11 @@ void TimeIntegration::RK1Step(
 
             // --- Get pointers to data and index space ranges
 
+            // u_next
             boost::shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
                 BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
                     patch->getPatchData(u_next_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
-                    patch->getPatchData(u_current_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
-                    patch->getPatchData(rhs_id));
 
-            // ghost box
             hier::Box u_next_ghostbox = u_next_data->getGhostBox();
             const hier::IntVector u_next_ghostbox_lower =
                 u_next_ghostbox.lower();
@@ -121,6 +115,13 @@ void TimeIntegration::RK1Step(
                                       u_next_ghostbox_lower);
             PQS_INT_VECT_TO_INT_ARRAY(u_next_ghostbox_hi,
                                       u_next_ghostbox_upper);
+
+            PQS_REAL* u_next = u_next_data->getPointer();
+
+            // u_current
+            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+                    patch->getPatchData(u_current_id));
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
             const hier::IntVector u_current_ghostbox_lower =
@@ -132,6 +133,13 @@ void TimeIntegration::RK1Step(
             PQS_INT_VECT_TO_INT_ARRAY(u_current_ghostbox_hi,
                                       u_current_ghostbox_upper);
 
+            PQS_REAL* u_current = u_current_data->getPointer();
+
+            // RHS
+            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+                    patch->getPatchData(rhs_id));
+
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
             const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
             const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
@@ -139,6 +147,8 @@ void TimeIntegration::RK1Step(
                                       rhs_ghostbox_lower);
             PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
                                       rhs_ghostbox_upper);
+
+            PQS_REAL* rhs = rhs_data->getPointer();
 
             // fill box
             hier::Box fillbox = rhs_data->getBox();
@@ -148,11 +158,6 @@ void TimeIntegration::RK1Step(
                                       fillbox_lower);
             PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi,
                                       fillbox_upper);
-
-            // pointers to data
-            PQS_REAL* u_next = u_next_data->getPointer();
-            PQS_REAL* u_current = u_current_data->getPointer();
-            PQS_REAL* rhs = rhs_data->getPointer();
 
             if (dim == 2) {
                 PQS_MATH_2D_RK1_STEP(
