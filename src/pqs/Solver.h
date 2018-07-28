@@ -410,6 +410,8 @@ protected:
     // level set function that defines steady-state fluid-fluid interface
     // before increment of the interface curvature (which is related to
     // changes in the pressure difference across the fluid-fluid interface)
+    //
+    // Note: the non-wetting phase is defined by the region where phi < 0
     int d_phi_pqs_id;  // depth = 1
 
     // level set function that defines fluid-fluid interface during evolution
