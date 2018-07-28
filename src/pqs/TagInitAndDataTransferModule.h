@@ -169,18 +169,18 @@ public:
      *      implements algorithm for initializing level set function that
      *      defines fluid-fluid interface
      *
-     * phi_pqs_id: PatchData ID of the level set function for the
+     * phi_pqs_id: PatchData ID for the level set function for the
      *      fluid-fluid interface (at each PQS step)
      *
-     * phi_lsm_current_id: PatchData ID of the level set function for the
+     * phi_lsm_current_id: PatchData ID for the level set function for the
      *      fluid-fluid interface (before each time step during evolution
      *      of the level set function)
      *
-     * phi_lsm_next_id: PatchData ID of the level set function for the
+     * phi_lsm_next_id: PatchData ID for the level set function for the
      *      fluid-fluid interface (during and after each time step during
      *      evolution of the level set function)
      *
-     * psi_id: PatchData ID of the level set function for the solid-pore
+     * psi_id: PatchData ID for the level set function for the solid-pore
      *      interface
      *
      * max_stencil_width: maximum stencil width required for computations
