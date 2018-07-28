@@ -1,132 +1,420 @@
 c***********************************************************************
 c
-c  kernels_2d.f
+c kernels_2d.f
 c
-c  F77 routines for TODO
+c Subroutines for PQS models
 c
 c***********************************************************************
 
 c***********************************************************************
 c
-c  pqs2dComputeDn() computes the n-th undivided differences in the
-c  specified direction given the (n-1)-th undivided differences.  The 
-c  undivided differences in cells with insufficient data is set to a 
-c  large number.
+c Compute RHS and maximum stable time step (on box) for Slightly
+c Compressible Model with zero contact angle.
 c
-c  Arguments:
-c    Dn (out):           n-th undivided differences 
-c    Dn_minus_one (in):  (n-1)-th undivided differences 
-c    n (in):             order of undivided differences to compute
-c    *_gb (in):          index range for ghostbox
-c    *_fb (in):          index range for fillbox
+c Parameters
+c ----------
+c max_stable_dt: [output] maximum stable time step for explicit time
+c     integration schemes
 c
-c  NOTES:
-c   - The index ranges for all ghostboxes and the fillbox should 
-c     correspond to the index range for cell-centered data.
-c   - The undivided differences for odd n are face-centered (i.e.
-c     indices are of the form (i+1/2)).  In this situation, the array
-c     index corresponding to the (i+1/2)-th undivided difference is
-c     i (i.e. the index shifted down to the nearest integer index). 
-c   - When n is odd, Dn is computed on the faces of the grid cells
-c     specified by the fillbox indices.  The index range for the 
-c     undivided differences to be computed is ilo_fb to (ihi_fb+1); 
-c     that is, the number of undivided difference computed is equal
-c     to the number of faces associated with the fillbox grid cells
-c     (ihi_fb - ilo_fb + 2).
-c   - The ghostbox for Dn_minus_one MUST be at least one ghostcell width
-c     larger than the fillbox.
+c rhs: [output] right-hand side of level set evolution equation for
+c     Slightly Compressible Model
+c
+c phi: level set function that defines fluid-fluid interface
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c volume: volume of non-wetting phase
+c
+c target_volume: target volume for non-wetting phase
+c
+c reference_pressure: reference pressure of non-wetting phase
+c
+c bulk_modulus: bulk modulus of non-wetting phase
+c
+c surface_tension: surface tension of interface between wetting
+c     and non-wetting phases
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c fb_lo: lower corner of index range for fillbox
+c
+c fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
-      subroutine pqs2dComputeDn(
-     &  Dn,
-     &  ilo_Dn_gb, ihi_Dn_gb, 
-     &  jlo_Dn_gb, jhi_Dn_gb,
-     &  Dn_minus_one,
-     &  ilo_Dn_minus_one_gb, ihi_Dn_minus_one_gb, 
-     &  jlo_Dn_minus_one_gb, jhi_Dn_minus_one_gb,
-     &  ilo_fb, ihi_fb, jlo_fb, jhi_fb,
-     &  n,
-     &  dir)
+      subroutine pqs2dCompressibleModelZeroContactAngleRHS(
+     &  max_stable_dt,
+     &  rhs,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  fb_lo, fb_hi,
+     &  dx,
+     &  volume,
+     &  target_volume,
+     &  reference_pressure,
+     &  bulk_modulus,
+     &  surface_tension)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-c     _gb refers to ghostbox 
-c     _fb refers to fillbox 
-      integer ilo_Dn_gb, ihi_Dn_gb, jlo_Dn_gb, jhi_Dn_gb
-      integer ilo_Dn_minus_one_gb, ihi_Dn_minus_one_gb
-      integer jlo_Dn_minus_one_gb, jhi_Dn_minus_one_gb
-      integer ilo_fb, ihi_fb, jlo_fb, jhi_fb
-      @REAL@ Dn(ilo_Dn_gb:ihi_Dn_gb,jlo_Dn_gb:jhi_Dn_gb)
-      @REAL@ Dn_minus_one(ilo_Dn_minus_one_gb:ihi_Dn_minus_one_gb,
-     &                    jlo_Dn_minus_one_gb:jhi_Dn_minus_one_gb)
-      integer n
-      integer dir 
-      integer i,j
-      integer offset(1:2)
-      integer fillbox_shift(1:2)
-      real sign_multiplier
-      real big
-      parameter (big=1.d10)
+      real*8 max_stable_dt
 
-c     calculate offsets, fillbox shifts, and sign_multiplier used 
-c     when computing undivided differences.
-c     NOTE:  even and odd undivided differences are taken in
-c            opposite order because of the discrepancy between
-c            face- and cell-centered data.  the sign discrepancy 
-c            is taken into account by sign_multiplier
-      do i=1,2
-        offset(i) = 0
-        fillbox_shift(i) = 0
-      enddo
-      if (mod(n,2).eq.1) then
-        offset(dir) = 1
-        sign_multiplier = 1.0
-        fillbox_shift(dir) = 1
-      else
-        offset(dir) = -1
-        sign_multiplier = -1.0
-        fillbox_shift(dir) = 0
-      endif
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@  rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &            rhs_gb_lo(2):rhs_gb_hi(2))
 
-c     loop over cells with sufficient data {
-      do j=jlo_fb,jhi_fb+fillbox_shift(2)
-        do i=ilo_fb,ihi_fb+fillbox_shift(1)
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@  phi(phi_gb_lo(1):phi_gb_hi(1),
+     &            phi_gb_lo(2):phi_gb_hi(2))
 
-          Dn(i,j) = sign_multiplier
-     &            * ( Dn_minus_one(i,j)
-     &              - Dn_minus_one(i-offset(1),j-offset(2)))
+      integer fb_lo(1:2), fb_hi(1:2)
+      @REAL@ dx(1:2)
+
+      real*8 volume
+      real*8 target_volume
+      real*8 reference_pressure
+      real*8 bulk_modulus
+      real*8 surface_tension
+
+      integer i, j
+      integer idx(1:2)
+
+      @REAL@ V_n_pressure
+      @REAL@ mean_curvature, pqsMath2dMeanCurvature
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+      @REAL@ grad_phi_x_centered, grad_phi_y_centered
+      @REAL@ grad_phi_x_max, grad_phi_y_max
+      @REAL@ norm_grad_phi
+
+      real*8 stable_dt_local, stable_inv_dt_local
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+
+c     Preparations
+
+      max_stable_dt = 1.0d37
+
+c     Loop over grid
+      do j=fb_lo(2), fb_hi(2)
+        do i=fb_lo(1), fb_hi(1)
+
+c         --- Initialize rhs value
+
+          rhs(i,j) = 0.0d0
+
+c         --- Compute hyperbolic part of RHS
+
+c         Compute pressure-driven component of normal velocity
+          V_n_pressure =
+     &        reference_pressure
+     &      * exp(bulk_modulus * (1 - volume/target_volume))
+
+c         Compute forward and backward approximations of grad(phi)
+          idx(1) = i
+          idx(2) = j
+          call pqsMath2dComputeGradENO1(
+     &           grad_phi_x_plus, grad_phi_x_minus,
+     &           grad_phi_y_plus, grad_phi_y_minus,
+     &           phi,
+     &           phi_gb_lo, phi_gb_hi,
+     &           dx,
+     &           idx)
+
+c         Use Godunov's method to compute hyperbolic part of RHS
+          if (abs(V_n_pressure) .gt. zero_tol) then
+            if (V_n_pressure .gt. 0.d0) then
+              norm_grad_phi = sqrt(
+     &            max(max(grad_phi_x_minus,0.d0)**2,
+     &                min(grad_phi_x_plus,0.d0)**2)
+     &          + max(max(grad_phi_y_minus,0.d0)**2,
+     &                min(grad_phi_y_plus,0.d0)**2))
+            else
+               norm_grad_phi = sqrt(
+     &             max(min(grad_phi_x_minus,0.d0)**2,
+     &                 max(grad_phi_x_plus,0.d0)**2)
+     &           + max(min(grad_phi_y_minus,0.d0)**2,
+     &                 max(grad_phi_y_plus,0.d0)**2))
+            endif
+
+            rhs(i,j) = rhs(i,j) - V_n_pressure * norm_grad_phi
+
+          endif
+
+c         --- Compute contribution to stable dt from hyperbolic part of RHS
+
+          grad_phi_x_max = max(abs(grad_phi_x_plus),
+     &                         abs(grad_phi_x_minus))
+          grad_phi_y_max = max(abs(grad_phi_y_plus),
+     &                         abs(grad_phi_y_minus))
+
+c         Note: dx term included to avoid division by zero
+c               in computation of stable_inv_dt_local
+          norm_grad_phi = sqrt( grad_phi_x_max**2
+     &                        + grad_phi_y_max**2
+     &                        + max(dx(1), dx(2))**2 )
+
+          stable_inv_dt_local =
+     &        abs(V_n_pressure * grad_phi_x_max / norm_grad_phi) / dx(1)
+     &      + abs(V_n_pressure * grad_phi_y_max / norm_grad_phi) / dx(2)
+
+c         --- Compute parabolic part of normal velocity terms of RHS
+
+c         Compute mean curvature
+          mean_curvature =
+     &        pqsMath2dMeanCurvature(phi, phi_gb_lo, phi_gb_hi,
+     &                               dx, idx)
+
+          grad_phi_x_centered = 0.5 * (phi(i+1,j) - phi(i-1,j)) / dx(1)
+          grad_phi_y_centered = 0.5 * (phi(i,j+1) - phi(i,j-1)) / dx(2)
+          norm_grad_phi = sqrt( grad_phi_x_centered**2
+     &                        + grad_phi_y_centered**2 )
+
+c         Compute contribution to RHS
+          rhs(i,j) = rhs(i,j)
+     &             + surface_tension * mean_curvature * norm_grad_phi
+
+c         Compute contribution to stable dt from parabolic part of RHS
+          stable_inv_dt_local = stable_inv_dt_local
+     &                        + 2 * surface_tension / dx(1)**2
+     &                        + 2 * surface_tension / dx(2)**2
+
+c         --- Update maximum stable dt
+
+          stable_dt_local = 1.0d0 / stable_inv_dt_local
+          if (max_stable_dt .gt. stable_dt_local) then
+            max_stable_dt = stable_dt_local
+          endif
 
         enddo
       enddo
-c     } end loop over grid 
+c     } end loop over grid
 
-c     set undivided differences for cells with insufficient data to big {
-      do j=jlo_Dn_gb,jhi_Dn_gb
-        do i=ilo_Dn_gb,ilo_fb-1
-          Dn(i,j) = big
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute RHS and maximum stable time step (on box) for Slightly
+c Compressible Model with zero contact angle.
+c
+c Parameters
+c ----------
+c max_stable_dt: [output] maximum stable time step for explicit time
+c     integration schemes
+c
+c rhs: [output] right-hand side of level set evolution equation for
+c     Slightly Compressible Model
+c
+c phi: level set function that defines fluid-fluid interface
+c
+c psi: level set function that defines solid-pore interface
+c
+c grad_psi: gradient of level set function that defines solid-pore
+c     interface
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c volume: volume of non-wetting phase
+c
+c target_volume: target volume for non-wetting phase
+c
+c reference_pressure: reference pressure of non-wetting phase
+c
+c bulk_modulus: bulk modulus of non-wetting phase
+c
+c surface_tension: surface tension of interface between wetting
+c     and non-wetting phases
+c
+c contact_angle: contact angle between solid-pore interface and
+c     the fluid-fluid interface
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c fb_lo: lower corner of index range for fillbox
+c
+c fb_hi: upper corner of index range for fillbox
+c
+c
+c***********************************************************************
+      subroutine pqs2dCompressibleModelNonzeroContactAngleRHS(
+     &  max_stable_dt,
+     &  rhs,
+     &  rhs_gb_lo, rhs_gb_hi,
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  psi,
+     &  psi_gb_lo, psi_gb_hi,
+     &  grad_psi_x, grad_psi_y,
+     &  grad_psi_gb_lo, grad_psi_gb_hi,
+     &  fb_lo, fb_hi,
+     &  dx,
+     &  volume,
+     &  target_volume,
+     &  reference_pressure,
+     &  bulk_modulus,
+     &  surface_tension,
+     &  contact_angle)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      real*8 max_stable_dt
+
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@  rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &            rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@  phi(phi_gb_lo(1):phi_gb_hi(1),
+     &            phi_gb_lo(2):phi_gb_hi(2))
+
+      integer psi_gb_lo(1:2), psi_gb_hi(1:2)
+      @REAL@  psi(psi_gb_lo(1):psi_gb_hi(1),
+     &            psi_gb_lo(2):psi_gb_hi(2))
+
+      integer grad_psi_gb_lo(1:2), grad_psi_gb_hi(1:2)
+      @REAL@  grad_psi_x(grad_psi_gb_lo(1):grad_psi_gb_hi(1),
+     &                   grad_psi_gb_lo(2):grad_psi_gb_hi(2))
+      @REAL@  grad_psi_y(grad_psi_gb_lo(1):grad_psi_gb_hi(1),
+     &                   grad_psi_gb_lo(2):grad_psi_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+      @REAL@ dx(1:2)
+
+      real*8 volume
+      real*8 target_volume
+      real*8 reference_pressure
+      real*8 bulk_modulus
+      real*8 surface_tension
+      real*8 contact_angle
+
+      integer i, j
+      integer idx(1:2)
+
+      @REAL@ V_x_contact_angle
+      @REAL@ V_y_contact_angle
+      @REAL@ V_n_pressure
+      @REAL@ mean_curvature, pqsMath2dMeanCurvature
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+      @REAL@ grad_phi_x_centered, grad_phi_y_centered
+      @REAL@ grad_phi_x_max, grad_phi_y_max
+      @REAL@ norm_grad_phi
+
+      real*8 stable_dt_local, stable_inv_dt_local
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+
+c     Preparations
+
+      max_stable_dt = 1.0d37
+
+c     Loop over grid
+      do j=fb_lo(2), fb_hi(2)
+        do i=fb_lo(1), fb_hi(1)
+
+c         --- Initialize rhs value
+
+          rhs(i,j) = 0.0d0
+
+c         --- Compute hyperbolic part of RHS
+
+c         Compute pressure-driven component of normal velocity
+          V_n_pressure =
+     &        reference_pressure
+     &      * exp(bulk_modulus * (1 - volume/target_volume))
+
+c         Compute contact angle component of advective velocity
+c         TODO
+          V_x_contact_angle = 0.0d0
+          V_y_contact_angle = 0.0d0
+
+c         Compute forward and backward approximations of grad(phi)
+          idx(1) = i
+          idx(2) = j
+          call pqsMath2dComputeGradENO1(
+     &           grad_phi_x_plus, grad_phi_x_minus,
+     &           grad_phi_y_plus, grad_phi_y_minus,
+     &           phi,
+     &           phi_gb_lo, phi_gb_hi,
+     &           dx,
+     &           idx)
+
+c         Use Local Lax-Friedrichs to compute hyperbolic part of RHS
+c
+c         Note: the formulas for the artificial dissipation coefficients
+c               _assume_ that phi is approximately a signed distance
+c               function to avoid the need for non-local searches over
+c               the grid. For details, refer to "Level Set Methods and
+c               Dynamic Implicit Surfaces" by Osher & Fedkiw (2003).
+
+c         TODO: implement
+          rhs(i,j) = rhs(i,j) + 2
+
+c         --- Compute contribution to stable dt from hyperbolic part of RHS
+
+          grad_phi_x_max = max(abs(grad_phi_x_plus),
+     &                         abs(grad_phi_x_minus))
+          grad_phi_y_max = max(abs(grad_phi_y_plus),
+     &                         abs(grad_phi_y_minus))
+
+c         Note: dx term included to avoid division by zero
+c               in computation of stable_inv_dt_local
+          norm_grad_phi = sqrt( grad_phi_x_max**2
+     &                        + grad_phi_y_max**2
+     &                        + max(dx(1), dx(2))**2 )
+
+          stable_inv_dt_local =
+     &        abs( V_x_contact_angle
+     &           + V_n_pressure * grad_phi_x_max / norm_grad_phi )
+     &        / dx(1)
+     &      + abs( V_y_contact_angle
+     &           + V_n_pressure * grad_phi_y_max / norm_grad_phi )
+     &        / dx(2)
+
+c         --- Compute parabolic part of normal velocity terms of RHS
+
+c         Compute mean curvature
+          mean_curvature =
+     &        pqsMath2dMeanCurvature(phi, phi_gb_lo, phi_gb_hi,
+     &                               dx, idx)
+
+          grad_phi_x_centered = 0.5 * (phi(i+1,j) - phi(i-1,j)) / dx(1)
+          grad_phi_y_centered = 0.5 * (phi(i,j+1) - phi(i,j-1)) / dx(2)
+          norm_grad_phi = sqrt( grad_phi_x_centered**2
+     &                        + grad_phi_y_centered**2 )
+
+c         Compute contribution to RHS
+          rhs(i,j) = rhs(i,j)
+     &             + surface_tension * mean_curvature * norm_grad_phi
+
+c         Compute contribution to stable dt from parabolic part of RHS
+          stable_inv_dt_local = stable_inv_dt_local
+     &                        + 2 * surface_tension / dx(1)**2
+     &                        + 2 * surface_tension / dx(2)**2
+
+c         --- Update maximum stable dt
+
+          stable_dt_local = 1.0d0 / stable_inv_dt_local
+          if (max_stable_dt .gt. stable_dt_local) then
+            max_stable_dt = stable_dt_local
+          endif
+
         enddo
       enddo
-
-      do j=jlo_Dn_gb,jhi_Dn_gb
-        do i=ihi_fb+fillbox_shift(1)+1,ihi_Dn_gb
-          Dn(i,j) = big
-        enddo
-      enddo
-
-      do j=jlo_Dn_gb,jlo_fb-1
-        do i=ilo_Dn_gb,ihi_Dn_gb
-          Dn(i,j) = big
-        enddo
-      enddo
-
-      do j=jhi_fb+fillbox_shift(2)+1,jhi_Dn_gb
-        do i=ilo_Dn_gb,ihi_Dn_gb
-          Dn(i,j) = big
-        enddo
-      enddo
-
-c     } end setting big value for cells near boundary of ghostcell box
+c     } end loop over grid
 
       return
       end

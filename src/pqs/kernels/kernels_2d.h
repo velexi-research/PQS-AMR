@@ -24,24 +24,66 @@ extern "C" {
 
 /* Link between C/C++ and Fortran function names
  *
- *      name in                          name in
- *      C/C++ code                       Fortran code
- *      ----------                       ------------
+ *      name in                name in
+ *      C/C++ code             Fortran code
+ *      ----------             ------------
  */
-#define PQS_2D_COMPUTE_DN                pqs2dcomputedn_
+#define PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS \
+                               pqs2dcompressiblemodelzerocontactanglerhs_
+#define PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
+                               pqs2dcompressiblemodelnonzerocontactanglerhs_
+#define PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS \
+                               pqs2dcurvaturemodelzerocontactanglerhs_
+#define PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
+                               pqs2dcurvaturemodelnonzerocontactanglerhs_
 
 /*!
  * TODO
  */
-void PQS_2D_COMPUTE_DN(
-   const int&, const double *, const double *, const double *,
-   const int&, const int&,
-   const int&, const int&,
-   const int&,
-   const int&,
-   double *,
-   const int&,
-   const double *, const double *);
+void PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+    const double *max_stable_dt,
+    const PQS_REAL *rhs,
+    const int *rhs_gb_lo,
+    const int *rhs_gb_hi,
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const int *fb_lo,
+    const int *fb_hi,
+    const PQS_REAL *dx,
+    const double *volume,
+    const double *target_volume,
+    const double *reference_pressure,
+    const double *bulk_modulus,
+    const double *surface_tension);
+
+/*!
+ * TODO
+ */
+void PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+    const double *max_stable_dt,
+    const PQS_REAL *rhs,
+    const int *rhs_gb_lo,
+    const int *rhs_gb_hi,
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const PQS_REAL *psi,
+    const int *psi_gb_lo,
+    const int *psi_gb_hi,
+    const PQS_REAL *grad_psi_x,
+    const PQS_REAL *grad_psi_y,
+    const int *grad_psi_gb_lo,
+    const int *grad_psi_gb_hi,
+    const int *fb_lo,
+    const int *fb_hi,
+    const PQS_REAL *dx,
+    const double *volume,
+    const double *target_volume,
+    const double *reference_pressure,
+    const double *bulk_modulus,
+    const double *surface_tension,
+    const double *contact_angle);
 
 #ifdef __cplusplus
 }
