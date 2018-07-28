@@ -8,7 +8,8 @@ c***********************************************************************
 
 c***********************************************************************
 c The TVD Runge-Kutta methods implemented in these subroutines are
-c discussed in Osher & Fedkiw (2003).
+c discussed in "Level Set Methods and Dynamic Implicit Surfaces" by
+c Osher & Fedkiw (2003).
 c***********************************************************************
 
 c***********************************************************************

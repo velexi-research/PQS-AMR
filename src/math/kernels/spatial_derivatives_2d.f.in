@@ -9,7 +9,8 @@ c***********************************************************************
 
 c***********************************************************************
 c The ENO/WENO methods implemented in these subroutines are discussed
-c in Osher & Fedkiw (2003).
+c in "Level Set Methods and Dynamic Implicit Surfaces" by Osher &
+c Fedkiw (2003).
 c***********************************************************************
 
 c***********************************************************************
@@ -42,6 +43,7 @@ c***********************************************************************
       subroutine pqsMath2dComputeGradENO1(
      &  grad_phi_x_plus, grad_phi_x_minus,
      &  grad_phi_y_plus, grad_phi_y_minus,
+     &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  dx,
      &  idx)
