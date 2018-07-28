@@ -57,7 +57,7 @@ c { begin subroutine
       @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
      &           phi_gb_lo(2):phi_gb_hi(2))
 
-      @REAL@ dx(1:2)
+      real*8 dx(1:2)
 
       @REAL@ grad_phi_x_plus, grad_phi_x_minus
       @REAL@ grad_phi_y_plus, grad_phi_y_minus
@@ -116,7 +116,7 @@ c { begin function
       @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
      &           phi_gb_lo(2):phi_gb_hi(2))
 
-      @REAL@ dx(1:2)
+      real*8 dx(1:2)
 
       @REAL@ phi_x, phi_y
       @REAL@ phi_xx, phi_xy, phi_yy
