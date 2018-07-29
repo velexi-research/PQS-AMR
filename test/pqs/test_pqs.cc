@@ -54,8 +54,15 @@ using namespace PQS;
 namespace pqsTests {
 
 // Test case: validate structure of configuration database
-TEST_F(pqsTests, test_config_db_structure)
+TEST_F(pqsTest, test_config_db_structure)
 {
+    // Configure and initialize geometry and PatchHierarchy
+    int num_dimensions = 3;
+    pqsTest::initializeGeometryAndHierarchy(config_db,
+                                            grid_geometry,
+                                            patch_hierarchy,
+                                            num_dimensions);
+
     // Sub-databases
     EXPECT_TRUE(config_db->isDatabase("PQS"));
     EXPECT_TRUE(config_db->isDatabase("SAMRAI"));
@@ -85,9 +92,16 @@ TEST_F(pqsTests, test_config_db_structure)
 }
 
 // Test case: test constructor for PQS::pqs::Solver class with PatchHierarchy
-TEST_F(pqsTests, test_Solver_Solver_with_patch_hierarchy)
+TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
 {
     // --- Preparations
+
+    // Configure and initialize geometry and PatchHierarchy
+    int num_dimensions = 3;
+    pqsTest::initializeGeometryAndHierarchy(config_db,
+                                            grid_geometry,
+                                            patch_hierarchy,
+                                            num_dimensions);
 
     // Configuration databases
     boost::shared_ptr<tbox::Database> pqs_config_db =
@@ -129,9 +143,16 @@ TEST_F(pqsTests, test_Solver_Solver_with_patch_hierarchy)
 }
 
 // Test case: test constructor for PQS::pqs::Solver class without PatchHierarchy
-TEST_F(pqsTests, test_Solver_Solver_without_patch_hierarchy)
+TEST_F(pqsTest, test_Solver_Solver_without_patch_hierarchy)
 {
     // --- Preparations
+
+    // Configure and initialize geometry and PatchHierarchy
+    int num_dimensions = 3;
+    pqsTest::initializeGeometryAndHierarchy(config_db,
+                                            grid_geometry,
+                                            patch_hierarchy,
+                                            num_dimensions);
 
     // Configuration databases
     boost::shared_ptr<tbox::Database> pqs_config_db =
@@ -168,57 +189,6 @@ TEST_F(pqsTests, test_Solver_Solver_without_patch_hierarchy)
     int expected_num_patch_levels = samrai_config_db->
         getDatabase("PatchHierarchy")->getInteger("max_levels");
     EXPECT_EQ(patch_hierarchy->getNumberOfLevels(), expected_num_patch_levels);
-}
-
-// Test case: PQS::pqs::Solver::equilibrateInterface()
-TEST_F(pqsTests, test_Solver_equilibrateInterface)
-{
-    // --- Preparations
-
-    // Configuration databases
-    boost::shared_ptr<tbox::Database> pqs_config_db =
-        config_db->getDatabase("PQS");
-
-    boost::shared_ptr<tbox::Database> samrai_config_db =
-        config_db->getDatabase("SAMRAI");
-
-    // Construct PQS::pqs::Solver object
-    solver = new pqs::Solver(config_db, pore_init_strategy,
-                             interface_init_strategy);
-
-    // mean curvature
-    double curvature = 1.0;
-
-    // --- Exercise functionality
-
-    solver->equilibrateInterface(curvature);
-
-    // --- Check results
-
-    // TODO
-}
-
-// Test case: PQS::pqs::Solver::advanceInterface()
-TEST_F(pqsTests, test_Solver_advanceInterface)
-{
-    // --- Preparations
-
-    // Configuration databases
-    boost::shared_ptr<tbox::Database> pqs_config_db =
-        config_db->getDatabase("PQS");
-
-    boost::shared_ptr<tbox::Database> samrai_config_db =
-        config_db->getDatabase("SAMRAI");
-
-    // --- Exercise functionality
-
-    // Construct PQS::pqs::Solver object
-    solver = new pqs::Solver(config_db, pore_init_strategy,
-                             interface_init_strategy);
-
-    // --- Check results
-
-    // TODO
 }
 
 } // pqsTests namespace
