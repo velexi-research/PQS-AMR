@@ -17,9 +17,6 @@
 
 // --- Headers, namespaces, and type declarations
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 
@@ -33,6 +30,7 @@ using namespace SAMRAI;
 using namespace PQS;
 
 // Class/type declarations
+namespace SAMRAI { namespace hier { class Patch; } }
 
 
 // --- Fixtures
@@ -43,9 +41,9 @@ class TestPoreInitModule: public pqs::PoreInitStrategy
 {
 public:
     /*
-     * No-op. Only used for testing.
+     * Set value at all grid points to 1.0.
      */
-    virtual void initializePoreSpace(hier::Patch& patch, int psi_id) {};
+    virtual void initializePoreSpace(hier::Patch& patch, int psi_id);
 };
 
 } // pqsTests namespace

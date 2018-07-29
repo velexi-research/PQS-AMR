@@ -1,4 +1,4 @@
-/*! \file TestInterfaceInitModule.h
+/*! \file TestInterfaceInitModule.cc
  *
  * \brief
  * Concrete implementation of pqs::InterfaceInitStrategy to use for testing.
@@ -17,12 +17,20 @@
 
 // --- Headers, namespaces, and type declarations
 
+// Boost
+#include <boost/smart_ptr/shared_ptr.hpp>
+
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/hier/Patch.h"
+#include "SAMRAI/pdat/CellData.h"
+#include "SAMRAI/tbox/Utilities.h"
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/pqs/InterfaceInitStrategy.h"
+
+// PQS test
+#include "TestInterfaceInitModule.h"
 
 // Namespaces
 using namespace std;
@@ -30,20 +38,21 @@ using namespace SAMRAI;
 using namespace PQS;
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class Patch; } }
+namespace SAMRAI { namespace hier { class PatchData; } }
 
 
 // --- Fixtures
 
 namespace pqsTests {
 
-class TestInterfaceInitModule: public pqs::InterfaceInitStrategy
+void TestInterfaceInitModule::initializeInterface(
+        hier::Patch& patch, int phi_id)
 {
-public:
-    /*
-     * Set value at all grid points to 1.0.
-     */
-    virtual void initializeInterface(hier::Patch& patch, int phi_id);
-};
+    boost::shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+            BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+                    patch.getPatchData(phi_id));
+
+    phi_data->fill(1.0);
+}
 
 } // pqsTests namespace
