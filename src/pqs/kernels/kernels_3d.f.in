@@ -172,7 +172,7 @@ c                 in computation of stable_inv_dt_local
             norm_grad_phi = sqrt( grad_phi_x_max**2
      &                          + grad_phi_y_max**2
      &                          + grad_phi_z_max**2
-     &                          + max(dx(1), dx(2))**2 )
+     &                          + max(dx(1), dx(2), dx(3))**2 )
 
             stable_inv_dt_local =
      &          abs(V_n_pressure * grad_phi_x_max / norm_grad_phi)
