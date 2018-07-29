@@ -32,6 +32,7 @@
 #include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/tbox/Database.h"
+#include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/Utilities.h"
 
 // PQS
@@ -52,7 +53,6 @@ namespace pqs {
 
 
 // --- Implementation of public methods
-
 
 Algorithms::Algorithms(
         const boost::shared_ptr<tbox::Database>& config_db,
@@ -154,21 +154,92 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
     // --- Compute RHS and maximum stable time step
 
     if (d_contact_angle == 0.0) {
-        PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
-            &max_stable_dt,
-            rhs,
-            rhs_ghostbox_lo, rhs_ghostbox_hi,
-            phi,
-            phi_ghostbox_lo, phi_ghostbox_hi,
-            fillbox_lo, fillbox_hi,
-            dx,
-            &volume,
-            &d_target_volume,
-            &d_reference_pressure,
-            &d_bulk_modulus,
-            &d_surface_tension);
+        if (patch->getDim().getValue() == 2) {
+
+            PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &volume,
+                &d_target_volume,
+                &d_reference_pressure,
+                &d_bulk_modulus,
+                &d_surface_tension);
+        } else {
+            // TODO: 3D
+        }
     } else {
-        // TODO
+        // --- Get pointers to data and index space ranges for
+        //     psi and grad(psi)
+
+        // psi
+        boost::shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
+                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+                        patch->getPatchData(d_psi_id));
+
+        hier::Box psi_ghostbox = psi_data->getGhostBox();
+        const hier::IntVector psi_ghostbox_lower =
+                psi_ghostbox.lower();
+        const hier::IntVector psi_ghostbox_upper =
+                psi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_lo,
+                psi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_hi,
+                psi_ghostbox_upper);
+
+        PQS_REAL* psi = psi_data->getPointer();
+
+        // grad(psi)
+        boost::shared_ptr< pdat::CellData<PQS_REAL> > grad_psi_data =
+                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+                        patch->getPatchData(d_grad_psi_id));
+
+        hier::Box grad_psi_ghostbox = grad_psi_data->getGhostBox();
+        const hier::IntVector grad_psi_ghostbox_lower =
+                grad_psi_ghostbox.lower();
+        const hier::IntVector grad_psi_ghostbox_upper =
+                grad_psi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(grad_psi_ghostbox_lo,
+                grad_psi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(grad_psi_ghostbox_hi,
+                grad_psi_ghostbox_upper);
+
+        if (patch->getDim().getValue() == 2) {
+            // Get pointers to data arrays for grad(phi)
+            PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
+            PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
+
+            PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                psi,
+                psi_ghostbox_lo, psi_ghostbox_hi,
+                grad_psi_x, grad_psi_y,
+                grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &volume,
+                &d_target_volume,
+                &d_reference_pressure,
+                &d_bulk_modulus,
+                &d_surface_tension,
+                &d_contact_angle);
+        } else {
+            // TODO: 3D
+
+            // Get pointers to data arrays for grad(phi)
+            PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
+            PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
+            PQS_REAL* grad_psi_z = grad_psi_data->getPointer(2);
+
+        }
     }
 
     return max_stable_dt;
