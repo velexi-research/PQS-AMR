@@ -35,6 +35,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/utilities.h"
 #include "PQS/pqs/Solver.h"
 
 // PQS test
@@ -48,11 +49,11 @@
 namespace pqsTests {
 
 // Static data members
-int pqsTests::s_num_tests = 5;
-int pqsTests::s_num_tests_remaining = pqsTests::s_num_tests;
+int pqsTest::s_num_tests = 7;
+int pqsTest::s_num_tests_remaining = pqsTest::s_num_tests;
 
-// Constructor (set up)
-pqsTests::pqsTests() {
+// Methods
+pqsTest::pqsTest() {
 
     // --- Initialize SAMRAI
 
@@ -88,7 +89,7 @@ pqsTests::pqsTests() {
 
     // Numerical method parameters
     pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
-    pqs_config_db->putInteger("time_integration_order", 2);
+    pqs_config_db->putInteger("time_integration_order", 1);
 
     // Algorithms database
     boost::shared_ptr<tbox::Database> algorithms_config_db =
@@ -120,56 +121,6 @@ pqsTests::pqsTests() {
     boost::shared_ptr<tbox::Database> gridding_algorithm_config_db =
         samrai_config_db->putDatabase("GriddingAlgorithm");
 
-    // --------- Geometry configuration
-
-    // Geometry database
-    boost::shared_ptr<tbox::Database> geometry_config_db =
-        samrai_config_db->putDatabase("Geometry");
-
-    // Problem dimension
-    geometry_config_db->putInteger("dim", 3);
-    const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
-
-    // Physical bounds
-    double x_lo[3] = {-1.0, -1.0, -1.0};
-    double x_up[3] = {1.0, 1.0, 1.0};
-    geometry_config_db->putDoubleArray("x_lo", x_lo, 3);
-    geometry_config_db->putDoubleArray("x_up", x_up, 3);
-
-    // Box
-    int box_lower[3] = {0, 0, 0};
-    int box_upper[3] = {19, 19, 19};
-    tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
-    geometry_config_db->putDatabaseBoxArray("domain_boxes", &domain_boxes, 1);
-
-    // --------- PatchHierarchy configuration
-
-    // PatchHierarchy database
-    boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
-        samrai_config_db->putDatabase("PatchHierarchy");
-
-    int max_levels = 3;
-    patch_hierarchy_config_db->putInteger("max_levels", max_levels);
-    patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
-    for (int ln=1; ln <= max_levels; ln++) {
-        int ratio_to_coarser[3] = {2, 2, 2};
-        std::string level_name = std::string("level_") + std::to_string(ln);
-        patch_hierarchy_config_db->putIntegerArray(level_name,
-                                                   ratio_to_coarser, 3);
-    }
-
-    // --- Initialize Geometry and PatchHierarchy
-
-    // Geometry
-    grid_geometry = boost::shared_ptr<geom::CartesianGridGeometry>(
-        new geom::CartesianGridGeometry(dim, "TestCartesianGeometry",
-                                        geometry_config_db));
-
-    // PatchHierarchy
-    patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
-        new hier::PatchHierarchy("TestPatchHierarchy", grid_geometry,
-                                 patch_hierarchy_config_db));
-
     // --- Initialize PQS objects
 
     // Solver
@@ -182,9 +133,9 @@ pqsTests::pqsTests() {
     // TestInterfaceInitModule (implements InterfaceInitStrategy)
     interface_init_strategy = boost::shared_ptr<pqs::InterfaceInitStrategy>(
         new TestInterfaceInitModule());
-}
+} // pqsTest::pqsTest()
 
-pqsTests::~pqsTests() {
+pqsTest::~pqsTest() {
     // Clean up SAMRAI objects
     patch_hierarchy.reset();
     grid_geometry.reset();
@@ -206,6 +157,106 @@ pqsTests::~pqsTests() {
         tbox::SAMRAIManager::finalize();
         tbox::SAMRAI_MPI::finalize();
     }
-}
+} // pqsTest::~pqsTest()
+
+void pqsTest::initializeGeometryAndHierarchy(
+        boost::shared_ptr<tbox::Database> config_db,
+        boost::shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
+        boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const int num_dimensions)
+{
+    // --- Check arguments
+
+    if (config_db == NULL) {
+        PQS_ERROR_STATIC("pqsTest", "initializeGeometryAndHierarchy",
+                  "'config_db' must not be NULL");
+    }
+    if ((num_dimensions != 2) && (num_dimensions != 3)) {
+        PQS_ERROR_STATIC("pqsTest", "initializeGeometryAndHierarchy",
+                  std::string("'num_dimensions' (= ") +
+                  std::to_string(num_dimensions) +
+                  std::string(") must be equal to 2 or 3"));
+    }
+
+    // --- Preparations
+
+    boost::shared_ptr<tbox::Database> samrai_config_db =
+        config_db->getDatabase("SAMRAI");
+
+    // Geometry database
+    boost::shared_ptr<tbox::Database> geometry_config_db =
+        samrai_config_db->putDatabase("Geometry");
+
+    // PatchHierarchy database
+    boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
+        samrai_config_db->putDatabase("PatchHierarchy");
+
+    // --- Geometry configuration
+
+    // Problem dimension
+    geometry_config_db->putInteger("dim", num_dimensions);
+    const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
+
+    if (num_dimensions == 2) {
+        // Physical bounds
+        double x_lo[2] = {-1.0, -1.0};
+        double x_up[2] = {1.0, 1.0};
+        geometry_config_db->putDoubleArray("x_lo", x_lo, 2);
+        geometry_config_db->putDoubleArray("x_up", x_up, 2);
+
+        // Box
+        int box_lower[2] = {0, 0};
+        int box_upper[2] = {19, 19};
+        const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
+        tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
+        geometry_config_db->putDatabaseBoxArray("domain_boxes",
+                                                &domain_boxes, 1);
+    } else {
+        // Physical bounds
+        double x_lo[3] = {-1.0, -1.0, -1.0};
+        double x_up[3] = {1.0, 1.0, 1.0};
+        geometry_config_db->putDoubleArray("x_lo", x_lo, 3);
+        geometry_config_db->putDoubleArray("x_up", x_up, 3);
+
+        // Box
+        int box_lower[3] = {0, 0, 0};
+        int box_upper[3] = {19, 19, 19};
+        tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
+        geometry_config_db->putDatabaseBoxArray("domain_boxes",
+                                                &domain_boxes, 1);
+    }
+
+    // --- PatchHierarchy configuration
+
+    int max_levels = 3;
+    patch_hierarchy_config_db->putInteger("max_levels", max_levels);
+    patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
+    for (int ln=1; ln <= max_levels; ln++) {
+        std::string level_name = std::string("level_") + std::to_string(ln);
+
+        if (num_dimensions == 2) {
+            int ratio_to_coarser[2] = {2, 2};
+            patch_hierarchy_config_db->putIntegerArray(level_name,
+                                                       ratio_to_coarser, 2);
+        } else {
+            int ratio_to_coarser[3] = {2, 2, 2};
+            patch_hierarchy_config_db->putIntegerArray(level_name,
+                                                       ratio_to_coarser, 3);
+        }
+    }
+
+    // --- Initialize Geometry and PatchHierarchy
+
+    // Geometry
+    grid_geometry = boost::shared_ptr<geom::CartesianGridGeometry>(
+        new geom::CartesianGridGeometry(dim, "TestCartesianGeometry",
+                                        geometry_config_db));
+
+    // PatchHierarchy
+    patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
+        new hier::PatchHierarchy("TestPatchHierarchy", grid_geometry,
+                                 patch_hierarchy_config_db));
+
+} // pqsTest::configureGeometryAndHierarchy()
 
 } // pqsTests namespace

@@ -15,6 +15,9 @@
  * ---------------------------------------------------------------------
  */
 
+#ifndef INCLUDED_PQS_fixture_h
+#define INCLUDED_PQS_fixture_h
+
 // --- Headers, namespaces, and type declarations
 
 // Google Test
@@ -47,7 +50,7 @@ namespace PQS { namespace pqs { class Solver; } }
 
 namespace pqsTests {
 
-class pqsTests: public ::testing::Test
+class pqsTest: public ::testing::Test
 {
 protected:
     // --- Fixture data
@@ -73,10 +76,22 @@ protected:
     // --- Fixture set up and tear down
 
     // Constructor (set up)
-    pqsTests();
+    pqsTest();
 
     // Destructor (tear down)
-    virtual ~pqsTests();
+    virtual ~pqsTest();
+
+    // --- Helper methods
+
+    /*
+     * Set configuration parameters, initialize geometry, and initialize
+     * PatchHierarchy based on 'num_dimensions'.
+     */
+    static void initializeGeometryAndHierarchy(
+            boost::shared_ptr<tbox::Database> config_db,
+            boost::shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
+            boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+            const int num_dimensions);
 
     // --- Test management
     //
@@ -87,3 +102,5 @@ protected:
 };
 
 } // pqsTests namespace
+
+#endif // INCLUDED_PQS_fixture_h
