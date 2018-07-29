@@ -44,6 +44,7 @@ c***********************************************************************
      &  grad_phi_x_plus, grad_phi_x_minus,
      &  grad_phi_y_plus, grad_phi_y_minus,
      &  grad_phi_z_plus, grad_phi_z_minus,
+     &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  dx,
      &  idx)
