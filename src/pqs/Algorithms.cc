@@ -40,6 +40,7 @@
 #include "PQS/utilities.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/kernels_2d.h"
+#include "PQS/pqs/kernels_3d.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchData; } }
@@ -155,7 +156,6 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
 
     if (d_contact_angle == 0.0) {
         if (patch->getDim().getValue() == 2) {
-
             PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
                 rhs,
@@ -170,7 +170,19 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 &d_bulk_modulus,
                 &d_surface_tension);
         } else {
-            // TODO: 3D
+            PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &volume,
+                &d_target_volume,
+                &d_reference_pressure,
+                &d_bulk_modulus,
+                &d_surface_tension);
         }
     } else {
         // --- Get pointers to data and index space ranges for
@@ -231,14 +243,31 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 &d_bulk_modulus,
                 &d_surface_tension,
                 &d_contact_angle);
-        } else {
-            // TODO: 3D
 
+        } else {
             // Get pointers to data arrays for grad(phi)
             PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
             PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
             PQS_REAL* grad_psi_z = grad_psi_data->getPointer(2);
 
+            PQS_3D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                psi,
+                psi_ghostbox_lo, psi_ghostbox_hi,
+                grad_psi_x, grad_psi_y, grad_psi_z,
+                grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &volume,
+                &d_target_volume,
+                &d_reference_pressure,
+                &d_bulk_modulus,
+                &d_surface_tension,
+                &d_contact_angle);
         }
     }
 
