@@ -48,7 +48,7 @@
 namespace pqsTests {
 
 // Static data members
-int pqsTests::s_num_tests = 3;
+int pqsTests::s_num_tests = 5;
 int pqsTests::s_num_tests_remaining = pqsTests::s_num_tests;
 
 // Constructor (set up)
@@ -88,7 +88,7 @@ pqsTests::pqsTests() {
 
     // Numerical method parameters
     pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
-    pqs_config_db->putInteger("time_integration_order", 3);
+    pqs_config_db->putInteger("time_integration_order", 2);
 
     // Algorithms database
     boost::shared_ptr<tbox::Database> algorithms_config_db =
@@ -97,10 +97,10 @@ pqsTests::pqsTests() {
     // Slightly Compressible Model database
     boost::shared_ptr<tbox::Database> scm_config_db =
         algorithms_config_db->putDatabase("SlightlyCompressibleModel");
-    scm_config_db->putDouble("P_reference", 1.0);
-    scm_config_db->putDouble("V_target", 0.5);
-    scm_config_db->putDouble("surface_tension", 0.1);
+    scm_config_db->putDouble("reference_pressure", 1.0);
     scm_config_db->putDouble("bulk_modulus", 1.0);
+    scm_config_db->putDouble("target_volume", 0.5);
+    scm_config_db->putDouble("surface_tension", 0.1);
 
     // ------ SAMRAI configuration
 
