@@ -119,12 +119,12 @@ c         Compute forward and backward approximations of grad(phi)
           idx(1) = i
           idx(2) = j
           call pqsMath2dComputeGradENO1(
-     &           grad_phi_x_plus, grad_phi_x_minus,
-     &           grad_phi_y_plus, grad_phi_y_minus,
-     &           phi,
-     &           phi_gb_lo, phi_gb_hi,
-     &           dx,
-     &           idx)
+     &        grad_phi_x_plus, grad_phi_x_minus,
+     &        grad_phi_y_plus, grad_phi_y_minus,
+     &        phi,
+     &        phi_gb_lo, phi_gb_hi,
+     &        dx,
+     &        idx)
 
 c         Use Godunov's method to compute hyperbolic part of RHS
           if (abs(V_n_pressure) .gt. zero_tol) then
@@ -345,12 +345,12 @@ c         Compute forward and backward approximations of grad(phi)
           idx(1) = i
           idx(2) = j
           call pqsMath2dComputeGradENO1(
-     &           grad_phi_x_plus, grad_phi_x_minus,
-     &           grad_phi_y_plus, grad_phi_y_minus,
-     &           phi,
-     &           phi_gb_lo, phi_gb_hi,
-     &           dx,
-     &           idx)
+     &        grad_phi_x_plus, grad_phi_x_minus,
+     &        grad_phi_y_plus, grad_phi_y_minus,
+     &        phi,
+     &        phi_gb_lo, phi_gb_hi,
+     &        dx,
+     &        idx)
 
 c         Use Local Lax-Friedrichs to compute hyperbolic part of RHS
 c
