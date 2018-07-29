@@ -72,7 +72,7 @@ c     Preparations
 
 c     Compute gradients
       grad_phi_x_plus = (phi(i+1,j,k) - phi(i,j,k)) / dx(1)
-      grad_phi_x_minus = (phi(i,j,k) - phi(i-1,j),k) / dx(1)
+      grad_phi_x_minus = (phi(i,j,k) - phi(i-1,j,k)) / dx(1)
 
       grad_phi_y_plus = (phi(i,j+1,k) - phi(i,j,k)) / dx(2)
       grad_phi_y_minus = (phi(i,j,k) - phi(i,j-1,k)) / dx(2)
@@ -126,6 +126,7 @@ c { begin function
 
       integer phi_gb_lo(1:3), phi_gb_hi(1:3)
       @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
      &           phi_gb_lo(3):phi_gb_hi(3))
 
       real*8 dx(1:3)
