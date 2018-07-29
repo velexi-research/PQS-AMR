@@ -95,15 +95,19 @@ public:
      * ----------
      * config_db: database containing configuration parameters
      *
-     * psi_id: PatchData ID of the level set function for the solid-pore
-     *      interface
+     * lse_rhs_id: PatchData ID for the right-hand side of level set evolution
+     *     equation
      *
-     * grad_psi_id: PatchData ID of the gradient of the level set function
-     *      for the solid-pore interface
+     * psi_id: PatchData ID for the level set function for the solid-pore
+     *     interface
+     *
+     * grad_psi_id: PatchData ID for the gradient of the level set
+     *     function for the solid-pore interface
      */
     Algorithms(const boost::shared_ptr<tbox::Database>& config_db,
+               const int lse_rhs_id,
                const int psi_id,
-               const int grad_psi_id);
+               const int grad_psi_id = 0);
 
     /*!
      * Empty default destructor.
@@ -128,14 +132,14 @@ public:
      * ----------
      * patch: Patch to compute RHS of level set equation on
      *
-     * phi_id: PatchData ID of level set function that defines fluid-fluid
-     *      interface
+     * phi_id: PatchData ID for level set function that defines fluid-fluid
+     *     interface
      *
-     * psi_id: PatchData ID of level set function that defines solid-pore
-     *      interface
+     * psi_id: PatchData ID for level set function that defines solid-pore
+     *     interface
      *
-     * grad_psi_id: PatchData ID of gradient of level set function that
-     *      defines solid-pore interface
+     * grad_psi_id: PatchData ID for gradient of level set function that
+     *     defines solid-pore interface
      *
      * Return value
      * ------------
@@ -152,14 +156,14 @@ public:
      * ----------
      * patch: Patch to compute RHS of level set equation on
      *
-     * phi_id: PatchData ID of level set function that defines fluid-fluid
-     *      interface
+     * phi_id: PatchData ID for level set function that defines fluid-fluid
+     *     interface
      *
-     * psi_id: PatchData ID of level set function that defines solid-pore
-     *      interface
+     * psi_id: PatchData ID for level set function that defines solid-pore
+     *     interface
      *
-     * grad_psi_id: PatchData ID of gradient of level set function that
-     *      defines solid-pore interface
+     * grad_psi_id: PatchData ID for gradient of level set function that
+     *     defines solid-pore interface
      *
      * Return value
      * ------------
@@ -167,7 +171,8 @@ public:
      */
     double computeSlightlyCompressibleModelRHS(
         const boost::shared_ptr<hier::Patch> patch,
-        const int phi_id) const;
+        const int phi_id,
+        const double volume) const;
 
     //! @}
 
@@ -207,15 +212,21 @@ protected:
 
     // ------ PQS
 
+    // Physical parameters
+    double d_contact_angle;  // default: 0
+
     // Slightly Compressible Model
-    double d_P_reference;
-    double d_V_target;
-    double d_surface_tension;
+    double d_reference_pressure;
     double d_bulk_modulus;
+    double d_target_volume;
+    double d_surface_tension;
 
     // --- SAMRAI parameters
 
     // ------ PatchData IDs
+
+    // right-hand side of level set evolution equation
+    int d_lse_rhs_id;   // depth = 1
 
     // level set function that defines solid-pore interface
     //
