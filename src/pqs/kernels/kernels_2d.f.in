@@ -203,7 +203,7 @@ c***********************************************************************
 c***********************************************************************
 c
 c Compute RHS and maximum stable time step (on box) for Slightly
-c Compressible Model with zero contact angle.
+c Compressible Model with nonzero contact angle.
 c
 c Parameters
 c ----------
