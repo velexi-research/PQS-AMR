@@ -25,6 +25,7 @@ endif (SINGLE_PRECISION)
 
 # Generate fortran files
 configure_file(spatial_derivatives_2d.f.in spatial_derivatives_2d.f)
+configure_file(spatial_derivatives_3d.f.in spatial_derivatives_3d.f)
 configure_file(time_integration_2d.f.in time_integration_2d.f)
 configure_file(time_integration_3d.f.in time_integration_3d.f)
 
