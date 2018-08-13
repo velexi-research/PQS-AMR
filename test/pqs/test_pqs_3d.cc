@@ -76,8 +76,6 @@ TEST_F(pqsTest, test_Solver_equilibrateInterface_3d)
     solver = new pqs::Solver(config_db, pore_init_strategy,
                              interface_init_strategy);
 
-    std::cout << "bbb " << solver->getPatchHierarchy() << std::endl;
-    std::cout << "ccc " << solver->getPatchHierarchy()->getDim().getValue() << std::endl;
     // mean curvature
     double curvature = 1.0;
 
