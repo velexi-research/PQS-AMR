@@ -22,6 +22,9 @@
 #include <stddef.h>
 #include <string>
 
+// Boost
+#include <boost/smart_ptr/shared_ptr.hpp>
+
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/geom/CartesianGridGeometry.h"
