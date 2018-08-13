@@ -10,7 +10,7 @@
 # Build targets
 # --------------------------------------------------------------
 
- # Library
+# Library
 file(GLOB SOURCE_FILES
      ${CMAKE_CURRENT_SOURCE_DIR}/*.h
      ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
@@ -30,6 +30,9 @@ foreach(HEADER_FILE ${HEADER_FILES})
                    ${BUILD_INCLUDE_DIR_PQS}/pqs/${FILENAME}
                    COPYONLY)
 endforeach(HEADER_FILE)
+
+# Add library for numerical kernels
+add_subdirectory(kernels)
 
 # ----------------------------------------------------------------------
 # Installation
