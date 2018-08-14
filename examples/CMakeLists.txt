@@ -27,7 +27,11 @@ file(GLOB SOURCE_FILES
 
 # Add executable and dependencies
 add_executable(pqs-amr ${SOURCE_FILES})
-add_dependencies(pqs-amr pqs_kernels samrai)
+add_dependencies(pqs-amr
+                 pqs_utilities
+                 pqs pqs_kernels
+                 pqs_math pqs_math_kernels
+                 samrai)
 
 # Set search path for header files
 target_include_directories(pqs-amr
@@ -37,19 +41,16 @@ target_include_directories(pqs-amr
 
 # Set link libraries
 target_link_libraries(pqs-amr
+    pqs_utilities
+    pqs pqs_kernels
+    pqs_math pqs_math_kernels
     ${SAMRAI_LIBS}
     ${HDF5_C_LIBRARIES}
     ${MPI_LIBRARY})
 
-# --- Add files to copy directly to build directory
+# ----------------------------------------------------------------------
+# Installation
+# ----------------------------------------------------------------------
 
-# Create directory for example input files
-#file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/example_inputs)
-
-# Copy sample input files to build directory
-configure_file(sample-input-files/curvature-2d-circle.input
-               ${SAMPLE_INPUT_FILE_DIRECTORY}/curvature-2d-circle.input
-               COPYONLY)
-configure_file(sample-input-files/curvature-3d-sphere.input
-               ${SAMPLE_INPUT_FILE_DIRECTORY}/curvature-3d-sphere.input
-               COPYONLY)
+# Executables - TODO
+#install(TARGETS pqs DESTINATION ${INSTALL_LIBRARY_DIR})
