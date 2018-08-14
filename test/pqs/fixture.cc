@@ -38,7 +38,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities.h"
+#include "PQS/utilities/macros.h"
 #include "PQS/pqs/Solver.h"
 
 // PQS test
