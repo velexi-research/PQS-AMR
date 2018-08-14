@@ -1,7 +1,7 @@
-/*! \file utilities.h
+/*! \file macros.h
  *
  * \brief
- * Header file for PQS utility functions and macros.
+ * Header file for PQS utility macros.
  */
 
 /*
@@ -15,8 +15,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_utilities_h
-#define INCLUDED_PQS_utilities_h
+#ifndef INCLUDED_PQS_macros_h
+#define INCLUDED_PQS_macros_h
 
 // --- Headers, namespaces, and type declarations
 
@@ -32,7 +32,7 @@ using namespace std;
 // Class/type declarations
 
 
-// --- Utility functions and macros
+// --- Utility macros
 
 /*!
  * Macro for handling errors that arise in the PQS library.
@@ -80,4 +80,4 @@ using namespace std;
         int_array[int_array_i] = int_vector[int_array_i]; \
     }
 
-#endif  // INCLUDED_PQS_utilities_h
+#endif  // INCLUDED_PQS_macros_h

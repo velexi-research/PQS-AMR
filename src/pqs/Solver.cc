@@ -49,7 +49,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities.h"
+#include "PQS/macros.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/Solver.h"
