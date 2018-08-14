@@ -1,5 +1,5 @@
 # --------------------------------------------------------------
-# Customizations for PQS pacakge
+# Customizations for PQS package
 # --------------------------------------------------------------
 
 # CMake initialization: No customizations
