@@ -29,8 +29,14 @@
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/utilities/application.h"
 
+// PQS Application
+#include "InterfaceInitModule.h"
+#include "PoreInitModule.h"
+
 // Class/type declarations
 namespace SAMRAI { namespace tbox { class Database; } }
+namespace PQS { namespace pqs { class InterfaceInitStrategy; } }
+namespace PQS { namespace pqs { class PoreInitStrategy; } }
 
 // Namespaces
 using namespace std;
@@ -46,8 +52,21 @@ int main(int argc, char *argv[])
     // Initialize PQS simulation
     boost::shared_ptr<tbox::Database> config_db = initialize_pqs(argc, argv);
 
+    // Construct fluid-fluid interface and pore interface initialization
+    // modules
+
+    // TestPoreInitModule (implements PoreInitStrategy)
+    boost::shared_ptr<pqs::PoreInitStrategy> pore_init_strategy =
+            boost::shared_ptr<pqs::PoreInitStrategy>(
+                    new PoreInitModule());
+
+    // TestInterfaceInitModule (implements InterfaceInitStrategy)
+    boost::shared_ptr<pqs::InterfaceInitStrategy> interface_init_strategy =
+            boost::shared_ptr<pqs::InterfaceInitStrategy>(
+                    new InterfaceInitModule());
+
     // Run PQS simulation
-    // run();
+    run_pqs(config_db, pore_init_strategy, interface_init_strategy);
 
     // Shutdown PQS simulation
     shutdown_pqs();
