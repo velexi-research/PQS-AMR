@@ -126,7 +126,6 @@
 #include "PQS/pqs/PoreInitStrategy.h"
 
 // Namespaces
-using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations

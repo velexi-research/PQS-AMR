@@ -127,7 +127,6 @@
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Namespaces
-using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations
