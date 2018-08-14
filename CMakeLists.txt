@@ -170,7 +170,10 @@ configure_file(config/PQS_config.h.in ${BUILD_INCLUDE_DIR_PQS}/PQS_config.h)
 # ----------------------------------------------------------------------
 
 # PQS
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/src/)
+
+# pqs_utilities
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/utilities)
 
 # pqs_math
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/math)
@@ -182,8 +185,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/pqs)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/src/lsm)
 #add_subdirectory(${PROJECT_SOURCE_DIR}/src/lsm/kernels)
 
-# PQS programs
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/programs)
+# PQS examples
+add_subdirectory(${PROJECT_SOURCE_DIR}/examples)
 
 # Sample input files
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/sample-input-files)
