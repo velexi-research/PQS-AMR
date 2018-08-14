@@ -35,7 +35,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities.h"
+#include "PQS/utilities/macros.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/math/time_integration_2d.h"
 #include "PQS/math/time_integration_3d.h"
