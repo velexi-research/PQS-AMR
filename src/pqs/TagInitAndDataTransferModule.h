@@ -126,6 +126,7 @@
 #include "PQS/pqs/PoreInitStrategy.h"
 
 // Namespaces
+using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations
@@ -536,7 +537,7 @@ public:
      * for refinement.
      */
     virtual void checkCoarsenRatios(
-        const std::vector<hier::IntVector>& ratio_to_coarser) {}
+        const vector<hier::IntVector>& ratio_to_coarser) {}
 
     /*!
      * No-op because no special processing is required when swapping old and
@@ -626,11 +627,11 @@ protected:
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
 
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
-    std::vector< boost::shared_ptr<xfer::RefineSchedule> >
+    vector< boost::shared_ptr<xfer::RefineSchedule> >
             d_xfer_fill_bdry_schedule_lsm_current;
 
     boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
-    std::vector< boost::shared_ptr<xfer::RefineSchedule> >
+    vector< boost::shared_ptr<xfer::RefineSchedule> >
             d_xfer_fill_bdry_schedule_lsm_next;
 
     // --- Object name

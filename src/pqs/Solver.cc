@@ -465,7 +465,7 @@ void Solver::verifyConfigurationDatabase(
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'lsm_spatial_derivative_type' missing from 'PQS' database");
     }
-    std::string lsm_spatial_derivative_type =
+    string lsm_spatial_derivative_type =
         pqs_config_db->getString("lsm_spatial_derivative_type");
     if ( !( (lsm_spatial_derivative_type == "ENO1") ||
             (lsm_spatial_derivative_type == "ENO2") ||
@@ -473,9 +473,9 @@ void Solver::verifyConfigurationDatabase(
             (lsm_spatial_derivative_type == "WENO5") ) ) {
 
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  std::string("Invalid 'lsm_spatial_derivative_order'. ") +
-                  std::string("Valid values: \"ENO1\", \"ENO2\", ") +
-                  std::string("\"ENO3\", \"WENO5\"."));
+                  string("Invalid 'lsm_spatial_derivative_order'. ") +
+                  string("Valid values: \"ENO1\", \"ENO2\", ") +
+                  string("\"ENO3\", \"WENO5\"."));
     }
 
     if (!pqs_config_db->isInteger("time_integration_order")) {
@@ -488,8 +488,8 @@ void Solver::verifyConfigurationDatabase(
             (time_integration_order == 2) ||
             (time_integration_order == 3) ) ) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  std::string("Inavlid 'time_integration_order'. ") +
-                  std::string("Valid values: 1, 2, 3."));
+                  string("Inavlid 'time_integration_order'. ") +
+                  string("Valid values: 1, 2, 3."));
     }
 
     // Verify SAMRAI database
@@ -568,7 +568,7 @@ void Solver::loadConfiguration(
     }
 
     // Numerical set method parameters
-    std::string lsm_spatial_derivative_type =
+    string lsm_spatial_derivative_type =
         pqs_config_db->getString("lsm_spatial_derivative_type");
     if (lsm_spatial_derivative_type == "ENO1") {
         d_lsm_spatial_derivative_type = ENO1;
@@ -606,9 +606,9 @@ void Solver::loadConfiguration(
         }
         default: {
             PQS_ERROR(this, "setupGridManagement",
-                      std::string("Invalid 'd_lsm_spatial_derivative_type' ") +
-                      std::string("value: ") +
-                      std::to_string(d_lsm_spatial_derivative_type));
+                      string("Invalid 'd_lsm_spatial_derivative_type' ") +
+                      string("value: ") +
+                      to_string(d_lsm_spatial_derivative_type));
         }
     }
 

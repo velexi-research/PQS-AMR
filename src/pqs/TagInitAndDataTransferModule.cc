@@ -151,8 +151,8 @@ void TagInitAndDataTransferModule::fillGhostCells(
     // Check arguments
     if (level_num >= d_patch_hierarchy->getNumberOfLevels()) {
         PQS_ERROR(this, "fillGhostCells",
-                  std::string("'level_num' must be less than number of ") +
-                  std::string("levels in PatchHierarchy"));
+                  string("'level_num' must be less than number of ") +
+                  string("levels in PatchHierarchy"));
     }
 
     // Fill ghost cells
@@ -166,10 +166,10 @@ void TagInitAndDataTransferModule::fillGhostCells(
                 true);  // apply physical boundary conditions
     } else {
         PQS_ERROR(this, "fillGhostCells",
-                  std::string("Invalid 'context': ") +
-                  std::to_string(context) +
-                  std::string(". Valid values: LSM_CURRENT (=1), ") +
-                  std::string("LSM_NEXT (=2)"));
+                  string("Invalid 'context': ") +
+                  to_string(context) +
+                  string(". Valid values: LSM_CURRENT (=1), ") +
+                  string("LSM_NEXT (=2)"));
     }
 
 } // TagInitAndDataTransferModule::fillGhostCells()
@@ -199,8 +199,8 @@ void TagInitAndDataTransferModule::initializeLevelData(
     if (old_patch_level != NULL) {
         if (level_num != old_patch_level->getLevelNumber()) {
             PQS_ERROR(this, "initializeLevelData",
-                      std::string("'level_num' must equal ") +
-                      std::string("PatchLevel number of 'old_patch_level'"));
+                      string("'level_num' must equal ") +
+                      string("PatchLevel number of 'old_patch_level'"));
         }
     }
     if (patch_hierarchy->getPatchLevel(level_num) == NULL) {
@@ -270,9 +270,9 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
     }
     if (patch_hierarchy != d_patch_hierarchy) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
-                  std::string("'patch_hierarchy' argument does not match ") +
-                  std::string("'patch_hierarchy' argument passed to ") +
-                  std::string("constructor"));
+                  string("'patch_hierarchy' argument does not match ") +
+                  string("'patch_hierarchy' argument passed to ") +
+                  string("constructor"));
     }
     if (coarsest_level_num < 0) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
@@ -280,8 +280,8 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
     }
     if (coarsest_level_num > finest_level_num) {
         PQS_ERROR(this, "resetHierarchyConfiguration",
-                  std::string("'coarsest_level_num' must be less ") +
-                  std::string("than or equal to 'finest_level_num'"));
+                  string("'coarsest_level_num' must be less ") +
+                  string("than or equal to 'finest_level_num'"));
     }
     for (int level_num = 0;
             level_num <= finest_level_num;
@@ -289,9 +289,9 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
 
         if (patch_hierarchy->getPatchLevel(level_num) == NULL) {
             PQS_ERROR(this, "resetHierarchyConfiguration",
-                      std::string("PatchLevel ") +
-                      std::to_string(level_num) +
-                      std::string(" is NULL in PatchHierarchy"));
+                      string("PatchLevel ") +
+                      to_string(level_num) +
+                      string(" is NULL in PatchHierarchy"));
         }
     }
 

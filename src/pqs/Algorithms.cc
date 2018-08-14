@@ -296,8 +296,8 @@ void Algorithms::verifyConfigurationDatabase(
 
     if (!config_db->isDatabase("SlightlyCompressibleModel")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  std::string("'SlightlyCompressibleModel' database ") +
-                  std::string("missing from 'config_db'"));
+                  string("'SlightlyCompressibleModel' database ") +
+                  string("missing from 'config_db'"));
     }
     boost::shared_ptr<tbox::Database> scm_config_db =
             config_db->getDatabase("SlightlyCompressibleModel");
