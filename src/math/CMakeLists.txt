@@ -31,6 +31,8 @@ foreach(HEADER_FILE ${HEADER_FILES})
                    COPYONLY)
 endforeach(HEADER_FILE)
 
+# --- Sub-targets
+
 # Add library for numerical kernels
 add_subdirectory(kernels)
 
