@@ -71,7 +71,7 @@ c { begin subroutine
      &            phi_gb_lo(2):phi_gb_hi(2))
 
       integer fb_lo(1:2), fb_hi(1:2)
-      @REAL@ dx(1:2)
+      real*8 dx(1:2)
 
       real*8 volume
       real*8 target_volume
@@ -289,7 +289,7 @@ c { begin subroutine
      &                   grad_psi_gb_lo(2):grad_psi_gb_hi(2))
 
       integer fb_lo(1:2), fb_hi(1:2)
-      @REAL@ dx(1:2)
+      real*8 dx(1:2)
 
       real*8 volume
       real*8 target_volume

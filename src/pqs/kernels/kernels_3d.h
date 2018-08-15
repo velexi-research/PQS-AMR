@@ -1,4 +1,4 @@
-/*! \file kernels_2d.h
+/*! \file kernels_3d.h
  *
  * \brief
  * Header files for numerical kernels that support PQS algorithm.
@@ -15,8 +15,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_kernels_2d_h
-#define INCLUDED_PQS_pqs_kernels_2d_h
+#ifndef INCLUDED_PQS_pqs_kernels_3d_h
+#define INCLUDED_PQS_pqs_kernels_3d_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,19 +28,19 @@ extern "C" {
  *      C/C++ code             Fortran code
  *      ----------             ------------
  */
-#define PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS \
-                               pqs2dcompressiblemodelzerocontactanglerhs_
-#define PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
-                               pqs2dcompressiblemodelnonzerocontactanglerhs_
-#define PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS \
-                               pqs2dcurvaturemodelzerocontactanglerhs_
-#define PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
-                               pqs2dcurvaturemodelnonzerocontactanglerhs_
+#define PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS \
+                               pqs3dcompressiblemodelzerocontactanglerhs_
+#define PQS_3D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
+                               pqs3dcompressiblemodelnonzerocontactanglerhs_
+#define PQS_3D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS \
+                               pqs3dcurvaturemodelzerocontactanglerhs_
+#define PQS_3D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
+                               pqs3dcurvaturemodelnonzerocontactanglerhs_
 
 /*!
  * TODO
  */
-void PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+void PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
     const PQS_REAL *rhs,
     const int *rhs_gb_lo,
@@ -60,7 +60,7 @@ void PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
 /*!
  * TODO
  */
-void PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+void PQS_3D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
     const PQS_REAL *rhs,
     const int *rhs_gb_lo,
@@ -73,6 +73,7 @@ void PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const int *psi_gb_hi,
     const PQS_REAL *grad_psi_x,
     const PQS_REAL *grad_psi_y,
+    const PQS_REAL *grad_psi_z,
     const int *grad_psi_gb_lo,
     const int *grad_psi_gb_hi,
     const int *fb_lo,
