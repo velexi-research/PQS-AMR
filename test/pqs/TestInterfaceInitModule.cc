@@ -1,7 +1,8 @@
 /*! \file TestInterfaceInitModule.cc
  *
  * \brief
- * Concrete implementation of pqs::InterfaceInitStrategy to use for testing.
+ * Implementation file for concrete subclass of pqs::InterfaceInitStrategy to
+ * use for testing.
  */
 
 /*

@@ -1,7 +1,8 @@
 /*! \file TestPoreInitModule.h
  *
  * \brief
- * Concrete implementation of pqs::PoreInitStrategy to use for testing.
+ * Header file for concrete subclass of pqs::PoreInitStrategy to use for
+ * testing.
  */
 
 /*
