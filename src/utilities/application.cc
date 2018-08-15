@@ -103,7 +103,7 @@ boost::shared_ptr<tbox::Database> initialize_pqs(int argc, char *argv[])
 
     // Get the base name for all name strings in application
     const string base_name =
-        config_db->getStringWithDefault("base_name", "unnamed");
+        config_db->getStringWithDefault("base_name", "PQS-OUTPUT");
 
     // --- Set is_from_restart in configuration database
 
