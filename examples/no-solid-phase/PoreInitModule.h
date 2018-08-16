@@ -1,7 +1,8 @@
 /*! \file PoreInitModule.h
  *
  * \brief
- * Concrete implementation of pqs::PoreInitStrategy to use for TODO example.
+ * Header file for concrete subclass of pqs::PoreInitStrategy to use in example
+ * application that has no solid phase.
  */
 
 /*
@@ -39,7 +40,8 @@ class PoreInitModule: public pqs::PoreInitStrategy
 {
 public:
     /*
-     * Set value at all grid points to 1.0.
+     * Set value of psi to -1.0 at all grid points (i.e., entire
+     * region is pore space).
      */
     virtual void initializePoreSpace(hier::Patch& patch, int psi_id);
 };

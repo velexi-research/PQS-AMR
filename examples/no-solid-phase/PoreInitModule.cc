@@ -1,7 +1,8 @@
 /*! \file PoreInitModule.cc
  *
  * \brief
- * Concrete implementation of pqs::PoreInitStrategy to use for TODO example.
+ * Implementation file for concrete subclass of pqs::PoreInitStrategy to use 
+ * in example application that has no solid phase.
  */
 
 /*
@@ -50,5 +51,5 @@ void PoreInitModule::initializePoreSpace(
             BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
                     patch.getPatchData(psi_id));
 
-    psi_data->fill(1.0);
+    psi_data->fill(-1.0);
 }
