@@ -117,14 +117,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                     patch->getPatchData(d_lse_rhs_id));
 
     hier::Box rhs_ghostbox = rhs_data->getGhostBox();
-    const hier::IntVector rhs_ghostbox_lower =
-            rhs_ghostbox.lower();
-    const hier::IntVector rhs_ghostbox_upper =
-            rhs_ghostbox.upper();
-    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo,
-            rhs_ghostbox_lower);
-    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi,
-            rhs_ghostbox_upper);
+    const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
+    const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo, rhs_ghostbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi, rhs_ghostbox_upper);
 
     PQS_REAL* rhs = rhs_data->getPointer();
 
@@ -134,14 +130,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                     patch->getPatchData(phi_id));
 
     hier::Box phi_ghostbox = phi_data->getGhostBox();
-    const hier::IntVector phi_ghostbox_lower =
-            phi_ghostbox.lower();
-    const hier::IntVector phi_ghostbox_upper =
-            phi_ghostbox.upper();
-    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo,
-            phi_ghostbox_lower);
-    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi,
-            phi_ghostbox_upper);
+    const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
+    const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
 
     PQS_REAL* phi = phi_data->getPointer();
 
@@ -194,14 +186,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                         patch->getPatchData(d_psi_id));
 
         hier::Box psi_ghostbox = psi_data->getGhostBox();
-        const hier::IntVector psi_ghostbox_lower =
-                psi_ghostbox.lower();
-        const hier::IntVector psi_ghostbox_upper =
-                psi_ghostbox.upper();
-        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_lo,
-                psi_ghostbox_lower);
-        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_hi,
-                psi_ghostbox_upper);
+        const hier::IntVector psi_ghostbox_lower = psi_ghostbox.lower();
+        const hier::IntVector psi_ghostbox_upper = psi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_lo, psi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_hi, psi_ghostbox_upper);
 
         PQS_REAL* psi = psi_data->getPointer();
 
