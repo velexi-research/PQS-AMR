@@ -100,7 +100,7 @@ c     Preparations
 
       max_stable_dt = 1.0d37
 
-c     Loop over grid
+c     loop over grid
       do j=fb_lo(2), fb_hi(2)
         do i=fb_lo(1), fb_hi(1)
 
@@ -321,7 +321,7 @@ c     Preparations
 
       max_stable_dt = 1.0d37
 
-c     Loop over grid
+c     loop over grid
       do j=fb_lo(2), fb_hi(2)
         do i=fb_lo(1), fb_hi(1)
 
