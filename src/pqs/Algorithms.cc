@@ -53,7 +53,7 @@ namespace PQS {
 namespace pqs {
 
 
-// --- Implementation of public methods
+// --- Public methods
 
 Algorithms::Algorithms(
         const boost::shared_ptr<tbox::Database>& config_db,
@@ -269,6 +269,9 @@ void Algorithms::printClassData(ostream& os) const
     os << "PQS::pqs::Algorithms::printClassData..." << endl;
     os << "(Algorithms*) this = " << (Algorithms*) this << endl;
 } // Algorithms::printClassData()
+
+
+// --- Private methods
 
 void Algorithms::verifyConfigurationDatabase(
     const boost::shared_ptr<tbox::Database>& config_db) const

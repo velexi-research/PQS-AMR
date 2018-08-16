@@ -67,7 +67,7 @@ namespace pqs {
 const string TagInitAndDataTransferModule::s_object_name =
     "PQS::pqs::TagInitAndDataTransferModule";
 
-// --- Implementation of public methods
+// --- Public methods
 
 // Constructor
 TagInitAndDataTransferModule::TagInitAndDataTransferModule(
@@ -432,7 +432,8 @@ void TagInitAndDataTransferModule::printClassData(ostream& os) const
     d_interface_init_strategy->printClassData(os);
 } // TagInitAndDataTransferModule::printClassData()
 
-// --- Implementation of private methods
+
+// --- Private methods
 
 void TagInitAndDataTransferModule::loadConfiguration(
         const boost::shared_ptr<tbox::Database>& config_db)

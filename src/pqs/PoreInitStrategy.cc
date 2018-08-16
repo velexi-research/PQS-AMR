@@ -32,7 +32,7 @@
 namespace PQS {
 namespace pqs {
 
-// --- Implementation of public methods
+// --- Public methods
 
 void PoreInitStrategy::printClassData(ostream& os) const
 {

@@ -68,7 +68,7 @@ namespace PQS { namespace pqs { class PoreInitStrategy; } }
 namespace PQS {
 namespace pqs {
 
-// --- Implementation of public methods
+// --- Public methods
 
 Solver::Solver(
         const boost::shared_ptr<tbox::Database>& config_db,
@@ -408,7 +408,8 @@ void Solver::printClassData(ostream& os) const
 
 } // Solver::printClassData()
 
-// --- Implementation of private methods
+
+// --- Private methods
 
 void Solver::verifyConfigurationDatabase(
         const boost::shared_ptr<tbox::Database>& config_db,
