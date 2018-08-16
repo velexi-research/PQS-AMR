@@ -30,7 +30,7 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 
-// PQS test
+// PQS application
 #include "PoreInitModule.h"
 
 // Namespaces
