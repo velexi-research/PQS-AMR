@@ -53,11 +53,7 @@
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace mesh { class BoxGeneratorStrategy; } }
-namespace SAMRAI { namespace mesh { class LoadBalanceStrategy; } }
-namespace SAMRAI { namespace mesh { class TagAndInitializeStrategy; } }
 namespace SAMRAI { namespace hier { class Patch; } }
-namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
 namespace PQS { namespace pqs { class InterfaceInitStrategy; } }
 namespace PQS { namespace pqs { class PoreInitStrategy; } }

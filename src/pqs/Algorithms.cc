@@ -42,8 +42,6 @@
 #include "PQS/pqs/kernels_3d.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class PatchData; } }
-namespace SAMRAI { namespace hier { class PatchGeometry; } }
 
 
 // --- Class implementation

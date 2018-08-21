@@ -40,7 +40,6 @@
 #include "PQS/math/time_integration_3d.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class PatchData; } }
 
 
 // --- Class implementation

@@ -19,6 +19,7 @@
 
 // Standard library
 #include <cstddef>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -47,7 +48,6 @@
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class BoxContainer; } }
-namespace SAMRAI { namespace hier { class PatchData; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
