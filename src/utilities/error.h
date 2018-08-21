@@ -62,7 +62,7 @@ using namespace SAMRAI;
  */
 #define PQS_ERROR(obj, method, message) \
     throw PQS::exception(std::string(typeid(obj).name()) + "::" + \
-                         std::string(method) + "::" + std::string(message));
+                         std::string(method) + ":" + std::string(message));
 
 /*!
  * Macro for raising errors in static methods that arise in the PQS library.
@@ -77,7 +77,7 @@ using namespace SAMRAI;
  */
 #define PQS_ERROR_STATIC(class_name, method, message) \
     throw PQS::exception(std::string(class_name) + "::" + \
-                         std::string(method) + "::" + std::string(message));
+                         std::string(method) + ":" + std::string(message));
 
 
 // --- PQS::exception Class
