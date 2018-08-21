@@ -56,6 +56,8 @@
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Class/type declarations
+namespace SAMRAI { namespace mesh { class BoxGeneratorStrategy; } }
+namespace SAMRAI { namespace mesh { class LoadBalanceStrategy; } }
 namespace SAMRAI { namespace mesh { class TagAndInitializeStrategy; } }
 namespace SAMRAI { namespace hier { class Patch; } }
 namespace SAMRAI { namespace hier { class Variable; } }
@@ -96,6 +98,7 @@ Solver::Solver(
     } else {
         createPatchHierarchy(config_db);
     }
+
     d_cycle = 0;
 
     // Load configuration from config_db
@@ -873,10 +876,10 @@ void Solver::setupGridManagement(
             d_patch_hierarchy,
             "GriddingAlgorithm",
             samrai_config_db->getDatabase("GriddingAlgorithm"),
-            boost::shared_ptr<mesh::TagAndInitializeStrategy>(
+            BOOST_CAST<mesh::TagAndInitializeStrategy>(
                 d_tag_init_and_data_xfer_module),
-            box_generator,
-            load_balancer));
+            BOOST_CAST<mesh::BoxGeneratorStrategy>(box_generator),
+            BOOST_CAST<mesh::LoadBalanceStrategy>(load_balancer)));
 
 } // Solver::setupGridManagement()
 
