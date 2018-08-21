@@ -26,9 +26,6 @@
 #include <stdlib.h>
 #include <string>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/appu/VisItDataWriter.h"
@@ -74,7 +71,7 @@ namespace PQS {
  * ------------
  * database containing configuration parameters for simulation
  */
-boost::shared_ptr<tbox::Database> initialize_pqs(int argc, char *argv[]);
+shared_ptr<tbox::Database> initialize_pqs(int argc, char *argv[]);
 
 /*!
  * Shut down PQS simulation.
@@ -89,10 +86,13 @@ void shutdown_pqs();
  * config_db: database containing configuration parameters
  *
  * pqs_solver: pqs::Solver object
+ *
+ * visit_data_writer: VisIt data file writer
  */
 void run_pqs(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::Solver>& pqs_solver);
+        const shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<pqs::Solver>& pqs_solver,
+        const shared_ptr<appu::VisItDataWriter>& visit_data_writer = 0);
 
 }  // PQS namespace
 
