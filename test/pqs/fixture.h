@@ -20,6 +20,9 @@
 
 // --- Headers, namespaces, and type declarations
 
+// Standard library
+#include <memory>
+
 // Google Test
 #include "gtest/gtest.h"
 

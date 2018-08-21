@@ -39,7 +39,6 @@ using namespace SAMRAI;
 using namespace PQS;
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class PatchData; } }
 
 
 // --- Fixtures
