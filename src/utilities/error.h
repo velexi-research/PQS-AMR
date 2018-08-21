@@ -1,7 +1,7 @@
 /*! \file error.h
  *
  * \brief
- * Header file for error handling in PQS library.
+ * Header file for PQS error handling classes and functions.
  */
 
 /*
@@ -20,16 +20,13 @@
 
 // --- Headers, namespaces, and type declarations
 
-// Standard
+// Standard library
 #include <string>
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/tbox/PIO.h"
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
-
-// PQS
-#include "PQS/PQS_config.h"
 
 // Namespaces
 using namespace SAMRAI;
@@ -46,10 +43,11 @@ using namespace SAMRAI;
  * message: error message
  */
 #define PQS_ABORT(message) \
-    tbox::pout << "Program abort called..." << std::endl; \
-    tbox::pout << "Error: " << std::string(message) << std::endl; \
-    tbox::pout << std::flush; \
-    tbox::SAMRAI_MPI::abort();
+    do { \
+        std::ostringstream os; \
+        os << std::string(message) << std::ends; \
+        tbox::Utilities::abort(os.str(), __FILE__, __LINE__); \
+    } while (0)
 
 /*!
  * Macro for raising errors that arise in the PQS library.
