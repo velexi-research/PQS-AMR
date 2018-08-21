@@ -37,6 +37,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/utilities/error.h"
 #include "PQS/utilities/macros.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/kernels_2d.h"

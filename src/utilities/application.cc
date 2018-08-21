@@ -41,7 +41,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities/macros.h"
+#include "PQS/utilities/error.h"
 #include "PQS/pqs/Solver.h"
 
 // Class/type declarations
@@ -173,8 +173,13 @@ void run_pqs(
     // --- Create PQS Solver
 
     // Construct PQS::pqs::Solver object
-    //solver = new pqs::Solver(config_db, pore_init_strategy,
-    //                         interface_init_strategy);
+    pqs::Solver *solver;
+    try {
+        solver = new pqs::Solver(config_db, pore_init_strategy,
+                                 interface_init_strategy);
+    } catch (const PQS::exception& e) {
+        PQS_ABORT(e.what());
+    }
 
     // Emit contents of config database and variable database to log file.
     tbox::plog << "Configuration database..." << endl;

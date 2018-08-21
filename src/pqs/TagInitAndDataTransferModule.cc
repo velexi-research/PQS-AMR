@@ -42,7 +42,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities/macros.h"
+#include "PQS/utilities/error.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/Solver.h"
