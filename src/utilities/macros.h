@@ -22,15 +22,7 @@
 
 // Standard library
 
-// SAMRAI
-#include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/hier/IntVector.h"
-#include "SAMRAI/tbox/PIO.h"
-#include "SAMRAI/tbox/SAMRAI_MPI.h"
-
 // Namespaces
-using namespace std;
-using namespace SAMRAI;
 
 // Class/type declarations
 
