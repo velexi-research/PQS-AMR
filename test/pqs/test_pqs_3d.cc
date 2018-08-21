@@ -19,17 +19,12 @@
 
 // Standard library
 #include <memory>
-#include <sstream>
-#include <stddef.h>
 
 // Google Test
 #include "gtest/gtest.h"
-#include "gtest/gtest-message.h"
-#include "gtest/gtest-test-part.h"
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/tbox/Database.h"
 
 // PQS
