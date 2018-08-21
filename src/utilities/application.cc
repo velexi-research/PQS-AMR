@@ -42,11 +42,9 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/utilities/error.h"
-#include "PQS/pqs/Solver.h"
 
 // Class/type declarations
-namespace PQS { namespace pqs { class InterfaceInitStrategy; } }
-namespace PQS { namespace pqs { class PoreInitStrategy; } }
+namespace PQS { namespace pqs { class Solver; } }
 
 // Namespaces
 using namespace std;
@@ -144,10 +142,8 @@ void shutdown_pqs()
 }
 
 void run_pqs(
-        const boost::shared_ptr<tbox::Database> config_db,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
-            interface_init_strategy)
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const boost::shared_ptr<pqs::Solver>& pqs_solver)
 {
     // --- Preparations
 
@@ -169,17 +165,6 @@ void run_pqs(
                                         base_name + ".restart");
 
     const bool write_restart = (restart_interval > 0);
-
-    // --- Create PQS Solver
-
-    // Construct PQS::pqs::Solver object
-    pqs::Solver *solver;
-    try {
-        solver = new pqs::Solver(config_db, pore_init_strategy,
-                                 interface_init_strategy);
-    } catch (const PQS::exception& e) {
-        PQS_ABORT(e.what());
-    }
 
     // Emit contents of config database and variable database to log file.
     tbox::plog << "Configuration database..." << endl;
@@ -228,10 +213,10 @@ void run_pqs(
 
     // --- Initialize calculation
 
-    // TODO: initialize simulation objects
-
     // Close restart file before starting main time-stepping loop
-    restart_manager->closeRestartFile();
+    if (is_from_restart) {
+        restart_manager->closeRestartFile();
+    }
 
     // Set up loop variables
     int count = 0;

@@ -48,7 +48,6 @@
 // PQS
 #include "PQS/PQS_config.h"
 #include "PQS/pqs/Solver.h"
-//#include "PQS/lsm/Toolbox.h"
 
 // Class/type declarations
 
@@ -89,17 +88,11 @@ void shutdown_pqs();
  * ----------
  * config_db: database containing configuration parameters
  *
- * pore_init_strategy: user implementation of PoreInitStrategy strategy
- *      interface
- *
- * interface_init_strategy: user implementation of
- *      InterfaceInitStrategy strategy interface
+ * pqs_solver: pqs::Solver object
  */
 void run_pqs(
-        const boost::shared_ptr<tbox::Database> config_db,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
-            interface_init_strategy);
+        const boost::shared_ptr<tbox::Database>& config_db,
+        const boost::shared_ptr<pqs::Solver>& pqs_solver);
 
 }  // PQS namespace
 
