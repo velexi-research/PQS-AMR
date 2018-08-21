@@ -19,12 +19,9 @@
 
 // Standard library
 #include <cstddef>
+#include <memory>
 #include <sstream>
 #include <string>
-
-// Boost
-#include <boost/smart_ptr/make_shared_object.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 // MPI
 #include "mpi.h"
@@ -73,11 +70,11 @@ namespace pqs {
 // --- Public methods
 
 Solver::Solver(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+        const shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy)
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy)
 {
     // Check arguments
     if (config_db == NULL) {
@@ -111,9 +108,9 @@ Solver::Solver(
     setupGridManagement(config_db, pore_init_strategy, interface_init_strategy);
 
     // Construct pqs::Algorithms object
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
-    d_pqs_algorithms = boost::shared_ptr<pqs::Algorithms>(
+    d_pqs_algorithms = shared_ptr<pqs::Algorithms>(
             new pqs::Algorithms(pqs_config_db->getDatabase("Algorithms"),
                                 d_psi_id, d_grad_psi_id));
 
@@ -127,7 +124,7 @@ Solver::~Solver()
     // Free memory allocated for simulation data
     for (int level_num = 0;
             level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
-        boost::shared_ptr<hier::PatchLevel> patch_level =
+        shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
         patch_level->deallocatePatchData(d_permanent_variables);
         patch_level->deallocatePatchData(d_intermediate_variables);
@@ -152,7 +149,7 @@ void Solver::equilibrateInterface(const double curvature)
             level_num < d_patch_hierarchy->getNumberOfLevels();
             level_num++) {
 
-        boost::shared_ptr<hier::PatchLevel> patch_level =
+        shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
 
         patch_level->allocatePatchData(d_intermediate_variables);
@@ -211,7 +208,7 @@ void Solver::equilibrateInterface(const double curvature)
                     level_num < d_patch_hierarchy->getNumberOfLevels();
                     level_num++) {
 
-                boost::shared_ptr<hier::PatchLevel> patch_level =
+                shared_ptr<hier::PatchLevel> patch_level =
                     d_patch_hierarchy->getPatchLevel(level_num);
 
                 // Fill ghost cells
@@ -222,7 +219,7 @@ void Solver::equilibrateInterface(const double curvature)
                 for (hier::PatchLevel::Iterator pi(patch_level->begin());
                         pi!=patch_level->end(); pi++) {
 
-                    boost::shared_ptr<hier::Patch> patch = *pi;
+                    shared_ptr<hier::Patch> patch = *pi;
 
                     // Compute RHS of level set evolution equation on Patch
                     double stable_dt_on_patch;
@@ -327,7 +324,7 @@ void Solver::equilibrateInterface(const double curvature)
             level_num < d_patch_hierarchy->getNumberOfLevels();
             level_num++) {
 
-        boost::shared_ptr<hier::PatchLevel> patch_level =
+        shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
 
         patch_level->deallocatePatchData(d_intermediate_variables);
@@ -344,14 +341,14 @@ void Solver::advanceInterface(const double delta_curvature)
                 level_num < d_patch_hierarchy->getNumberOfLevels();
                 level_num++) {
 
-            boost::shared_ptr<hier::PatchLevel> patch_level =
+            shared_ptr<hier::PatchLevel> patch_level =
                 d_patch_hierarchy->getPatchLevel(level_num);
 
             // Loop over Patches on PatchLevel
             for (hier::PatchLevel::Iterator pi(patch_level->begin());
                     pi!=patch_level->end(); pi++) {
 
-                boost::shared_ptr<hier::Patch> patch = *pi;
+                shared_ptr<hier::Patch> patch = *pi;
 
                 d_pqs_algorithms->computePrescribedCurvatureModelRHS(
                     patch, d_phi_lsm_current_id);
@@ -374,7 +371,7 @@ int Solver::getCycle() const
     return d_cycle;
 } // Solver::getCycle()
 
-boost::shared_ptr<hier::PatchHierarchy> Solver::getPatchHierarchy() const
+shared_ptr<hier::PatchHierarchy> Solver::getPatchHierarchy() const
 {
     return d_patch_hierarchy;
 } // Solver::getPatchHierarchy()
@@ -415,7 +412,7 @@ void Solver::printClassData(ostream& os) const
 // --- Private methods
 
 void Solver::verifyConfigurationDatabase(
-        const boost::shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<tbox::Database>& config_db,
         const bool verify_patch_hierarchy) const
 {
     // --- Check arguments
@@ -431,7 +428,7 @@ void Solver::verifyConfigurationDatabase(
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'PQS' database missing from 'config_db'");
     }
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
     // Algorithms database
@@ -504,7 +501,7 @@ void Solver::verifyConfigurationDatabase(
 
     // Verify Geometry and PatchHierarchy databases
     if (verify_patch_hierarchy) {
-        boost::shared_ptr<tbox::Database> samrai_config_db =
+        shared_ptr<tbox::Database> samrai_config_db =
             config_db->getDatabase("SAMRAI");
         if (!samrai_config_db->isDatabase("Geometry")) {
             PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -517,7 +514,7 @@ void Solver::verifyConfigurationDatabase(
         }
 
         // Verify SAMRAI::Geometry database
-        boost::shared_ptr<tbox::Database> geometry_config_db =
+        shared_ptr<tbox::Database> geometry_config_db =
             samrai_config_db->getDatabase("Geometry");
         if (!geometry_config_db->isInteger("dim")) {
             PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -528,7 +525,7 @@ void Solver::verifyConfigurationDatabase(
 }
 
 void Solver::loadConfiguration(
-        const boost::shared_ptr<tbox::Database>& config_db)
+        const shared_ptr<tbox::Database>& config_db)
 {
     // --- Check arguments
 
@@ -539,7 +536,7 @@ void Solver::loadConfiguration(
 
     // --- Load configuration parameters
 
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
     // Physical parameters
@@ -616,30 +613,30 @@ void Solver::loadConfiguration(
         }
     }
 
-    d_max_stencil_width = boost::shared_ptr<hier::IntVector>(
+    d_max_stencil_width = shared_ptr<hier::IntVector>(
         new hier::IntVector(d_patch_hierarchy->getDim(), stencil_width));
 
 } // Solver::loadConfiguration()
 
 void Solver::createPatchHierarchy(
-        const boost::shared_ptr<tbox::Database>& config_db)
+        const shared_ptr<tbox::Database>& config_db)
 {
     // Preparations
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
-    boost::shared_ptr<tbox::Database> geometry_config_db =
+    shared_ptr<tbox::Database> geometry_config_db =
         samrai_config_db->getDatabase("Geometry");
 
     // Create CartesianGridGeometry
     const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
-    boost::shared_ptr<geom::CartesianGridGeometry> grid_geometry =
-        boost::shared_ptr<geom::CartesianGridGeometry>(
+    shared_ptr<geom::CartesianGridGeometry> grid_geometry =
+        shared_ptr<geom::CartesianGridGeometry>(
             new geom::CartesianGridGeometry(
                 dim, "CartesianGeometry",
                 samrai_config_db->getDatabase("Geometry")));
 
     // Create PatchHierarchy
-    d_patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
+    d_patch_hierarchy = shared_ptr<hier::PatchHierarchy>(
         new hier::PatchHierarchy("PatchHierarchy", grid_geometry,
             samrai_config_db->getDatabase("PatchHierarchy")));
 
@@ -665,26 +662,26 @@ void Solver::setupSimulationVariables()
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
     // Get variable contexts
-    boost::shared_ptr<hier::VariableContext> pqs_context =
+    shared_ptr<hier::VariableContext> pqs_context =
         var_db->getContext("pqs");
-    boost::shared_ptr<hier::VariableContext> lsm_current_context =
+    shared_ptr<hier::VariableContext> lsm_current_context =
         var_db->getContext("lsm_current");
-    boost::shared_ptr<hier::VariableContext> lsm_next_context =
+    shared_ptr<hier::VariableContext> lsm_next_context =
         var_db->getContext("lsm_next");
-    boost::shared_ptr<hier::VariableContext> computed_context =
+    shared_ptr<hier::VariableContext> computed_context =
         var_db->getContext("computed");  // computed from phi or psi
-    boost::shared_ptr<hier::VariableContext> samr_context =
+    shared_ptr<hier::VariableContext> samr_context =
         var_db->getContext("SAMR");  // variable that supports SAMR
 
     // phi (fluid-fluid interface)
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > phi_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > phi_variable;
     if (var_db->checkVariableExists("phi")) {
         phi_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("phi"));
     } else {
         const int depth = 1;
-        phi_variable = boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+        phi_variable = shared_ptr< pdat::CellVariable<PQS_REAL> >(
             new pdat::CellVariable<PQS_REAL>(dim, "phi", depth));
     }
 
@@ -706,14 +703,14 @@ void Solver::setupSimulationVariables()
     d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
     // psi (solid-pore interface)
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > psi_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > psi_variable;
     if (var_db->checkVariableExists("psi")) {
         psi_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("psi"));
     } else {
         const int depth = 1;
-        psi_variable = boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+        psi_variable = shared_ptr< pdat::CellVariable<PQS_REAL> >(
             new pdat::CellVariable<PQS_REAL>(dim, "psi", depth));
     }
     d_psi_id =
@@ -723,15 +720,15 @@ void Solver::setupSimulationVariables()
     d_permanent_variables.setFlag(d_psi_id);
 
     // grad psi (solid-pore interface)
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > grad_psi_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > grad_psi_variable;
     if (var_db->checkVariableExists("grad psi")) {
         grad_psi_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("grad psi"));
     } else {
         const int depth = dim.getValue();
         grad_psi_variable =
-            boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+            shared_ptr< pdat::CellVariable<PQS_REAL> >(
                 new pdat::CellVariable<PQS_REAL>(dim, "grad psi", depth));
     }
     d_grad_psi_id =
@@ -743,15 +740,15 @@ void Solver::setupSimulationVariables()
     /* TODO: review to see if these are needed
 
     // normal velocity
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > normal_velocity_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > normal_velocity_variable;
     if (var_db->checkVariableExists("normal velocity")) {
         normal_velocity_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("normal velocity"));
     } else {
         const int depth = 1;
         normal_velocity_variable =
-            boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+            shared_ptr< pdat::CellVariable<PQS_REAL> >(
                 new pdat::CellVariable<PQS_REAL>(dim, "normal velocity",
                                                     depth));
     }
@@ -762,15 +759,15 @@ void Solver::setupSimulationVariables()
     d_intermediate_variables.setFlag(d_normal_velocity_id);
 
     // vector velocity
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > vector_velocity_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > vector_velocity_variable;
     if (var_db->checkVariableExists("vector velocity")) {
         vector_velocity_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("vector velocity"));
     } else {
         const int depth = dim.getValue();
         vector_velocity_variable =
-            boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+            shared_ptr< pdat::CellVariable<PQS_REAL> >(
                 new pdat::CellVariable<PQS_REAL>(dim, "vector velocity",
                                                  depth));
     }
@@ -783,14 +780,14 @@ void Solver::setupSimulationVariables()
     */
 
     // RHS of level set evolution equation
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > lse_rhs_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > lse_rhs_variable;
     if (var_db->checkVariableExists("LSE RHS")) {
         lse_rhs_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("LSE RHS"));
     } else {
         const int depth = 1;
-        lse_rhs_variable = boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+        lse_rhs_variable = shared_ptr< pdat::CellVariable<PQS_REAL> >(
             new pdat::CellVariable<PQS_REAL>(dim, "LSE RHS", depth));
     }
     d_lse_rhs_id =
@@ -800,15 +797,15 @@ void Solver::setupSimulationVariables()
     d_intermediate_variables.setFlag(d_lse_rhs_id);
 
     // control volume
-    boost::shared_ptr< pdat::CellVariable<PQS_REAL> > control_volume_variable;
+    shared_ptr< pdat::CellVariable<PQS_REAL> > control_volume_variable;
     if (var_db->checkVariableExists("control volume")) {
         control_volume_variable =
-            BOOST_CAST<pdat::CellVariable<PQS_REAL>, hier::Variable>(
+            SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
                 var_db->getVariable("control volume"));
     } else {
         const int depth = 1;
         control_volume_variable =
-            boost::shared_ptr< pdat::CellVariable<PQS_REAL> >(
+            shared_ptr< pdat::CellVariable<PQS_REAL> >(
                 new pdat::CellVariable<PQS_REAL>(dim, "control volume", depth));
     }
     d_control_volume_id =
@@ -820,9 +817,9 @@ void Solver::setupSimulationVariables()
 } // Solver::setupSimulationVariables()
 
 void Solver::setupGridManagement(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+        const shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy)
 {
     // --- Check arguments
@@ -837,20 +834,20 @@ void Solver::setupGridManagement(
     // --- Preparations
 
     // Get SAMRAI configuration database
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
     // --- Construct SAMRAI objects
 
     // Construct box generator and load balancer objects
-    boost::shared_ptr<mesh::BergerRigoutsos> box_generator =
-        boost::shared_ptr<mesh::BergerRigoutsos>(
+    shared_ptr<mesh::BergerRigoutsos> box_generator =
+        shared_ptr<mesh::BergerRigoutsos>(
             new mesh::BergerRigoutsos(
                 d_patch_hierarchy->getDim(),
                 samrai_config_db->getDatabase("BoxGenerator")));
 
-    boost::shared_ptr<mesh::ChopAndPackLoadBalancer> load_balancer =
-        boost::shared_ptr<mesh::ChopAndPackLoadBalancer> (
+    shared_ptr<mesh::ChopAndPackLoadBalancer> load_balancer =
+        shared_ptr<mesh::ChopAndPackLoadBalancer> (
             new mesh::ChopAndPackLoadBalancer(
                 d_patch_hierarchy->getDim(),
                 "LoadBalancer",
@@ -858,7 +855,7 @@ void Solver::setupGridManagement(
 
     // Construct PQS::pqs::TagInitAndDataTransferModule
     d_tag_init_and_data_xfer_module =
-        boost::shared_ptr<pqs::TagInitAndDataTransferModule>(
+        shared_ptr<pqs::TagInitAndDataTransferModule>(
             new pqs::TagInitAndDataTransferModule(
                 config_db->getDatabase("PQS"),
                 d_patch_hierarchy,
@@ -871,15 +868,12 @@ void Solver::setupGridManagement(
                 *d_max_stencil_width));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
-    d_gridding_algorithm = boost::shared_ptr<mesh::GriddingAlgorithm> (
+    d_gridding_algorithm = shared_ptr<mesh::GriddingAlgorithm> (
         new mesh::GriddingAlgorithm(
             d_patch_hierarchy,
             "GriddingAlgorithm",
             samrai_config_db->getDatabase("GriddingAlgorithm"),
-            BOOST_CAST<mesh::TagAndInitializeStrategy>(
-                d_tag_init_and_data_xfer_module),
-            BOOST_CAST<mesh::BoxGeneratorStrategy>(box_generator),
-            BOOST_CAST<mesh::LoadBalanceStrategy>(load_balancer)));
+            d_tag_init_and_data_xfer_module, box_generator, load_balancer));
 
 } // Solver::setupGridManagement()
 

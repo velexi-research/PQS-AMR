@@ -109,9 +109,6 @@
 // Standard library
 #include <ostream>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/IntVector.h"
@@ -196,11 +193,11 @@ public:
      *
      * patch_hierarchy: PatchHierarchy to use for simulation
      */
-    Solver(const boost::shared_ptr<tbox::Database>& config_db,
-           const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-           const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+    Solver(const shared_ptr<tbox::Database>& config_db,
+           const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+           const shared_ptr<pqs::InterfaceInitStrategy>&
                    interface_init_strategy,
-           const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL);
+           const shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL);
 
     /*!
      * Default destructor frees memory allocated for simulation.
@@ -315,7 +312,7 @@ public:
      * ------------
      * pointer to PatchHierarchy
      */
-    virtual boost::shared_ptr<hier::PatchHierarchy> getPatchHierarchy() const;
+    virtual shared_ptr<hier::PatchHierarchy> getPatchHierarchy() const;
 
     /*!
      * Get PatchData ID for level set function that defines solid-pore
@@ -398,7 +395,7 @@ protected:
     // ------ Data management
 
     // maximum stencil width (over all simulation variables and computations)
-    boost::shared_ptr<hier::IntVector> d_max_stencil_width;
+    shared_ptr<hier::IntVector> d_max_stencil_width;
 
     // ------ PatchData IDs
 
@@ -446,16 +443,16 @@ protected:
     // --- Components
 
     // PQS algorithms
-    boost::shared_ptr<pqs::Algorithms> d_pqs_algorithms;
+    shared_ptr<pqs::Algorithms> d_pqs_algorithms;
 
     // SAMR grid
-    boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
-    boost::shared_ptr<mesh::GriddingAlgorithm> d_gridding_algorithm;
-    boost::shared_ptr<pqs::TagInitAndDataTransferModule>
+    shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
+    shared_ptr<mesh::GriddingAlgorithm> d_gridding_algorithm;
+    shared_ptr<pqs::TagInitAndDataTransferModule>
             d_tag_init_and_data_xfer_module;
 
     // Boundary conditions
-    //boost::shared_ptr<BoundaryConditionModule> d_bc_module;
+    //shared_ptr<BoundaryConditionModule> d_bc_module;
     //tbox::Array<hier::IntVector> d_lower_bc_phi;
     //tbox::Array<hier::IntVector> d_upper_bc_phi;
     //tbox::Array<hier::IntVector> d_lower_bc_psi;
@@ -483,7 +480,7 @@ private:
      *   containing error information.
      */
     void verifyConfigurationDatabase(
-        const boost::shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<tbox::Database>& config_db,
         const bool verify_patch_hierarchy=false) const;
 
     /*
@@ -493,13 +490,13 @@ private:
      * ----------
      * config_db: database containing configuration parameters
      */
-    void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
+    void loadConfiguration(const shared_ptr<tbox::Database>& config_db);
 
     /*
      * Create PatchHierarchy.
      */
     void createPatchHierarchy(
-        const boost::shared_ptr<tbox::Database>& config_db);
+        const shared_ptr<tbox::Database>& config_db);
 
     /*
      * Set up simulation variables.
@@ -524,9 +521,9 @@ private:
      * None
      */
     void setupGridManagement(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+        const shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy);
 
     /*

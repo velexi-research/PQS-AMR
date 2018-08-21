@@ -46,9 +46,6 @@
 // Standard
 #include <ostream>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/Patch.h"
@@ -104,7 +101,7 @@ public:
      * grad_psi_id: PatchData ID for the gradient of the level set
      *     function for the solid-pore interface
      */
-    Algorithms(const boost::shared_ptr<tbox::Database>& config_db,
+    Algorithms(const shared_ptr<tbox::Database>& config_db,
                const int lse_rhs_id,
                const int psi_id,
                const int grad_psi_id = 0);
@@ -146,7 +143,7 @@ public:
      * maximum stable timestep on Patch
      */
     double computePrescribedCurvatureModelRHS(
-        const boost::shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch> patch,
         const int phi_id) const;
 
     /*!
@@ -170,7 +167,7 @@ public:
      * maximum stable timestep on Patch
      */
     double computeSlightlyCompressibleModelRHS(
-        const boost::shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch> patch,
         const int phi_id,
         const double volume) const;
 
@@ -253,7 +250,7 @@ private:
      *   containing error information.
      */
     void verifyConfigurationDatabase(
-            const boost::shared_ptr<tbox::Database>& config_db) const;
+            const shared_ptr<tbox::Database>& config_db) const;
 
     /*
      * Load configuration parameters from specified database.
@@ -262,7 +259,7 @@ private:
      * ----------
      * config_db: database containing configuration parameters
      */
-    void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
+    void loadConfiguration(const shared_ptr<tbox::Database>& config_db);
 
     /*
      * Private copy constructor to prevent use.

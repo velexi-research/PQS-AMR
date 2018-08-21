@@ -23,9 +23,6 @@
 #include <string>
 #include <vector>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/hier/BaseGridGeometry.h"
 #include "SAMRAI/hier/ComponentSelector.h"
@@ -71,10 +68,10 @@ const string TagInitAndDataTransferModule::s_object_name =
 
 // Constructor
 TagInitAndDataTransferModule::TagInitAndDataTransferModule(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+        const std::shared_ptr<tbox::Database>& config_db,
+        const std::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const std::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const std::shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
         const int phi_pqs_id,
         const int phi_lsm_current_id,
@@ -138,7 +135,7 @@ TagInitAndDataTransferModule::~TagInitAndDataTransferModule()
     for (int level_num = 0;
             level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
 
-        boost::shared_ptr<hier::PatchLevel> patch_level =
+        std::shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
 
         patch_level->deallocatePatchData(d_scratch_variables);
@@ -175,12 +172,12 @@ void TagInitAndDataTransferModule::fillGhostCells(
 } // TagInitAndDataTransferModule::fillGhostCells()
 
 void TagInitAndDataTransferModule::initializeLevelData(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const std::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
         const double init_data_time,
         const bool can_be_refined,
         const bool initial_time,
-        const boost::shared_ptr<hier::PatchLevel>& old_patch_level,
+        const std::shared_ptr<hier::PatchLevel>& old_patch_level,
         const bool allocate_data)
 {
     // Check arguments
@@ -209,7 +206,7 @@ void TagInitAndDataTransferModule::initializeLevelData(
     }
 
     // Get PatchLevel
-    boost::shared_ptr<hier::PatchLevel> patch_level =
+    std::shared_ptr<hier::PatchLevel> patch_level =
         patch_hierarchy->getPatchLevel(level_num);
 
     // Allocate PatchData
@@ -226,7 +223,7 @@ void TagInitAndDataTransferModule::initializeLevelData(
         for (hier::PatchLevel::Iterator pi(patch_level->begin());
                 pi!=patch_level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            std::shared_ptr<hier::Patch> patch = *pi;
             if (patch == NULL) {
                 PQS_ERROR(this, "initializeLevelData",
                           "Null Patch pointer found when iterating over "
@@ -242,7 +239,7 @@ void TagInitAndDataTransferModule::initializeLevelData(
     } else {
         // If appropriate, fill new PatchLevel with data from the old PatchLevel
         if ((level_num > 0) || (old_patch_level!=NULL)) {
-            boost::shared_ptr<xfer::RefineSchedule> sched =
+            std::shared_ptr<xfer::RefineSchedule> sched =
                 d_xfer_fill_new_level->createSchedule(
                 patch_level, old_patch_level, level_num-1,
                 patch_hierarchy, NULL);
@@ -259,7 +256,7 @@ void TagInitAndDataTransferModule::initializeLevelData(
 } // TagInitAndDataTransferModule::initializeLevelData()
 
 void TagInitAndDataTransferModule::resetHierarchyConfiguration(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const std::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int coarsest_level_num,
         const int finest_level_num)
 {
@@ -307,7 +304,7 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
             level_num <= finest_level_num;
             level_num++) {
 
-        boost::shared_ptr<hier::PatchLevel> patch_level =
+        std::shared_ptr<hier::PatchLevel> patch_level =
             patch_hierarchy->getPatchLevel(level_num);
 
         if (level_num == 0) {
@@ -342,7 +339,7 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
 } // TagInitAndDataTransferModule::resetHierarchyConfiguration()
 
 void TagInitAndDataTransferModule::tagCellsForRefinement(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const std::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
         const int regrid_cycle,
         const double regrid_time,
@@ -371,14 +368,14 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
     }
 
     // Get PatchLevel
-    boost::shared_ptr<hier::PatchLevel> patch_level =
+    std::shared_ptr<hier::PatchLevel> patch_level =
         patch_hierarchy->getPatchLevel(level_num);
 
     // Initialize data on Patches on the PatchLevel.
     for (hier::PatchLevel::Iterator pi(patch_level->begin());
             pi!=patch_level->end(); pi++) {
 
-        boost::shared_ptr<hier::Patch> patch = *pi;
+        std::shared_ptr<hier::Patch> patch = *pi;
         if (patch == NULL) {
         PQS_ERROR(this, "initializeLevelData",
                   "Null Patch pointer found when iterating over "
@@ -386,8 +383,8 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
         }
 
         // TODO: implement actual cell tagging algorithm
-        boost::shared_ptr< pdat::CellData<int> > tag_data =
-            BOOST_CAST<pdat::CellData<int>, hier::PatchData>(
+        std::shared_ptr< pdat::CellData<int> > tag_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<int> >(
                 patch->getPatchData(tag_id));
 
         tag_data->getPointer()[0] = 1;
@@ -436,12 +433,12 @@ void TagInitAndDataTransferModule::printClassData(ostream& os) const
 // --- Private methods
 
 void TagInitAndDataTransferModule::loadConfiguration(
-        const boost::shared_ptr<tbox::Database>& config_db)
+        const std::shared_ptr<tbox::Database>& config_db)
 {
 } // TagInitAndDataTransferModule::loadConfiguration()
 
 void TagInitAndDataTransferModule::setupDataTransferObjects(
-        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry,
+        const std::shared_ptr<hier::BaseGridGeometry>& grid_geometry,
         const hier::IntVector& max_stencil_width)
 {
     // --- Preparations
@@ -457,11 +454,11 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
     // --- Create PatchData for data transfer scratch space
 
     // Get 'scratch' variable context
-    boost::shared_ptr<hier::VariableContext> scratch_context =
+    std::shared_ptr<hier::VariableContext> scratch_context =
         var_db->getContext("scratch");
 
     // Get variable associated with d_phi_lsm_current_id
-    boost::shared_ptr< hier::Variable > phi_variable;
+    std::shared_ptr< hier::Variable > phi_variable;
     if (!var_db->mapIndexToVariable(d_phi_lsm_current_id, phi_variable)) {
         PQS_ERROR(this, "setupDataTransferObjects",
                   "Error mapping 'd_phi_lsm_current_id' to Variable object.");
@@ -472,7 +469,7 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
                                            scratch_ghost_cell_width);
 
     // Get variable associated with d_psi_id
-    boost::shared_ptr< hier::Variable > psi_variable;
+    std::shared_ptr< hier::Variable > psi_variable;
     if (!var_db->mapIndexToVariable(d_psi_id, psi_variable)) {
         PQS_ERROR(this, "setupDataTransferObjects",
                   "Error mapping 'd_psi_id' to Variable object.");
@@ -486,17 +483,17 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
     // --- Get refinement operators for filling PatchData from coarser
     //     PatchLevels
 
-    boost::shared_ptr<hier::RefineOperator> phi_linear_refine_op =
+    std::shared_ptr<hier::RefineOperator> phi_linear_refine_op =
         grid_geometry->lookupRefineOperator(phi_variable, "LINEAR_REFINE");
 
-    boost::shared_ptr<hier::RefineOperator> psi_linear_refine_op =
+    std::shared_ptr<hier::RefineOperator> psi_linear_refine_op =
         grid_geometry->lookupRefineOperator(psi_variable, "LINEAR_REFINE");
 
     // --- Set up data transfer objects
 
     // Filling a new level (used during initialization of a PatchLevel)
     d_xfer_fill_new_level =
-        boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
+        std::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
 
     d_xfer_fill_new_level->registerRefine(
         d_phi_pqs_id, d_phi_pqs_id, d_phi_scratch_id, phi_linear_refine_op);
@@ -505,13 +502,13 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
 
     // Filling a ghost cells during time integration of level set functions
     d_xfer_fill_bdry_lsm_current =
-        boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
+        std::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
     d_xfer_fill_bdry_lsm_current->registerRefine(
         d_phi_lsm_current_id, d_phi_lsm_current_id, d_phi_scratch_id,
         phi_linear_refine_op);
 
     d_xfer_fill_bdry_lsm_next =
-        boost::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
+        std::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
     d_xfer_fill_bdry_lsm_next->registerRefine(
         d_phi_lsm_next_id, d_phi_lsm_next_id, d_phi_scratch_id,
         phi_linear_refine_op);

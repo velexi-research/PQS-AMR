@@ -22,9 +22,6 @@
 #include <stddef.h>
 #include <string>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/geom/CartesianGridGeometry.h"
@@ -72,13 +69,13 @@ pqsTest::pqsTest() {
 
     // --- Construct configuration database
 
-    config_db = boost::shared_ptr<tbox::Database>(
+    config_db = shared_ptr<tbox::Database>(
         new tbox::MemoryDatabase("Configuration Parameters"));
 
     // ------ PQS configuration
 
     // PQS database
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->putDatabase("PQS");
 
     // Physical parameters
@@ -95,11 +92,11 @@ pqsTest::pqsTest() {
     pqs_config_db->putInteger("time_integration_order", 1);
 
     // Algorithms database
-    boost::shared_ptr<tbox::Database> algorithms_config_db =
+    shared_ptr<tbox::Database> algorithms_config_db =
         pqs_config_db->putDatabase("Algorithms");
 
     // Slightly Compressible Model database
-    boost::shared_ptr<tbox::Database> scm_config_db =
+    shared_ptr<tbox::Database> scm_config_db =
         algorithms_config_db->putDatabase("SlightlyCompressibleModel");
     scm_config_db->putDouble("reference_pressure", 1.0);
     scm_config_db->putDouble("bulk_modulus", 1.0);
@@ -109,19 +106,19 @@ pqsTest::pqsTest() {
     // ------ SAMRAI configuration
 
     // SAMRAI database
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->putDatabase("SAMRAI");
 
     // BoxGenerator database
-    boost::shared_ptr<tbox::Database> box_generator_config_db =
+    shared_ptr<tbox::Database> box_generator_config_db =
         samrai_config_db->putDatabase("BoxGenerator");
 
     // LoadBalancer database
-    boost::shared_ptr<tbox::Database> load_balancer_config_db =
+    shared_ptr<tbox::Database> load_balancer_config_db =
         samrai_config_db->putDatabase("LoadBalancer");
 
     // GriddingAlgorithm database
-    boost::shared_ptr<tbox::Database> gridding_algorithm_config_db =
+    shared_ptr<tbox::Database> gridding_algorithm_config_db =
         samrai_config_db->putDatabase("GriddingAlgorithm");
 
     // --- Initialize PQS objects
@@ -130,11 +127,11 @@ pqsTest::pqsTest() {
     solver = NULL;
 
     // TestPoreInitModule (implements PoreInitStrategy)
-    pore_init_strategy = boost::shared_ptr<pqs::PoreInitStrategy>(
+    pore_init_strategy = shared_ptr<pqs::PoreInitStrategy>(
         new TestPoreInitModule());
 
     // TestInterfaceInitModule (implements InterfaceInitStrategy)
-    interface_init_strategy = boost::shared_ptr<pqs::InterfaceInitStrategy>(
+    interface_init_strategy = shared_ptr<pqs::InterfaceInitStrategy>(
         new TestInterfaceInitModule());
 } // pqsTest::pqsTest()
 
@@ -163,9 +160,9 @@ pqsTest::~pqsTest() {
 } // pqsTest::~pqsTest()
 
 void pqsTest::initializeGeometryAndHierarchy(
-        boost::shared_ptr<tbox::Database> config_db,
-        boost::shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
-        boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        shared_ptr<tbox::Database> config_db,
+        shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
+        shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int num_dimensions)
 {
     // --- Check arguments
@@ -183,15 +180,15 @@ void pqsTest::initializeGeometryAndHierarchy(
 
     // --- Preparations
 
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
     // Geometry database
-    boost::shared_ptr<tbox::Database> geometry_config_db =
+    shared_ptr<tbox::Database> geometry_config_db =
         samrai_config_db->putDatabase("Geometry");
 
     // PatchHierarchy database
-    boost::shared_ptr<tbox::Database> patch_hierarchy_config_db =
+    shared_ptr<tbox::Database> patch_hierarchy_config_db =
         samrai_config_db->putDatabase("PatchHierarchy");
 
     // --- Geometry configuration
@@ -251,12 +248,12 @@ void pqsTest::initializeGeometryAndHierarchy(
     // --- Initialize Geometry and PatchHierarchy
 
     // Geometry
-    grid_geometry = boost::shared_ptr<geom::CartesianGridGeometry>(
+    grid_geometry = shared_ptr<geom::CartesianGridGeometry>(
         new geom::CartesianGridGeometry(dim, "TestCartesianGeometry",
                                         geometry_config_db));
 
     // PatchHierarchy
-    patch_hierarchy = boost::shared_ptr<hier::PatchHierarchy>(
+    patch_hierarchy = shared_ptr<hier::PatchHierarchy>(
         new hier::PatchHierarchy("TestPatchHierarchy", grid_geometry,
                                  patch_hierarchy_config_db));
 

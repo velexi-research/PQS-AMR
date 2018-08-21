@@ -110,9 +110,6 @@
 #include <ostream>
 #include <vector>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/PatchHierarchy.h"
@@ -187,10 +184,10 @@ public:
      *
      */
     TagInitAndDataTransferModule(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const boost::shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
-        const boost::shared_ptr<pqs::InterfaceInitStrategy>&
+        const shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
+        const shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
         const int phi_pqs_id,
         const int phi_lsm_current_id,
@@ -292,13 +289,13 @@ public:
      *   new PatchLevels into PatchHierarchy objects.
      */
     virtual void initializeLevelData(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
         const double init_data_time,
         const bool can_be_refined,
         const bool initial_time,
-        const boost::shared_ptr<hier::PatchLevel>& old_patch_level =
-            boost::shared_ptr<hier::PatchLevel>(),
+        const shared_ptr<hier::PatchLevel>& old_patch_level =
+            shared_ptr<hier::PatchLevel>(),
         const bool allocate_data = true);
 
     /*!
@@ -326,7 +323,7 @@ public:
      *
      */
     virtual void resetHierarchyConfiguration(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int coarsest_level_num,
         const int finest_level_num);
 
@@ -368,7 +365,7 @@ public:
      *   PatchData associated with 'tag_id' to 1.
      */
     virtual void tagCellsForRefinement(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
         const int regrid_cycle,
         const double regrid_time,
@@ -461,7 +458,7 @@ public:
      * for refinement.
      */
     virtual void preprocessErrorEstimation(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
         const int cycle,
         const double regrid_time,
@@ -544,19 +541,19 @@ public:
      * new PatchLevels during regridding.
      */
     virtual void processHierarchyBeforeAddingNewLevel(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
-        const boost::shared_ptr<hier::BoxLevel>& new_box_level) {}
+        const shared_ptr<hier::BoxLevel>& new_box_level) {}
 
     /*!
      * No-op because no special processing is required before a PatchLevel is
      * removed from the PatchHierarchy during regrid.
      */
     virtual void processLevelBeforeRemoval(
-        const boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         const int level_num,
-        const boost::shared_ptr<hier::PatchLevel>& old_patch_level =
-            boost::shared_ptr<hier::PatchLevel>()) {}
+        const shared_ptr<hier::PatchLevel>& old_patch_level =
+            shared_ptr<hier::PatchLevel>()) {}
 
     //! @}
 
@@ -615,23 +612,23 @@ protected:
     // --- Components
 
     // SAMRAI components
-    boost::shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
+    shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
 
     // Pore initialization
-    boost::shared_ptr<pqs::PoreInitStrategy> d_pore_init_strategy;
+    shared_ptr<pqs::PoreInitStrategy> d_pore_init_strategy;
 
     // Interface initialization
-    boost::shared_ptr<pqs::InterfaceInitStrategy> d_interface_init_strategy;
+    shared_ptr<pqs::InterfaceInitStrategy> d_interface_init_strategy;
 
     // Data transfer
-    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
+    shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
 
-    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
-    vector< boost::shared_ptr<xfer::RefineSchedule> >
+    shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
+    vector< shared_ptr<xfer::RefineSchedule> >
             d_xfer_fill_bdry_schedule_lsm_current;
 
-    boost::shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
-    vector< boost::shared_ptr<xfer::RefineSchedule> >
+    shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
+    vector< shared_ptr<xfer::RefineSchedule> >
             d_xfer_fill_bdry_schedule_lsm_next;
 
     // --- Object name
@@ -644,7 +641,7 @@ private:
     /*
      * Load configuration parameters from specified database.
      */
-    void loadConfiguration(const boost::shared_ptr<tbox::Database>& config_db);
+    void loadConfiguration(const shared_ptr<tbox::Database>& config_db);
 
     /*
      * Set up data transfer objects and associated scratch space variables.
@@ -656,7 +653,7 @@ private:
      * max_stencil_width: maximum stencil width required for computations
      */
     void setupDataTransferObjects(
-        const boost::shared_ptr<hier::BaseGridGeometry>& grid_geometry,
+        const shared_ptr<hier::BaseGridGeometry>& grid_geometry,
         const hier::IntVector& max_stencil_width);
 
     /*

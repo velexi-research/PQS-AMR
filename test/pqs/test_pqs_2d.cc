@@ -18,20 +18,13 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
-#include <sstream>
-#include <stddef.h>
-
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include <memory>
 
 // Google Test
 #include "gtest/gtest.h"
-#include "gtest/gtest-message.h"
-#include "gtest/gtest-test-part.h"
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/tbox/Database.h"
 
 // PQS
@@ -66,10 +59,10 @@ TEST_F(pqsTest, test_Solver_equilibrateInterface_2d)
                                             num_dimensions);
 
     // Configuration databases
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
     // Construct PQS::pqs::Solver object
@@ -101,10 +94,10 @@ TEST_F(pqsTest, test_Solver_advanceInterface_2d)
                                             num_dimensions);
 
     // Configuration databases
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
     // --- Exercise functionality

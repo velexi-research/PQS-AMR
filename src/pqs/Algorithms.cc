@@ -18,12 +18,10 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
+#include <memory>
 #include <sstream>
 #include <stddef.h>
 #include <string>
-
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 // SAMRAI
 #include "SAMRAI/geom/CartesianPatchGeometry.h"
@@ -57,7 +55,7 @@ namespace pqs {
 // --- Public methods
 
 Algorithms::Algorithms(
-        const boost::shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<tbox::Database>& config_db,
         const int lse_rhs_id,
         const int psi_id,
         const int grad_psi_id)
@@ -87,7 +85,7 @@ Algorithms::Algorithms(
 } // Algorithms::Algorithms()
 
 double Algorithms::computePrescribedCurvatureModelRHS(
-        const boost::shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch> patch,
         const int phi_id) const
 {
     patch->getPatchData(phi_id);
@@ -95,7 +93,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 } // Algorithms::computePrescribedCurvatureModelRHS()
 
 double Algorithms::computeSlightlyCompressibleModelRHS(
-        const boost::shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch> patch,
         const int phi_id,
         const double volume) const
 {
@@ -105,16 +103,16 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
     double max_stable_dt;
 
     // Get geometry parameters
-    boost::shared_ptr<geom::CartesianPatchGeometry> patch_geom =
-            BOOST_CAST<geom::CartesianPatchGeometry, hier::PatchGeometry>(
+    shared_ptr<geom::CartesianPatchGeometry> patch_geom =
+            SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
                 patch->getPatchGeometry());
     const double* dx = patch_geom->getDx();
 
     // ------- Get pointers to data and index space ranges
 
     // RHS
-    boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-            BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+    shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(d_lse_rhs_id));
 
     hier::Box rhs_ghostbox = rhs_data->getGhostBox();
@@ -126,8 +124,8 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
     PQS_REAL* rhs = rhs_data->getPointer();
 
     // phi
-    boost::shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
-            BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+    shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(phi_id));
 
     hier::Box phi_ghostbox = phi_data->getGhostBox();
@@ -182,8 +180,8 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
         //     psi and grad(psi)
 
         // psi
-        boost::shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+        shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                         patch->getPatchData(d_psi_id));
 
         hier::Box psi_ghostbox = psi_data->getGhostBox();
@@ -195,8 +193,8 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
         PQS_REAL* psi = psi_data->getPointer();
 
         // grad(psi)
-        boost::shared_ptr< pdat::CellData<PQS_REAL> > grad_psi_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+        shared_ptr< pdat::CellData<PQS_REAL> > grad_psi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                         patch->getPatchData(d_grad_psi_id));
 
         hier::Box grad_psi_ghostbox = grad_psi_data->getGhostBox();
@@ -275,7 +273,7 @@ void Algorithms::printClassData(ostream& os) const
 // --- Private methods
 
 void Algorithms::verifyConfigurationDatabase(
-    const boost::shared_ptr<tbox::Database>& config_db) const
+    const shared_ptr<tbox::Database>& config_db) const
 {
     // --- Check arguments
 
@@ -291,7 +289,7 @@ void Algorithms::verifyConfigurationDatabase(
                   string("'SlightlyCompressibleModel' database ") +
                   string("missing from 'config_db'"));
     }
-    boost::shared_ptr<tbox::Database> scm_config_db =
+    shared_ptr<tbox::Database> scm_config_db =
             config_db->getDatabase("SlightlyCompressibleModel");
 
     if (!scm_config_db->isDouble("reference_pressure")) {
@@ -314,7 +312,7 @@ void Algorithms::verifyConfigurationDatabase(
 } // Algorithms::verifyConfigurationDatabase()
 
 void Algorithms::loadConfiguration(
-        const boost::shared_ptr<tbox::Database>& config_db)
+        const shared_ptr<tbox::Database>& config_db)
 {
     // --- Check arguments
 

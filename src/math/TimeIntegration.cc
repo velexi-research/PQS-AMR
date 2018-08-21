@@ -18,10 +18,8 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
+#include <memory>
 #include <stddef.h>
-
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 // SAMRAI
 #include "SAMRAI/hier/Box.h"
@@ -53,7 +51,7 @@ namespace math {
 // --- Implementation of public methods
 
 void TimeIntegration::RK1Step(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_next_id,
             const int u_current_id,
             const int rhs_id,
@@ -92,19 +90,19 @@ void TimeIntegration::RK1Step(
     // by calling Fortran routines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num=0 ; level_num < num_levels; level_num++) {
-        boost::shared_ptr<hier::PatchLevel> level =
+        shared_ptr<hier::PatchLevel> level =
             patch_hierarchy->getPatchLevel(level_num);
 
         for (hier::PatchLevel::Iterator pi(level->begin());
                 pi!=level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<hier::Patch> patch = *pi;
 
             // --- Get pointers to data and index space ranges
 
             // u_next
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_next_id));
 
             hier::Box u_next_ghostbox = u_next_data->getGhostBox();
@@ -120,8 +118,8 @@ void TimeIntegration::RK1Step(
             PQS_REAL* u_next = u_next_data->getPointer();
 
             // u_current
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_current_id));
 
             hier::Box u_current_ghostbox = u_current_data->getGhostBox();
@@ -137,8 +135,8 @@ void TimeIntegration::RK1Step(
             PQS_REAL* u_current = u_current_data->getPointer();
 
             // RHS
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(rhs_id));
 
             hier::Box rhs_ghostbox = rhs_data->getGhostBox();
@@ -195,7 +193,7 @@ void TimeIntegration::RK1Step(
 }  // TimeIntegration::RK1Step()
 
 void TimeIntegration::TVDRK2Stage1(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_stage1_id,
             const int u_current_id,
             const int rhs_id,
@@ -234,24 +232,24 @@ void TimeIntegration::TVDRK2Stage1(
     // by calling Fortran routines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num=0 ; level_num < num_levels; level_num++) {
-        boost::shared_ptr<hier::PatchLevel> level =
+        shared_ptr<hier::PatchLevel> level =
             patch_hierarchy->getPatchLevel(level_num);
 
         for (hier::PatchLevel::Iterator pi(level->begin());
                 pi!=level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<hier::Patch> patch = *pi;
 
             // --- Get pointers to data and index space ranges
 
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_stage1_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_current_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(rhs_id));
 
             // ghost box
@@ -332,7 +330,7 @@ void TimeIntegration::TVDRK2Stage1(
 }  // TimeIntegration::TVDRK2Stage1(
 
 void TimeIntegration::TVDRK2Stage2(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_next_id,
             const int u_stage1_id,
             const int u_current_id,
@@ -376,27 +374,27 @@ void TimeIntegration::TVDRK2Stage2(
     // by calling Fortran routines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num=0 ; level_num < num_levels; level_num++) {
-        boost::shared_ptr<hier::PatchLevel> level =
+        shared_ptr<hier::PatchLevel> level =
             patch_hierarchy->getPatchLevel(level_num);
 
         for (hier::PatchLevel::Iterator pi(level->begin());
                 pi!=level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<hier::Patch> patch = *pi;
 
             // --- Get pointers to data and index space ranges
 
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_next_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_stage1_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_current_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(rhs_id));
 
             // ghost box
@@ -494,7 +492,7 @@ void TimeIntegration::TVDRK2Stage2(
 }  // TimeIntegration::TVDRK2Stage2(
 
 void TimeIntegration::TVDRK3Stage1(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_stage1_id,
             const int u_current_id,
             const int rhs_id,
@@ -533,24 +531,24 @@ void TimeIntegration::TVDRK3Stage1(
     // by calling Fortran routines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num=0 ; level_num < num_levels; level_num++) {
-        boost::shared_ptr<hier::PatchLevel> level =
+        shared_ptr<hier::PatchLevel> level =
             patch_hierarchy->getPatchLevel(level_num);
 
         for (hier::PatchLevel::Iterator pi(level->begin());
                 pi!=level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<hier::Patch> patch = *pi;
 
             // --- Get pointers to data and index space ranges
 
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_stage1_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_current_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(rhs_id));
 
             // ghost box
@@ -631,7 +629,7 @@ void TimeIntegration::TVDRK3Stage1(
 }  // TimeIntegration::TVDRK3Stage1(
 
 void TimeIntegration::TVDRK3Stage2(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_stage2_id,
             const int u_stage1_id,
             const int u_current_id,
@@ -675,27 +673,27 @@ void TimeIntegration::TVDRK3Stage2(
     // by calling Fortran routines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num=0 ; level_num < num_levels; level_num++) {
-        boost::shared_ptr<hier::PatchLevel> level =
+        shared_ptr<hier::PatchLevel> level =
             patch_hierarchy->getPatchLevel(level_num);
 
         for (hier::PatchLevel::Iterator pi(level->begin());
                 pi!=level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<hier::Patch> patch = *pi;
 
             // --- Get pointers to data and index space ranges
 
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage2_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_stage2_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_stage2_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_stage1_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_stage1_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_current_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(rhs_id));
 
             // ghost box
@@ -793,7 +791,7 @@ void TimeIntegration::TVDRK3Stage2(
 }  // TimeIntegration::TVDRK3Stage2(
 
 void TimeIntegration::TVDRK3Stage3(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_next_id,
             const int u_stage2_id,
             const int u_current_id,
@@ -837,27 +835,27 @@ void TimeIntegration::TVDRK3Stage3(
     // by calling Fortran routines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num=0 ; level_num < num_levels; level_num++) {
-        boost::shared_ptr<hier::PatchLevel> level =
+        shared_ptr<hier::PatchLevel> level =
             patch_hierarchy->getPatchLevel(level_num);
 
         for (hier::PatchLevel::Iterator pi(level->begin());
                 pi!=level->end(); pi++) {
 
-            boost::shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<hier::Patch> patch = *pi;
 
             // --- Get pointers to data and index space ranges
 
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_next_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_next_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_stage2_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_stage2_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_stage2_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > u_current_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(u_current_id));
-            boost::shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
-                BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+            shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch->getPatchData(rhs_id));
 
             // ghost box

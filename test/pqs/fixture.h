@@ -23,9 +23,6 @@
 // Google Test
 #include "gtest/gtest.h"
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 
@@ -56,19 +53,19 @@ protected:
     // --- Fixture data
 
     // Configuration database
-    boost::shared_ptr<tbox::Database> config_db;
+    shared_ptr<tbox::Database> config_db;
 
     // SAMRAI::geom::Geometry
-    boost::shared_ptr<geom::CartesianGridGeometry> grid_geometry;
+    shared_ptr<geom::CartesianGridGeometry> grid_geometry;
 
     // SAMRAI::hier::PatchHierarchy
-    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy;
+    shared_ptr<hier::PatchHierarchy> patch_hierarchy;
 
     // PQS::pqs::PoreInitStrategy
-    boost::shared_ptr<pqs::PoreInitStrategy> pore_init_strategy;
+    shared_ptr<pqs::PoreInitStrategy> pore_init_strategy;
 
     // PQS::pqs::InterfaceInitStrategy
-    boost::shared_ptr<pqs::InterfaceInitStrategy> interface_init_strategy;
+    shared_ptr<pqs::InterfaceInitStrategy> interface_init_strategy;
 
     // PQS::pqs::Solver
     pqs::Solver *solver;
@@ -88,9 +85,9 @@ protected:
      * PatchHierarchy based on 'num_dimensions'.
      */
     static void initializeGeometryAndHierarchy(
-            boost::shared_ptr<tbox::Database> config_db,
-            boost::shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
-            boost::shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+            shared_ptr<tbox::Database> config_db,
+            shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
+            shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
             const int num_dimensions);
 
     // --- Test management

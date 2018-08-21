@@ -18,8 +18,8 @@
 
 // --- Headers, namespaces, and type declarations
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
+// Standard library
+#include <memory>
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
@@ -49,8 +49,8 @@ namespace pqsTests {
 void TestPoreInitModule::initializePoreSpace(
         hier::Patch& patch, int psi_id)
 {
-    boost::shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
-            BOOST_CAST<pdat::CellData<PQS_REAL>, hier::PatchData>(
+    shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch.getPatchData(psi_id));
 
     psi_data->fill(1.0);

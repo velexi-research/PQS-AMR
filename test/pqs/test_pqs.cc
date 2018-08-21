@@ -18,11 +18,9 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
-#include <sstream>
+#include <memory>
 #include <stddef.h>
-
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include <sstream>
 
 // Google Test
 #include "gtest/gtest.h"
@@ -68,12 +66,12 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(config_db->isDatabase("SAMRAI"));
 
     // PQS database
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
     EXPECT_TRUE(pqs_config_db->isDouble("initial_curvature"));
 
     // SAMRAI database
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
     EXPECT_TRUE(samrai_config_db->isDatabase("Geometry"));
     EXPECT_TRUE(samrai_config_db->isDatabase("PatchHierarchy"));
@@ -82,7 +80,7 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(samrai_config_db->isDatabase("GriddingAlgorithm"));
 
     // Geometry database
-    boost::shared_ptr<tbox::Database> geometry_config_db =
+    shared_ptr<tbox::Database> geometry_config_db =
         samrai_config_db->getDatabase("Geometry");
     EXPECT_TRUE(geometry_config_db->keyExists("dim"));
     EXPECT_TRUE(geometry_config_db->keyExists("x_lo"));
@@ -104,10 +102,10 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
                                             num_dimensions);
 
     // Configuration databases
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
     // --- Exercise functionality
@@ -133,7 +131,7 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
     EXPECT_GE(solver->getInterfacePatchDataId(), 0);
 
     // PatchHierarchy configuration
-    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy =
+    shared_ptr<hier::PatchHierarchy> patch_hierarchy =
         solver->getPatchHierarchy();
     EXPECT_TRUE(patch_hierarchy);  // check that pointer is not NULL
 
@@ -155,10 +153,10 @@ TEST_F(pqsTest, test_Solver_Solver_without_patch_hierarchy)
                                             num_dimensions);
 
     // Configuration databases
-    boost::shared_ptr<tbox::Database> pqs_config_db =
+    shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
-    boost::shared_ptr<tbox::Database> samrai_config_db =
+    shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
     // --- Exercise functionality
@@ -182,7 +180,7 @@ TEST_F(pqsTest, test_Solver_Solver_without_patch_hierarchy)
     EXPECT_GE(solver->getInterfacePatchDataId(), 0);
 
     // PatchHierarchy configuration
-    boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy =
+    shared_ptr<hier::PatchHierarchy> patch_hierarchy =
         solver->getPatchHierarchy();
     EXPECT_TRUE(patch_hierarchy);  // check that pointer is not NULL
 

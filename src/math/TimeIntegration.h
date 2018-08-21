@@ -37,9 +37,6 @@
 // Standard
 #include <ostream>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 
@@ -47,6 +44,7 @@
 #include "PQS/PQS_config.h"
 
 // Namespaces
+using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations
@@ -92,7 +90,7 @@ public:
      * None
      */
     static void RK1Step(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_next_id,
             const int u_current_id,
             const int rhs_id,
@@ -133,7 +131,7 @@ public:
      * - the first stage of TVD RK2 is identical to a single RK1 step
      */
     static void TVDRK2Stage1(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_stage1_id,
             const int u_current_id,
             const int rhs_id,
@@ -162,7 +160,7 @@ public:
      * None
      */
     static void TVDRK2Stage2(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_next_id,
             const int u_stage1_id,
             const int u_current_id,
@@ -202,7 +200,7 @@ public:
      * - the first stage of TVD RK2 is identical to a single RK1 step
      */
     static void TVDRK3Stage1(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_stage1_id,
             const int u_current_id,
             const int rhs_id,
@@ -231,7 +229,7 @@ public:
      * None
      */
     static void TVDRK3Stage2(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_stage2_id,
             const int u_stage1_id,
             const int u_current_id,
@@ -261,7 +259,7 @@ public:
      * None
      */
     static void TVDRK3Stage3(
-            boost::shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+            shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int u_next_id,
             const int u_stage2_id,
             const int u_current_id,
