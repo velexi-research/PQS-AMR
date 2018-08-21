@@ -22,9 +22,6 @@ else (SINGLE_PRECISION)
     message("-- Setting floating-point precision to 'double'")
 endif (SINGLE_PRECISION)
 
-# Boost
-set(BOOST "" CACHE FILEPATH "Location of Boost library")
-
 # HDF5
 set(HDF5 "" CACHE FILEPATH "Location of HDF5 library")
 
@@ -76,12 +73,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # ----------------------------------------------------------------------
 
 # --- Software with pre-defined CMake package modules
-
-# Boost
-if (BOOST)
-    set(BOOST_ROOT ${BOOST})
-endif (BOOST)
-find_package(Boost REQUIRED)
 
 # Git
 find_package(Git)
