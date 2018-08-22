@@ -26,6 +26,7 @@
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
+#include "SAMRAI/appu/VisItDataWriter.h"
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/InputDatabase.h"
@@ -39,10 +40,9 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/utilities/error.h"
+#include "PQS/pqs/Solver.h"
 
 // Class/type declarations
-namespace PQS { namespace pqs { class Solver; } }
-namespace SAMRAI { namespace appu { class VisItDataWriter; } }
 
 // Namespaces
 using namespace std;
@@ -195,12 +195,11 @@ void run_pqs(
     }
 
     // Write VisIt data for initial time step
-    /* TODO: activate
     if ( (visit_data_writer != NULL) && (!is_from_restart) ) {
-        visit_data_writer->writePlotData(patch_hierarchy, cur_integrator_step,
+        visit_data_writer->writePlotData(pqs_solver->getPatchHierarchy(),
+                                         cur_integrator_step,
                                          current_time);
     }
-    */
 
     // --- Main time loop
     // TODO
