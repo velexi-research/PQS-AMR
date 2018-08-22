@@ -71,7 +71,7 @@ namespace PQS {
  * ------------
  * database containing configuration parameters for simulation
  */
-shared_ptr<tbox::Database> initialize_pqs(int argc, char *argv[]);
+shared_ptr<tbox::Database> initialize_pqs(int *argc, char **argv[]);
 
 /*!
  * Shut down PQS simulation.

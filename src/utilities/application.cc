@@ -20,15 +20,12 @@
 // Standard
 #include <iosfwd>
 #include <iostream>
+#include <memory>
 #include <stdlib.h>
 #include <string>
 
-// Boost
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/appu/VisItDataWriter.h"
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/InputDatabase.h"
@@ -45,6 +42,7 @@
 
 // Class/type declarations
 namespace PQS { namespace pqs { class Solver; } }
+namespace SAMRAI { namespace appu { class VisItDataWriter; } }
 
 // Namespaces
 using namespace std;
@@ -56,11 +54,11 @@ namespace PQS {
 
 // --- Function implementations
 
-boost::shared_ptr<tbox::Database> initialize_pqs(int argc, char *argv[])
+shared_ptr<tbox::Database> initialize_pqs(int *argc, char **argv[])
 {
     // --- Initialize SAMRAI
 
-    tbox::SAMRAI_MPI::init(&argc, &argv);
+    tbox::SAMRAI_MPI::init(argc, argv);
     tbox::SAMRAIManager::initialize();
     tbox::SAMRAIManager::startup();
     const tbox::SAMRAI_MPI& mpi(tbox::SAMRAI_MPI::getSAMRAIWorld());
@@ -73,29 +71,28 @@ boost::shared_ptr<tbox::Database> initialize_pqs(int argc, char *argv[])
 
     bool is_from_restart = false;
 
-    if ( (argc != 2) && (argc != 4) ) {
-        tbox::pout << "USAGE:  " << argv[0] << " <config file> "
+    if ( (*argc != 2) && (*argc != 4) ) {
+        tbox::pout << "USAGE:  " << (*argv)[0] << " <config file> "
              << "\n"
              << "<restart dir> <restore number> [options]\n"
              << "  options:\n"
              << "  none at this time"
              << endl;
-        tbox::SAMRAI_MPI::abort();
         PQS_ERROR_STATIC("pqs::application", "initialize_pqs",
                          "Invalid number of arguments passed to application.");
     } else {
-        config_file = argv[1];
-        if (argc == 4) {
-            restart_read_dir = argv[2];
-            restore_num = atoi(argv[3]);
+        config_file = (*argv)[1];
+        if (*argc == 4) {
+            restart_read_dir = (*argv)[2];
+            restore_num = atoi((*argv)[3]);
             is_from_restart = true;
         }
     }
 
     // --- Load parameters from configuration file
 
-    boost::shared_ptr<tbox::InputDatabase> config_db =
-        boost::shared_ptr<tbox::InputDatabase>(
+    shared_ptr<tbox::InputDatabase> config_db =
+        shared_ptr<tbox::InputDatabase>(
             new tbox::InputDatabase("config_db"));
     tbox::InputManager::getManager()->parseInputFile(config_file, config_db);
 
@@ -142,14 +139,14 @@ void shutdown_pqs()
 }
 
 void run_pqs(
-        const boost::shared_ptr<tbox::Database>& config_db,
-        const boost::shared_ptr<pqs::Solver>& pqs_solver)
+        const shared_ptr<tbox::Database>& config_db,
+        const shared_ptr<pqs::Solver>& pqs_solver,
+        const shared_ptr<appu::VisItDataWriter>& visit_data_writer)
 {
     // --- Preparations
 
     // Get the base name for all name strings in application
-    const string base_name =
-        config_db->getStringWithDefault("base_name", "unnamed");
+    const string base_name = config_db->getString("base_name");
 
     // Set up restart manager
     const bool is_from_restart =
@@ -172,44 +169,11 @@ void run_pqs(
     tbox::plog << "\nVariable database..." << endl;
     hier::VariableDatabase::getDatabase()->printClassData(tbox::plog);
 
-    // --- Set up visualization data writers
-
-    bool use_visit = false;
-    if (config_db->keyExists("use_visit")) {
-        use_visit = config_db->getBool("use_visit");
-    }
+    // --- Set up parameters for writing visualization files
 
     // Set up viz write interval
-    int viz_write_interval = -1;
-    if (use_visit) {
-        if (config_db->keyExists("viz_write_interval")) {
-            viz_write_interval =
-                config_db->getInteger("viz_write_interval");
-        }
-    }
-
-    // Set up extra VisIt parameters
-    int visit_number_procs_per_file = 1;
-    if (use_visit) {
-        if (config_db->keyExists("visit_number_procs_per_file")) {
-            visit_number_procs_per_file =
-                config_db->getInteger("visit_number_procs_per_file");
-        }
-    }
-
-    /* TODO: activate
-    boost::shared_ptr<appu::VisItDataWriter> visit_data_writer = 0;
-    if (use_visit) {
-        string visit_data_dir = base_name + ".visit";
-        visit_data_writer = boost::shared_ptr<appu::VisItDataWriter>
-           (new appu::VisItDataWriter(
-                dim, "VisIt Writer", visit_data_dir,
-                visit_number_procs_per_file));
-
-        // Register data to write to visualization file
-        // TODO
-    }
-    */
+    const int viz_write_interval =
+            config_db->getIntegerWithDefault("viz_write_interval", -1);
 
     // --- Initialize calculation
 
@@ -232,7 +196,7 @@ void run_pqs(
 
     // Write VisIt data for initial time step
     /* TODO: activate
-    if ( use_visit && (!is_from_restart) ) {
+    if ( (visit_data_writer != NULL) && (!is_from_restart) ) {
         visit_data_writer->writePlotData(patch_hierarchy, cur_integrator_step,
                                          current_time);
     }
@@ -275,7 +239,7 @@ void run_pqs(
         }
 
         // Write VisIt data
-        if ( use_visit && (0==cur_integrator_step%viz_write_interval) ) {
+        if ( (visit_data_writer != NULL) && (0==cur_integrator_step%viz_write_interval) ) {
             visit_data_writer->writePlotData(patch_hierarchy,
                                              cur_integrator_step,
                                              lsm_algorithm->getCurrentTime());
@@ -305,7 +269,7 @@ void run_pqs(
     }
 
     // Write VisIt data for final time step
-    if ( use_visit && (0!=cur_integrator_step%viz_write_interval) ) {
+    if ( (visit_data_writer != NULL) && (0!=cur_integrator_step%viz_write_interval) ) {
         visit_data_writer->writePlotData(patch_hierarchy, cur_integrator_step,
                                          lsm_algorithm->getCurrentTime());
     }
