@@ -1,4 +1,4 @@
-/*! \file interface_kernels_2d.h
+/*! \file interface_kernels_3d.h
  *
  * \brief
  * Header files for numerical kernels to initialize fluid-fluid
@@ -17,8 +17,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_kernels_3d_h
-#define INCLUDED_PQS_pqs_kernels_3d_h
+#ifndef INCLUDED_interface_kernels_3d_h
+#define INCLUDED_interface_kernels_3d_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,4 +65,4 @@ void INIT_BUMPY_SPHERE(
 }
 #endif
 
-#endif
+#endif // INCLUDED_interface_kernels_3d_h

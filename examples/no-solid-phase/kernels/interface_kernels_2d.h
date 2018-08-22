@@ -17,6 +17,9 @@
  * ---------------------------------------------------------------------
  */
 
+#ifndef INCLUDED_interface_kernels_2d_h
+#define INCLUDED_interface_kernels_2d_h
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,4 +65,4 @@ void INIT_STARFISH(
 }
 #endif
 
-#endif
+#endif // INCLUDED_interface_kernels_2d_h
