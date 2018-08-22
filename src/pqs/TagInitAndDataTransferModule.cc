@@ -387,7 +387,7 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
             SAMRAI_SHARED_PTR_CAST< pdat::CellData<int> >(
                 patch->getPatchData(tag_id));
 
-        tag_data->getPointer()[0] = 1;
+        tag_data->fill(1);
     }
 } // TagInitAndDataTransferModule::tagCellsForRefinement()
 
