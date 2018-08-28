@@ -104,7 +104,7 @@ public:
     Algorithms(const shared_ptr<tbox::Database>& config_db,
                const int lse_rhs_id,
                const int psi_id,
-               const int grad_psi_id = 0);
+               const int grad_psi_id = -1);
 
     /*!
      * Empty default destructor.
