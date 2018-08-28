@@ -57,3 +57,8 @@ target_link_libraries(pqs-amr-no-solid-phase
     ${SAMRAI_LIBS}
     ${HDF5_C_LIBRARIES}
     ${MPI_LIBRARY})
+
+# Add files to copy directly to build directory
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/sample-config-files)
+configure_file(sample-config-files/pqs-amr-sample-2d.conf
+               sample-config-files COPYONLY)
