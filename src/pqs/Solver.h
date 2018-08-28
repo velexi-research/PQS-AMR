@@ -161,6 +161,16 @@ typedef enum {
     SAMR = 4
 } VARIABLE_CONTEXT;
 
+/*! \enum PQS_ALGORITHM_TYPE
+ *
+ * Enumerated type for PQS algorithms.
+ *
+ */
+typedef enum {
+    PRESCRIBED_CURVATURE_MODEL = 0,
+    SLIGHTLY_COMPRESSIBLE_MODEL = 1
+} PQS_ALGORITHM_TYPE;
+
 class Solver {
 
 public:
@@ -222,24 +232,9 @@ public:
      * ----------
      * curvature: target mean curvature for steady-state interface
      *
-     * Return value
-     * ------------
-     * None
-     *
-     * Notes
-     * -----
-     * - The steady-state interface is computed using the Slightly Compressible
-     *   Model (Prodanovic and Bryant, 2006).
-     */
-    virtual void equilibrateInterface(const double curvature);
-
-    /*!
-     * Advance fluid-fluid interface.
-     *
-     * Parameters
-     * ----------
-     * curvature_step: mean curvature increment to apply to current
-     *      fluid-fluid interface
+     * algorithm_type: algorithm to use to equilibrate fluid-fluid
+     *      interface. Valid values: PRESCRIBED_CURVATURE_MODEL,
+     *      SLIGHTLY_COMPRESSIBLE_MODEL.
      *
      * Return value
      * ------------
@@ -247,10 +242,15 @@ public:
      *
      * Notes
      * -----
-     * - The new interface is computed using the Prescribed Curvature Model
-     *   (Prodanovic and Bryant, 2006).
+     * - When 'algorithm_type' is set to PRESCRIBED_CURVATURE_MODEL, the
+     *   steady-state fluid-fluid interface is computed using the Prescribed
+     *   Curvature Model (Prodanovic and Bryant, 2006).
+     * - When 'algorithm_type' is set to SLIGHTLY_COMPRESSIBLE_MODEL, the
+     *   steady-state fluid-fluid interface is computed using the Slightly
+     *   Compressible Model (Prodanovic and Bryant, 2006).
      */
-    virtual void advanceInterface(const double curvature_step);
+    virtual void equilibrateInterface(const double curvature,
+                                      const PQS_ALGORITHM_TYPE algorithm_type);
 
     //! @}
 

@@ -133,7 +133,9 @@ Solver::~Solver()
     }
 } // Solver::~Solver()
 
-void Solver::equilibrateInterface(const double curvature)
+void Solver::equilibrateInterface(
+        const double curvature,
+        const PQS_ALGORITHM_TYPE algorithm_type)
 {
     // --- Preparations
 
@@ -225,9 +227,15 @@ void Solver::equilibrateInterface(const double curvature)
 
                     // Compute RHS of level set evolution equation on Patch
                     double stable_dt_on_patch;
-                    stable_dt_on_patch =
-                        d_pqs_algorithms->computeSlightlyCompressibleModelRHS(
-                            patch, phi_id, volume);
+                    if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
+                        stable_dt_on_patch = d_pqs_algorithms->
+                                computePrescribedCurvatureModelRHS(
+                                        patch, phi_id);
+                    } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
+                        stable_dt_on_patch = d_pqs_algorithms->
+                                computeSlightlyCompressibleModelRHS(
+                                        patch, phi_id, volume);
+                    }
 
                     // Update maximum stable time step
                     if (stable_dt_on_patch < max_stable_dt_on_proc) {
@@ -332,36 +340,6 @@ void Solver::equilibrateInterface(const double curvature)
         patch_level->deallocatePatchData(d_intermediate_variables);
     }
 } // Solver::equilibrateInterface()
-
-void Solver::advanceInterface(const double curvature_step)
-{
-    // TODO
-    bool done = true;
-    while (!done) {
-        // Loop over PatchLevel in PatchHierarchy
-        for (int level_num = 0;
-                level_num < d_patch_hierarchy->getNumberOfLevels();
-                level_num++) {
-
-            shared_ptr<hier::PatchLevel> patch_level =
-                d_patch_hierarchy->getPatchLevel(level_num);
-
-            // Loop over Patches on PatchLevel
-            for (hier::PatchLevel::Iterator pi(patch_level->begin());
-                    pi!=patch_level->end(); pi++) {
-
-                shared_ptr<hier::Patch> patch = *pi;
-
-                d_pqs_algorithms->computePrescribedCurvatureModelRHS(
-                    patch, d_phi_lsm_current_id);
-            }
-        }
-
-        // * compute RHS
-        // * advance phi
-        // * computing stopping criteria
-    }
-} // Solver::advanceInterface()
 
 double Solver::getCurvature() const
 {
