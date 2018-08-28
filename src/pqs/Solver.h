@@ -238,7 +238,7 @@ public:
      *
      * Parameters
      * ----------
-     * delta_curvature: mean curvature increment to apply to current
+     * curvature_step: mean curvature increment to apply to current
      *      fluid-fluid interface
      *
      * Return value
@@ -250,7 +250,7 @@ public:
      * - The new interface is computed using the Prescribed Curvature Model
      *   (Prodanovic and Bryant, 2006).
      */
-    virtual void advanceInterface(const double delta_curvature);
+    virtual void advanceInterface(const double curvature_step);
 
     //! @}
 
@@ -282,13 +282,52 @@ public:
      *
      * - At the beginning of the simulation (i.e., before either
      *   equilibrateInterface() or advanceInterface() has been called), the
-     *   returned mean curvature value is equal to the initial target value
-     *   for the fluid-fluid interface.
+     *   returned mean curvature value is equal to the desired value for the
+     *   initial curvature of the fluid-fluid interface.
      */
     virtual double getCurvature() const;
 
     /*!
-     * Get number of curvature increments taken since the beginning of the
+     * Get initial mean curvature of fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * initial value of mean curvature
+     */
+    virtual double getInitialCurvature() const;
+
+    /*!
+     * Get final mean curvature of fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * final value of mean curvature
+     */
+    virtual double getFinalCurvature() const;
+
+    /*!
+     * Get mean curvature increment to use to advance fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * mean curvature increment
+     */
+    virtual double getCurvatureStep() const;
+
+    /*!
+     * Get number of curvature steps taken since the beginning of the
      * simulation.
      *
      * Parameters
@@ -297,9 +336,9 @@ public:
      *
      * Return value
      * ------------
-     * simulation cycle count
+     * number of steps taken since the beginning of the simulation
      */
-    virtual int getCycle() const;
+    virtual int getStepCount() const;
 
     /*!
      * Get pointer to PatchHierarchy.
@@ -369,6 +408,8 @@ protected:
 
     // PQS
     double d_initial_curvature;
+    double d_final_curvature;
+    double d_curvature_step;
 
     // Level set method parameters
     double d_lsm_t_max;
@@ -385,7 +426,7 @@ protected:
 
     // PQS
     double d_curvature;  // current value of prescribed mean curvature
-    int d_cycle;  // number of prescribed curvature steps taken
+    int d_step_count;  // number of prescribed curvature steps taken
 
     // AMR
     int d_regrid_count;

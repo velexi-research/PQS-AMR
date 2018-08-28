@@ -40,6 +40,7 @@
 #include "SAMRAI/pdat/CellVariable.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/Dimension.h"
+#include "SAMRAI/tbox/PIO.h"
 #include "SAMRAI/tbox/RestartManager.h"
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/tbox/Utilities.h"
@@ -92,7 +93,8 @@ Solver::Solver(
         createPatchHierarchy(config_db);
     }
 
-    d_cycle = 0;
+    d_curvature = 0;  // TODO fix to be correct when restarting simulation
+    d_step_count = 0;  // TODO fix to be correct when restarting simulation
 
     // Load configuration from config_db
     loadConfiguration(config_db);
@@ -112,6 +114,10 @@ Solver::Solver(
 
     // Initialize simulation
     initializeSimulation();
+
+    // Emit contents of variable database to log file.
+    tbox::plog << "\nVariable database..." << endl;
+    hier::VariableDatabase::getDatabase()->printClassData(tbox::plog);
 
 } // Solver::Solver()
 
@@ -327,7 +333,7 @@ void Solver::equilibrateInterface(const double curvature)
     }
 } // Solver::equilibrateInterface()
 
-void Solver::advanceInterface(const double delta_curvature)
+void Solver::advanceInterface(const double curvature_step)
 {
     // TODO
     bool done = true;
@@ -362,10 +368,25 @@ double Solver::getCurvature() const
     return d_curvature;
 } // Solver::getCurvature()
 
-int Solver::getCycle() const
+double Solver::getInitialCurvature() const
 {
-    return d_cycle;
-} // Solver::getCycle()
+    return d_initial_curvature;
+} // Solver::getInitialCurvature()
+
+double Solver::getFinalCurvature() const
+{
+    return d_final_curvature;
+} // Solver::getFinalCCurvature()
+
+double Solver::getCurvatureStep() const
+{
+    return d_curvature_step;
+} // Solver::getCurvatureStep()
+
+int Solver::getStepCount() const
+{
+    return d_step_count;
+} // Solver::getStepCount()
 
 shared_ptr<hier::PatchHierarchy> Solver::getPatchHierarchy() const
 {
@@ -437,6 +458,14 @@ void Solver::verifyConfigurationDatabase(
     if (!pqs_config_db->isDouble("initial_curvature")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'initial_curvature' missing from 'PQS' database");
+    }
+    if (!pqs_config_db->isDouble("final_curvature")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'final_curvature' missing from 'PQS' database");
+    }
+    if (!pqs_config_db->isDouble("curvature_step")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  "'curvature_step' missing from 'PQS' database");
     }
 
     // Level set method parameters
@@ -536,7 +565,9 @@ void Solver::loadConfiguration(
         config_db->getDatabase("PQS");
 
     // Physical parameters
-    d_curvature = pqs_config_db->getDouble("initial_curvature");
+    d_initial_curvature = pqs_config_db->getDouble("initial_curvature");
+    d_final_curvature = pqs_config_db->getDouble("final_curvature");
+    d_curvature_step = pqs_config_db->getDouble("curvature_step");
 
     // Level set method parameters
     d_lsm_t_max = pqs_config_db->getDouble("lsm_t_max");
@@ -890,7 +921,7 @@ void Solver::initializeSimulation()
             d_gridding_algorithm->makeFinerLevel(
                     0, // TODO: do we need tag buffer?
                     true, // initial_cycle=true
-                    d_cycle,
+                    d_step_count,
                     time);
         }
 
