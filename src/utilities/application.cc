@@ -27,7 +27,6 @@
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/appu/VisItDataWriter.h"
-#include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/InputDatabase.h"
 #include "SAMRAI/tbox/InputManager.h"
@@ -43,6 +42,7 @@
 #include "PQS/pqs/Solver.h"
 
 // Class/type declarations
+namespace SAMRAI { namespace hier { class PatchHierarchy; } }
 
 // Namespaces
 using namespace std;
@@ -141,14 +141,14 @@ void shutdown_pqs()
 void run_pqs(
         const shared_ptr<tbox::Database>& config_db,
         const shared_ptr<pqs::Solver>& pqs_solver,
-        const shared_ptr<appu::VisItDataWriter>& visit_data_writer)
+        const shared_ptr<appu::VisItDataWriter>& viz_data_writer)
 {
     // --- Preparations
 
     // Get the base name for all name strings in application
     const string base_name = config_db->getString("base_name");
 
-    // Set up restart manager
+    // Set up restart parameters
     const bool is_from_restart =
         config_db->getBoolWithDefault("is_from_restart", false);
 
@@ -163,116 +163,111 @@ void run_pqs(
 
     const bool write_restart = (restart_interval > 0);
 
-    // Emit contents of config database and variable database to log file.
+    // Set up visualization parameters
+    const int viz_write_interval =
+            config_db->getIntegerWithDefault("viz_write_interval", 0);
+
+    const bool write_viz_files =
+            (viz_data_writer != NULL) && (viz_write_interval > 0);
+
+    // Emit contents of config database to log file.
     tbox::plog << "Configuration database..." << endl;
     config_db->printClassData(tbox::plog);
-    tbox::plog << "\nVariable database..." << endl;
-    hier::VariableDatabase::getDatabase()->printClassData(tbox::plog);
 
-    // --- Set up parameters for writing visualization files
+    // Set up loop variables
+    double curvature = pqs_solver->getCurvature();
+    int step_count = pqs_solver->getStepCount();
 
-    // Set up viz write interval
-    const int viz_write_interval =
-            config_db->getIntegerWithDefault("viz_write_interval", -1);
+    // Set loop constants
+    shared_ptr<hier::PatchHierarchy> patch_hierarchy =
+        pqs_solver->getPatchHierarchy();
+    double final_curvature = pqs_solver->getFinalCurvature();
+    double curvature_step = pqs_solver->getCurvatureStep();
 
-    // --- Initialize calculation
+    // Initialize calculation
+    if (!is_from_restart) {
+        tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+        tbox::pout << "  Initial curvature: " << curvature << endl;
+        tbox::pout << "  Step count: " << step_count << endl;
 
-    // Close restart file before starting main time-stepping loop
-    if (is_from_restart) {
+        // TODO: Equilibrate initial fluid-fluid interface
+    } else {
+        // Simulation variables loaded from restart files, so fluid-fluid
+        // interface already equilibrated. No additional equilibration
+        // required.
+
+        // Close restart file
         restart_manager->closeRestartFile();
     }
 
-    // Set up loop variables
-    int count = 0;
-    double dt = 0; // TODO
-    double current_time = 0; // TODO
-    int cur_integrator_step = 0; // TODO
+    // Write restart and viz files for initial conditions
+    // (if this run is not from restart)
+    if (!is_from_restart) {
+        // Write restart files
+        if (write_restart) {
+            restart_manager->writeRestartFile(restart_write_dir,
+                                              step_count);
+        }
 
-    // Output initial conditions (if this run is not from restart)
-    if ( write_restart && (!is_from_restart) ) {
-        restart_manager->writeRestartFile(restart_write_dir,
-                                          cur_integrator_step);
+        // Write viz files
+        if (write_viz_files) {
+            viz_data_writer->writePlotData(patch_hierarchy, step_count,
+                                           curvature);
+        }
     }
 
-    // Write VisIt data for initial time step
-    if ( (visit_data_writer != NULL) && (!is_from_restart) ) {
-        visit_data_writer->writePlotData(pqs_solver->getPatchHierarchy(),
-                                         cur_integrator_step,
-                                         current_time);
-    }
+    // --- Main curvature-stepping loop
 
-    // --- Main time loop
-    // TODO
-    /*
-    while ( !lsm_algorithm->endTimeReached() &&
-            ((max_num_time_steps <= 0) || (count < max_num_time_steps)) ) {
+    while (curvature < final_curvature) {
 
-        tbox::pout << "++++++++++++++++++++++++++++++++++++++++++"
-            << endl;
-        tbox::pout << "  Time step (in current run): " << count << endl;
-        tbox::pout << "  Integrator time step: " << cur_integrator_step
-            << endl;
-        tbox::pout << "  Current time:  " << current_time << endl;
+        // Compute next curvature target
+        curvature += curvature_step;
+        if (final_curvature < curvature) {
+            curvature = final_curvature;
+        }
 
-        // Compute next time step
-        dt = lsm_algorithm->computeStableDt();
-        double end_time = lsm_algorithm->getEndTime();
-        if (end_time - current_time < dt) dt = end_time - current_time;
-        tbox::pout << "  dt:  " << dt << endl;
+        // Update step count
+        step_count++;
 
-        // Advance level set functions
-        lsm_algorithm->advanceLevelSetFunctions(dt);
+        tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+        tbox::pout << "  Current curvature: " << curvature << endl;
+        tbox::pout << "  Step count: " << step_count << endl;
 
-        // Add an extra line to output for aesthetic reasons
-        tbox::pout << endl;
-
-        // Output data for current time step if this is the
-        // initial time step or if the next write interval has
-        // been reached
-        cur_integrator_step = lsm_algorithm->numIntegrationStepsTaken();
+        // Update fluid-fluid interface
+        // TODO
+        // pqs_solver->advanceInterace();
 
         // Write restart file
-        if ( write_restart && (0==cur_integrator_step%restart_interval) ) {
-            restart_manager->writeRestartFile(restart_write_dir,
-                                          cur_integrator_step);
+        if (write_restart) {
+            if (step_count % restart_interval == 0) {
+                restart_manager->writeRestartFile(restart_write_dir,
+                                                  step_count);
+            }
         }
 
         // Write VisIt data
-        if ( (visit_data_writer != NULL) && (0==cur_integrator_step%viz_write_interval) ) {
-            visit_data_writer->writePlotData(patch_hierarchy,
-                                             cur_integrator_step,
-                                             lsm_algorithm->getCurrentTime());
-      }
-
-      // Update counter and current time
-      count++;
-      current_time = lsm_algorithm->getCurrentTime();
-
+        if (write_viz_files) {
+            if (step_count % viz_write_interval == 0) {
+                viz_data_writer->writePlotData(patch_hierarchy, step_count,
+                                               curvature);
+            }
+        }
     }
 
-    // Output information for final time step
-    // (if it hasn't already been output)
-    current_time = lsm_algorithm->getCurrentTime();
-    tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-    tbox::pout << "  Final time step (in current run): " << count << endl;
-    tbox::pout << "  Final integrator time step: " << cur_integrator_step
-        << endl;
-    tbox::pout << "  Current time:  " << current_time << endl;
-    tbox::pout << endl;
-    tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-
     // Write restart file for final time step
-    if ( write_restart && (0!=cur_integrator_step%restart_interval) ) {
-        restart_manager->writeRestartFile(restart_write_dir,
-                                          cur_integrator_step);
+    if (write_restart) {
+        if (step_count % restart_interval != 0) {
+            restart_manager->writeRestartFile(restart_write_dir, step_count);
+       }
     }
 
     // Write VisIt data for final time step
-    if ( (visit_data_writer != NULL) && (0!=cur_integrator_step%viz_write_interval) ) {
-        visit_data_writer->writePlotData(patch_hierarchy, cur_integrator_step,
-                                         lsm_algorithm->getCurrentTime());
+    if (write_viz_files) {
+        if (step_count % viz_write_interval != 0) {
+            viz_data_writer->writePlotData(patch_hierarchy, step_count,
+                                           curvature);
+        }
     }
-    */
 }
 
 }  // PQS namespace
