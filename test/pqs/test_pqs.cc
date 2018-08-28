@@ -65,12 +65,28 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(config_db->isDatabase("PQS"));
     EXPECT_TRUE(config_db->isDatabase("SAMRAI"));
 
-    // PQS database
+    // --- PQS database
+
     shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
     EXPECT_TRUE(pqs_config_db->isDouble("initial_curvature"));
+    EXPECT_TRUE(pqs_config_db->isDouble("final_curvature"));
+    EXPECT_TRUE(pqs_config_db->isDouble("curvature_increment"));
 
-    // SAMRAI database
+    // ------ Algorithms database
+
+    EXPECT_TRUE(pqs_config_db->isDatabase("Algorithms"));
+    shared_ptr<tbox::Database> algorithms_config_db =
+        pqs_config_db->getDatabase("Algorithms");
+
+    // PrescribedCurvatureModel database
+    EXPECT_TRUE(algorithms_config_db->isDatabase("PrescribedCurvatureModel"));
+
+    // SlightlyCompressibleModel database
+    EXPECT_TRUE(algorithms_config_db->isDatabase("SlightlyCompressibleModel"));
+
+    // --- SAMRAI database
+
     shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
     EXPECT_TRUE(samrai_config_db->isDatabase("Geometry"));
@@ -86,7 +102,6 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(geometry_config_db->keyExists("x_lo"));
     EXPECT_TRUE(geometry_config_db->keyExists("x_up"));
     EXPECT_TRUE(geometry_config_db->keyExists("domain_boxes"));
-
 }
 
 // Test case: test constructor for PQS::pqs::Solver class with PatchHierarchy
@@ -122,9 +137,11 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
     EXPECT_NE(solver, (pqs::Solver*) NULL);
 
     // Solver parameters
-    EXPECT_EQ(solver->getCurvature(),
+    EXPECT_EQ(solver->getInitialCurvature(),
               pqs_config_db->getDouble("initial_curvature"));
-    EXPECT_EQ(solver->getCycle(), 0);
+    EXPECT_EQ(solver->getFinalCurvature(),
+              pqs_config_db->getDouble("final_curvature"));
+    EXPECT_EQ(solver->getStepCount(), 0);
 
     // Solver state
     EXPECT_GE(solver->getPoreSpacePatchDataId(), 0);
@@ -171,9 +188,11 @@ TEST_F(pqsTest, test_Solver_Solver_without_patch_hierarchy)
     EXPECT_NE(solver, (pqs::Solver*) NULL);
 
     // Solver parameters
-    EXPECT_EQ(solver->getCurvature(),
+    EXPECT_EQ(solver->getInitialCurvature(),
               pqs_config_db->getDouble("initial_curvature"));
-    EXPECT_EQ(solver->getCycle(), 0);
+    EXPECT_EQ(solver->getFinalCurvature(),
+              pqs_config_db->getDouble("final_curvature"));
+    EXPECT_EQ(solver->getStepCount(), 0);
 
     // Solver state
     EXPECT_GE(solver->getPoreSpacePatchDataId(), 0);

@@ -80,6 +80,8 @@ pqsTest::pqsTest() {
 
     // Physical parameters
     pqs_config_db->putDouble("initial_curvature", 0.5);
+    pqs_config_db->putDouble("final_curvature", 1.0);
+    pqs_config_db->putDouble("curvature_increment", 0.1);
 
     // Level set method parameters
     pqs_config_db->putInteger("lsm_t_max", 1.0);
@@ -95,10 +97,16 @@ pqsTest::pqsTest() {
     shared_ptr<tbox::Database> algorithms_config_db =
         pqs_config_db->putDatabase("Algorithms");
 
+    // Prescribed Curvature Model database
+    shared_ptr<tbox::Database> pcm_config_db =
+        algorithms_config_db->putDatabase("PrescribedCurvatureModel");
+    pcm_config_db->putDouble("pressure", 1.0);
+    pcm_config_db->putDouble("surface_tension", 0.1);
+
     // Slightly Compressible Model database
     shared_ptr<tbox::Database> scm_config_db =
         algorithms_config_db->putDatabase("SlightlyCompressibleModel");
-    scm_config_db->putDouble("reference_pressure", 1.0);
+    scm_config_db->putDouble("pressure", 1.0);
     scm_config_db->putDouble("bulk_modulus", 1.0);
     scm_config_db->putDouble("target_volume", 0.5);
     scm_config_db->putDouble("surface_tension", 0.1);
