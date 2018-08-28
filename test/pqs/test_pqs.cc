@@ -71,7 +71,7 @@ TEST_F(pqsTest, test_config_db_structure)
         config_db->getDatabase("PQS");
     EXPECT_TRUE(pqs_config_db->isDouble("initial_curvature"));
     EXPECT_TRUE(pqs_config_db->isDouble("final_curvature"));
-    EXPECT_TRUE(pqs_config_db->isDouble("curvature_increment"));
+    EXPECT_TRUE(pqs_config_db->isDouble("curvature_step"));
 
     // ------ Algorithms database
 

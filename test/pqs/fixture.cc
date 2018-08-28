@@ -81,7 +81,7 @@ pqsTest::pqsTest() {
     // Physical parameters
     pqs_config_db->putDouble("initial_curvature", 0.5);
     pqs_config_db->putDouble("final_curvature", 1.0);
-    pqs_config_db->putDouble("curvature_increment", 0.1);
+    pqs_config_db->putDouble("curvature_step", 0.1);
 
     // Level set method parameters
     pqs_config_db->putInteger("lsm_t_max", 1.0);
