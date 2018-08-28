@@ -186,11 +186,13 @@ void run_pqs(
 
     // Initialize calculation
     if (!is_from_restart) {
+        // Emit status message
         tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
         tbox::pout << "  Initial curvature: " << curvature << endl;
         tbox::pout << "  Step count: " << step_count << endl;
 
-        // TODO: Equilibrate initial fluid-fluid interface
+        pqs_solver->equilibrateInterface(curvature,
+                                         pqs::SLIGHTLY_COMPRESSIBLE_MODEL);
     } else {
         // Simulation variables loaded from restart files, so fluid-fluid
         // interface already equilibrated. No additional equilibration
@@ -229,13 +231,18 @@ void run_pqs(
         // Update step count
         step_count++;
 
+        // Emit status message
         tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-        tbox::pout << "  Current curvature: " << curvature << endl;
+        if (curvature == final_curvature) {
+            tbox::pout << "  Final curvature: " << curvature << endl;
+        } else {
+            tbox::pout << "  Current curvature: " << curvature << endl;
+        }
         tbox::pout << "  Step count: " << step_count << endl;
 
         // Update fluid-fluid interface
-        // TODO
-        // pqs_solver->advanceInterace();
+        pqs_solver->equilibrateInterface(curvature,
+                                         pqs::PRESCRIBED_CURVATURE_MODEL);
 
         // Write restart file
         if (write_restart) {
@@ -253,6 +260,9 @@ void run_pqs(
             }
         }
     }
+
+    // Emit status message
+    tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
 
     // Write restart file for final time step
     if (write_restart) {
