@@ -213,10 +213,14 @@ protected:
     double d_contact_angle;  // default: 0
 
     // Slightly Compressible Model
-    double d_reference_pressure;
-    double d_bulk_modulus;
-    double d_target_volume;
-    double d_surface_tension;
+    double d_scm_pressure;
+    double d_scm_bulk_modulus;
+    double d_scm_target_volume;
+    double d_scm_surface_tension;
+
+    // Prescribed Curvature Model
+    double d_pcm_pressure;
+    double d_pcm_surface_tension;
 
     // --- SAMRAI parameters
 

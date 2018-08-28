@@ -154,10 +154,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 fillbox_lo, fillbox_hi,
                 dx,
                 &volume,
-                &d_target_volume,
-                &d_reference_pressure,
-                &d_bulk_modulus,
-                &d_surface_tension);
+                &d_scm_target_volume,
+                &d_scm_pressure,
+                &d_scm_bulk_modulus,
+                &d_scm_surface_tension);
         } else {
             PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -168,10 +168,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 fillbox_lo, fillbox_hi,
                 dx,
                 &volume,
-                &d_target_volume,
-                &d_reference_pressure,
-                &d_bulk_modulus,
-                &d_surface_tension);
+                &d_scm_target_volume,
+                &d_scm_pressure,
+                &d_scm_bulk_modulus,
+                &d_scm_surface_tension);
         }
     } else {
         // --- Get pointers to data and index space ranges for
@@ -223,10 +223,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 fillbox_lo, fillbox_hi,
                 dx,
                 &volume,
-                &d_target_volume,
-                &d_reference_pressure,
-                &d_bulk_modulus,
-                &d_surface_tension,
+                &d_scm_target_volume,
+                &d_scm_pressure,
+                &d_scm_bulk_modulus,
+                &d_scm_surface_tension,
                 &d_contact_angle);
 
         } else {
@@ -248,10 +248,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 fillbox_lo, fillbox_hi,
                 dx,
                 &volume,
-                &d_target_volume,
-                &d_reference_pressure,
-                &d_bulk_modulus,
-                &d_surface_tension,
+                &d_scm_target_volume,
+                &d_scm_pressure,
+                &d_scm_bulk_modulus,
+                &d_scm_surface_tension,
                 &d_contact_angle);
         }
     }
@@ -280,6 +280,27 @@ void Algorithms::verifyConfigurationDatabase(
                   "'config_db' must not be NULL");
     }
 
+    // --- Verify "PrescribedCurvatureModel" database
+
+    if (!config_db->isDatabase("PrescribedCurvatureModel")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  string("'PrescribedCurvatureModel' database ") +
+                  string("missing from 'config_db'"));
+    }
+    shared_ptr<tbox::Database> pcm_config_db =
+            config_db->getDatabase("PrescribedCurvatureModel");
+
+    if (!pcm_config_db->isDouble("pressure")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  string("'pressure' missing from ") +
+                  string("'PrescribedCurvatureModel' database"));
+    }
+    if (!pcm_config_db->isDouble("surface_tension")) {
+        PQS_ERROR(this, "verifyConfigurationDatabase",
+                  string("'surface_tension' missing from ") +
+                  string("'PrescribedCurvatureModel' database"));
+    }
+
     // --- Verify "SlightlyCompressibleModel" database
 
     if (!config_db->isDatabase("SlightlyCompressibleModel")) {
@@ -290,23 +311,26 @@ void Algorithms::verifyConfigurationDatabase(
     shared_ptr<tbox::Database> scm_config_db =
             config_db->getDatabase("SlightlyCompressibleModel");
 
-    if (!scm_config_db->isDouble("reference_pressure")) {
+    if (!scm_config_db->isDouble("pressure")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'reference_pressure' missing from 'PQS' database");
+                  string("'pressure' missing from ") +
+                  string("'SlightlyCompressibleModel' database"));
     }
     if (!scm_config_db->isDouble("target_volume")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'target_volume' missing from 'PQS' database");
+                  string("'target_volume' missing from ") +
+                  string("'SlightlyCompressibleModel' database"));
     }
     if (!scm_config_db->isDouble("surface_tension")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'surface_tension' missing from 'PQS' database");
+                  string("'surface_tension' missing from ") +
+                  string("'SlightlyCompressibleModel' database"));
     }
     if (!scm_config_db->isDouble("bulk_modulus")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'bulk_modulus' missing from 'PQS' database");
+                  string("'bulk_modulus' missing from ") +
+                  string("'SlightlyCompressibleModel' database"));
     }
-
 } // Algorithms::verifyConfigurationDatabase()
 
 void Algorithms::loadConfiguration(
@@ -321,6 +345,23 @@ void Algorithms::loadConfiguration(
 
     // --- Load configuration parameters
 
+    // Prescribed Curvature Model parameters
+    shared_ptr<tbox::Database> pcm_config_db =
+            config_db->getDatabase("PrescribedCurvatureModel");
+
+    d_pcm_pressure = pcm_config_db->getDouble("pressure");
+    d_pcm_surface_tension = pcm_config_db->getDouble("surface_tension");
+
+    // Slightly Compressible Model parameters
+    shared_ptr<tbox::Database> scm_config_db =
+            config_db->getDatabase("SlightlyCompressibleModel");
+
+    d_scm_pressure = scm_config_db->getDouble("pressure");
+    d_scm_target_volume = scm_config_db->getDouble("target_volume");
+    d_scm_surface_tension = scm_config_db->getDouble("surface_tension");
+    d_scm_bulk_modulus = scm_config_db->getDouble("bulk_modulus");
+
+    // Contact angle parameters
     if (!config_db->isDouble("contact_angle")) {
         d_contact_angle = 0.0;
     } else {
@@ -330,10 +371,6 @@ void Algorithms::loadConfiguration(
                       "'contact_angle' must be non-negative.");
         }
     }
-
-    // Slightly Compressible Model parameters
-
-    // Prescribed Curvature parameters
 
 } // Algorithms::loadConfiguration()
 
