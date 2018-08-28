@@ -46,8 +46,8 @@ using namespace PQS;
 
 namespace pqsTests {
 
-// Test case: PQS::pqs::Solver::equilibrateInterface()
-TEST_F(pqsTest, test_Solver_equilibrateInterface_3d)
+// Test case: PQS::pqs::Solver::equilibrateInterface() using PCM
+TEST_F(pqsTest, test_Solver_equilibrateInterface_3d_PCM)
 {
     // --- Preparations
 
@@ -74,15 +74,15 @@ TEST_F(pqsTest, test_Solver_equilibrateInterface_3d)
 
     // --- Exercise functionality
 
-    solver->equilibrateInterface(curvature);
+    solver->equilibrateInterface(curvature, pqs::PRESCRIBED_CURVATURE_MODEL);
 
     // --- Check results
 
     // TODO
 }
 
-// Test case: PQS::pqs::Solver::advanceInterface()
-TEST_F(pqsTest, test_Solver_advanceInterface_3d)
+// Test case: PQS::pqs::Solver::equilibrateInterface() using SCM
+TEST_F(pqsTest, test_Solver_equilibrateInterface_3d_SCM)
 {
     // --- Preparations
 
@@ -100,11 +100,16 @@ TEST_F(pqsTest, test_Solver_advanceInterface_3d)
     shared_ptr<tbox::Database> samrai_config_db =
         config_db->getDatabase("SAMRAI");
 
-    // --- Exercise functionality
-
     // Construct PQS::pqs::Solver object
     solver = new pqs::Solver(config_db, pore_init_strategy,
                              interface_init_strategy);
+
+    // mean curvature
+    double curvature = 1.0;
+
+    // --- Exercise functionality
+
+    solver->equilibrateInterface(curvature, pqs::SLIGHTLY_COMPRESSIBLE_MODEL);
 
     // --- Check results
 
