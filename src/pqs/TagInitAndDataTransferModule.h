@@ -213,19 +213,43 @@ public:
      ************************************************************************/
 
     /*!
+     * Copy data from PQS to LSM (current) context.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void copyDataPQStoLSM() const;
+
+    /*!
+     * Copy data from LSM (next) to PQS context.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void copyDataLSMtoPQS() const;
+
+    /*!
      * Fill ghostcells for Patches in PatchLevel.
      *
      * Parameters
      * ----------
-     * level_num: number of PatchLevel to fill ghost cells for
-     *
      * context: variable context that ghost cell data should be filled for
      *
      * Return value
      * ------------
      * None
      */
-    virtual void fillGhostCells(const int level_num, const int context) const;
+    virtual void fillGhostCells(const int context) const;
 
     //! @}
 
@@ -622,6 +646,12 @@ protected:
 
     // Data transfer
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
+
+    shared_ptr<xfer::RefineAlgorithm> d_xfer_pqs_to_lsm;
+    vector< shared_ptr<xfer::RefineSchedule> > d_xfer_pqs_to_lsm_schedule;
+
+    shared_ptr<xfer::RefineAlgorithm> d_xfer_lsm_to_pqs;
+    vector< shared_ptr<xfer::RefineSchedule> > d_xfer_lsm_to_pqs_schedule;
 
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
     vector< shared_ptr<xfer::RefineSchedule> >
