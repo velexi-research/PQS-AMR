@@ -45,7 +45,6 @@ add_dependencies(pqs-amr-no-solid-phase
 
 # Set search path for header files
 target_include_directories(pqs-amr-no-solid-phase
-    PUBLIC ${Boost_INCLUDE_DIR}
     PUBLIC ${MPI_CXX_INCLUDE_PATH}
     PUBLIC ${SAMRAI_INCLUDE_DIR})
 

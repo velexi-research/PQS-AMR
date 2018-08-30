@@ -18,7 +18,6 @@ add_library(pqs ${SOURCE_FILES})
 
 # Set search path for header files
 target_include_directories(pqs
-    PUBLIC ${Boost_INCLUDE_DIR}
     PUBLIC ${MPI_CXX_INCLUDE_PATH}
     PUBLIC ${SAMRAI_INCLUDE_DIR})
 
