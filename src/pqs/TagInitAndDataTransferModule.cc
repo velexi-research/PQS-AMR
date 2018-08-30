@@ -25,7 +25,10 @@
 #include <vector>
 
 // SAMRAI
+#include "SAMRAI/geom/CartesianPatchGeometry.h"
 #include "SAMRAI/hier/BaseGridGeometry.h"
+#include "SAMRAI/hier/Box.h"
+#include "SAMRAI/hier/BoxContainer.h"
 #include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
@@ -34,6 +37,7 @@
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 #include "SAMRAI/pdat/CellData.h"
+#include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/Utilities.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 #include "SAMRAI/xfer/RefineSchedule.h"
@@ -47,7 +51,6 @@
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class BoxContainer; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
@@ -77,6 +80,7 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
         const int phi_lsm_current_id,
         const int phi_lsm_next_id,
         const int psi_id,
+        const int control_volume_id,
         const hier::IntVector& max_stencil_width):
     mesh::TagAndInitializeStrategy(s_object_name)
 {
@@ -113,12 +117,17 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
         PQS_ERROR(this, "TagInitAndDataTransferModule",
                   "'psi_id' must be non-negative");
     }
+    if (control_volume_id < 0) {
+        PQS_ERROR(this, "TagInitAndDataTransferModule",
+                  "'control_volume_id' must be non-negative");
+    }
 
     // Set data members
     d_phi_pqs_id = phi_pqs_id;
     d_phi_lsm_current_id = phi_lsm_current_id;
     d_phi_lsm_next_id = phi_lsm_next_id;
     d_psi_id = psi_id;
+    d_control_volume_id = control_volume_id;
     d_patch_hierarchy = patch_hierarchy;
     d_pore_init_strategy = pore_init_strategy;
     d_interface_init_strategy = interface_init_strategy;
@@ -397,8 +406,7 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
     // --- Recompute simulation parameters
 
     // recompute control volumes
-    // LevelSetMethodToolbox::computeControlVolumes(
-    // patch_hierarchy, d_control_volume_handle);
+    computeControlVolumes();
 
 } // TagInitAndDataTransferModule::resetHierarchyConfiguration()
 
@@ -593,6 +601,84 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
         phi_linear_refine_op);
 
 } // TagInitAndDataTransferModule::setupDataTransferObjects()
+
+void TagInitAndDataTransferModule::computeControlVolumes() const
+{
+    // On every level, set control volume to volume of grid cell on level.
+    const int finest_level_num = d_patch_hierarchy->getFinestLevelNumber();
+
+    for (int level_num = finest_level_num; level_num >= 0; level_num--) {
+        shared_ptr<hier::PatchLevel> patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num);
+
+        for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                pi!=patch_level->end(); pi++) {
+
+            shared_ptr<hier::Patch> patch = *pi;
+            shared_ptr<geom::CartesianPatchGeometry> patch_geometry =
+                SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
+                    patch->getPatchGeometry());
+            int dim = d_patch_hierarchy->getDim().getValue();
+            const double* dx = patch_geometry->getDx();
+
+            double cell_volume = dx[0];
+            for (int i = 1; i < dim; i++) {
+                cell_volume *= dx[i];
+            }
+
+            shared_ptr< pdat::CellData<PQS_REAL> > control_volume_data =
+                    SAMRAI_SHARED_PTR_CAST<pdat::CellData<PQS_REAL>>(
+                            patch->getPatchData(d_control_volume_id));
+
+            if (!control_volume_data) {
+                PQS_ERROR(this, "computeControlVolumes",
+                          string("'d_control_volume_id' does not refer to a ") +
+                          string("pdat_CellVariable"));
+            }
+
+            control_volume_data->fillAll(cell_volume);
+        }
+
+        // On all but the finest level, set control volume to 0 for all
+        // cells covered by finer cells.
+        if (level_num < finest_level_num) {
+            // Get boxes that describe index space of the next finer level
+            // and coarsen them to describe corresponding index space at
+            // this level.
+            shared_ptr<hier::PatchLevel> next_finer_level =
+                    d_patch_hierarchy->getPatchLevel(level_num + 1);
+            hier::BoxContainer coarsened_boxes = next_finer_level->getBoxes();
+            hier::IntVector coarsen_ratio =
+                    next_finer_level->getRatioToCoarserLevel();
+            coarsen_ratio /= patch_level->getRatioToCoarserLevel();
+            coarsened_boxes.coarsen(coarsen_ratio);
+
+            // Set control volume to 0 wherever there is a nonempty intersection
+            // with the next finer level.
+            for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                    pi!=patch_level->end(); pi++) {
+
+                shared_ptr<hier::Patch> patch = *pi;
+                shared_ptr< pdat::CellData<PQS_REAL> > control_volume_data;
+
+                for (hier::BoxContainer::iterator ib = coarsened_boxes.begin();
+                        ib != coarsened_boxes.end(); ++ib) {
+
+                    hier::Box coarse_box = *ib;
+                    hier::Box intersection = coarse_box*(patch->getBox());
+                    if (!intersection.empty()) {
+                        control_volume_data =
+                            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                                    patch->getPatchData(d_control_volume_id));
+
+                        control_volume_data->fillAll(0.0, intersection);
+                    }
+                }
+            }
+        }
+
+    } // loop over PatchLevels
+} // TagInitAndDataTransferModule::computeControlVolumes()
 
 // Copy constructor
 TagInitAndDataTransferModule::TagInitAndDataTransferModule(

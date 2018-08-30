@@ -180,6 +180,8 @@ public:
      * psi_id: PatchData ID for the level set function for the solid-pore
      *      interface
      *
+     * control_volume_id: PatchData ID for the control volume data
+     *
      * max_stencil_width: maximum stencil width required for computations
      *
      */
@@ -192,7 +194,8 @@ public:
         const int phi_pqs_id,
         const int phi_lsm_current_id,
         const int phi_lsm_next_id,
-        const int phi_id,
+        const int psi_id,
+        const int control_volume_id,
         const hier::IntVector& max_stencil_width);
 
     /*!
@@ -633,6 +636,9 @@ protected:
     int d_psi_id;
     int d_psi_scratch_id;
 
+    // control volume
+    int d_control_volume_id;
+
     // --- Components
 
     // SAMRAI components
@@ -685,6 +691,11 @@ private:
     void setupDataTransferObjects(
         const shared_ptr<hier::BaseGridGeometry>& grid_geometry,
         const hier::IntVector& max_stencil_width);
+
+    /*
+     * Compute control volumes for grid cells.
+     */
+    void computeControlVolumes() const;
 
     /*
      * Private copy constructor to prevent use.
