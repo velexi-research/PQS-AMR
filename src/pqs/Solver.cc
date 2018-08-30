@@ -111,7 +111,7 @@ Solver::Solver(
         config_db->getDatabase("PQS");
     d_pqs_algorithms = shared_ptr<pqs::Algorithms>(
             new pqs::Algorithms(pqs_config_db->getDatabase("Algorithms"),
-                                d_psi_id, d_grad_psi_id));
+                                d_lse_rhs_id, d_psi_id, d_grad_psi_id));
 
     // Initialize simulation
     initializeSimulation();
