@@ -40,6 +40,48 @@ extern "C" {
 /*!
  * TODO
  */
+void PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+    const double *max_stable_dt,
+    const PQS_REAL *rhs,
+    const int *rhs_gb_lo,
+    const int *rhs_gb_hi,
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const int *fb_lo,
+    const int *fb_hi,
+    const double *dx,
+    const double *pressure,
+    const double *surface_tension);
+
+/*!
+ * TODO
+ */
+void PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+    const double *max_stable_dt,
+    const PQS_REAL *rhs,
+    const int *rhs_gb_lo,
+    const int *rhs_gb_hi,
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const PQS_REAL *psi,
+    const int *psi_gb_lo,
+    const int *psi_gb_hi,
+    const PQS_REAL *grad_psi_x,
+    const PQS_REAL *grad_psi_y,
+    const int *grad_psi_gb_lo,
+    const int *grad_psi_gb_hi,
+    const int *fb_lo,
+    const int *fb_hi,
+    const double *dx,
+    const double *pressure,
+    const double *surface_tension,
+    const double *contact_angle);
+
+/*!
+ * TODO
+ */
 void PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
     const PQS_REAL *rhs,
