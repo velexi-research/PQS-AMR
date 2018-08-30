@@ -27,7 +27,7 @@ c volume: volume of non-wetting phase
 c
 c target_volume: target volume for non-wetting phase
 c
-c reference_pressure: reference pressure of non-wetting phase
+c pressure: reference pressure of non-wetting phase
 c
 c bulk_modulus: bulk modulus of non-wetting phase
 c
@@ -53,7 +53,7 @@ c***********************************************************************
      &  dx,
      &  volume,
      &  target_volume,
-     &  reference_pressure,
+     &  pressure,
      &  bulk_modulus,
      &  surface_tension)
 c***********************************************************************
@@ -75,7 +75,7 @@ c { begin subroutine
 
       real*8 volume
       real*8 target_volume
-      real*8 reference_pressure
+      real*8 pressure
       real*8 bulk_modulus
       real*8 surface_tension
 
@@ -111,9 +111,8 @@ c         --- Initialize rhs value
 c         --- Compute hyperbolic part of RHS
 
 c         Compute pressure-driven component of normal velocity
-          V_n_pressure =
-     &        reference_pressure
-     &      * exp(bulk_modulus * (1 - volume/target_volume))
+          V_n_pressure = pressure *
+     &        exp(bulk_modulus * (1 - volume/target_volume))
 
 c         Compute forward and backward approximations of grad(phi)
           idx(1) = i
@@ -226,7 +225,7 @@ c volume: volume of non-wetting phase
 c
 c target_volume: target volume for non-wetting phase
 c
-c reference_pressure: reference pressure of non-wetting phase
+c pressure: reference pressure of non-wetting phase
 c
 c bulk_modulus: bulk modulus of non-wetting phase
 c
@@ -260,7 +259,7 @@ c***********************************************************************
      &  dx,
      &  volume,
      &  target_volume,
-     &  reference_pressure,
+     &  pressure,
      &  bulk_modulus,
      &  surface_tension,
      &  contact_angle)
@@ -293,7 +292,7 @@ c { begin subroutine
 
       real*8 volume
       real*8 target_volume
-      real*8 reference_pressure
+      real*8 pressure
       real*8 bulk_modulus
       real*8 surface_tension
       real*8 contact_angle
@@ -332,9 +331,8 @@ c         --- Initialize rhs value
 c         --- Compute hyperbolic part of RHS
 
 c         Compute pressure-driven component of normal velocity
-          V_n_pressure =
-     &        reference_pressure
-     &      * exp(bulk_modulus * (1 - volume/target_volume))
+          V_n_pressure = pressure *
+     &        exp(bulk_modulus * (1 - volume/target_volume))
 
 c         Compute contact angle component of advective velocity
 c         TODO
