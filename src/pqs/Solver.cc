@@ -891,6 +891,7 @@ void Solver::setupGridManagement(
                 d_phi_lsm_current_id,
                 d_phi_lsm_next_id,
                 d_psi_id,
+                d_control_volume_id,
                 *d_max_stencil_width));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
