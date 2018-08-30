@@ -19,6 +19,7 @@
 
 // Standard library
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -141,8 +142,6 @@ void Solver::equilibrateInterface(
 
     // Initialize loop variables
     double t = 0.0;
-    double dt;
-
     int step = 0;
 
     double delta_phi = 2 * d_lsm_min_delta_phi;
@@ -159,6 +158,9 @@ void Solver::equilibrateInterface(
         patch_level->allocatePatchData(d_intermediate_variables);
     }
 
+    // Copy phi data from PQS to LSM context
+    d_tag_init_and_data_xfer_module->copyDataPQStoLSM();
+
     // --- Perform level set method computation
 
     while ( (step < d_lsm_max_iterations) &&
@@ -166,16 +168,22 @@ void Solver::equilibrateInterface(
             (delta_phi > d_lsm_min_delta_phi) &&
             (delta_saturation > d_lsm_min_delta_saturation) ) {
 
-        for (int rk_stage = 1; rk_stage <= d_time_integration_order;
-                rk_stage++)
+        // --- Preparations
+
+        double dt;
+
+        // Compute volume of non-wettting phase
+        double volume = 1.0;  // TODO
+
+        // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
+        for (int rk_stage = 1; rk_stage <= d_time_integration_order; rk_stage++)
         {
             // --- Preparations
 
             // Time step variables
-            double dt;
-            double max_stable_dt_on_proc;
+            double max_stable_dt_on_proc = std::numeric_limits<double>::max();
 
-            // Configuration for TVD Runge-Kutta stage
+            // Configuration for computation of RHS of evolution equation
             int phi_id;
             if (d_time_integration_order == 1) {
                 phi_id = d_phi_lsm_current_id;
@@ -202,9 +210,10 @@ void Solver::equilibrateInterface(
                 ghost_cell_fill_context = LSM_NEXT;
             }
 
-            // --- Compute volume of non-wettting phase
+            // --- Fill ghost cells
 
-            double volume = 1.0;  // TODO
+            d_tag_init_and_data_xfer_module->fillGhostCells(
+                    ghost_cell_fill_context);
 
             // --- Compute RHS of level set evolution equation
 
@@ -214,10 +223,6 @@ void Solver::equilibrateInterface(
 
                 shared_ptr<hier::PatchLevel> patch_level =
                     d_patch_hierarchy->getPatchLevel(level_num);
-
-                // Fill ghost cells
-                d_tag_init_and_data_xfer_module->fillGhostCells(
-                        level_num, ghost_cell_fill_context);
 
                 // Compute RHS of level set evolution equation
                 for (hier::PatchLevel::Iterator pi(patch_level->begin());
@@ -235,6 +240,11 @@ void Solver::equilibrateInterface(
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computeSlightlyCompressibleModelRHS(
                                         patch, phi_id, volume);
+                    } else {
+                        PQS_ERROR(this, "equilibrateInterface",
+                                  string("Invalid PQS algorithm (") +
+                                  to_string(algorithm_type) +
+                                  string(")"));
                     }
 
                     // Update maximum stable time step
@@ -257,10 +267,10 @@ void Solver::equilibrateInterface(
             // --- Advance phi
 
             if (d_time_integration_order == 1) {
-                // lsm_current --> lsm_current
+                // lsm_current --> lsm_next
                 math::TimeIntegration::RK1Step(
                         d_patch_hierarchy,
-                        d_phi_lsm_current_id,
+                        d_phi_lsm_next_id,
                         d_phi_lsm_current_id,
                         d_lse_rhs_id,
                         dt);
@@ -276,7 +286,7 @@ void Solver::equilibrateInterface(
                             dt);
 
                 } else if (rk_stage == 2) {
-                    // lsm_next --> lsm_current
+                    // lsm_next --> lsm_next
                     math::TimeIntegration::TVDRK2Stage2(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -306,7 +316,7 @@ void Solver::equilibrateInterface(
                             dt);
 
                 } else if (rk_stage == 3) {
-                    // lsm_next --> lsm_current
+                    // lsm_next --> lsm_next
                     math::TimeIntegration::TVDRK3Stage3(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -328,6 +338,9 @@ void Solver::equilibrateInterface(
     }
 
     // --- Clean up
+
+    // Copy phi data from LSM to PQS context
+    d_tag_init_and_data_xfer_module->copyDataLSMtoPQS();
 
     // Deallocate PatchData
     for (int level_num = 0;
