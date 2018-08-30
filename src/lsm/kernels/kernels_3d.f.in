@@ -1,0 +1,190 @@
+c***********************************************************************
+c
+c kernels_3d.f
+c
+c F77 routines for Level Set Method computations in 3 space dimensions
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute volume of region where level set function is less than 0.
+c
+c Parameters
+c ----------
+c phi: level set function
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c eps: width of numerical smoothing to use for Heaviside function
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c ib_lo: lower corner of index range for interior box
+c
+c ib_hi: upper corner of index range for interior box
+c
+c***********************************************************************
+      @REAL@ function pqsLsm3dVolumePhiLessThanZero(
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  ib_lo, ib_hi,
+     &  dx,
+     &  eps)
+***********************************************************************
+c { begin function
+      implicit none
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      integer ib_lo(1:3), ib_hi(1:3)
+      real*8 dx(1:3)
+      real*8 eps
+
+      integer i, j, k
+      real*8 phi_cur
+      real*8 phi_cur_over_eps
+      real*8 one_minus_H
+      real*8 dV
+      real*8 pi
+      parameter (pi=3.14159265358979323846d0)
+      real*8 one_over_pi
+      parameter (one_over_pi=0.31830988618379d0)
+
+      real*8 volume
+
+c     compute dV
+      dV = dx(1) * dx(2) * dx(3)
+
+c     initialize volume to zero
+      volume = 0.0d0
+
+c     loop over included cells {
+      do k=ib_lo(3),ib_hi(3)
+        do j=ib_lo(2),ib_hi(2)
+          do i=ib_lo(1),ib_hi(1)
+
+            phi_cur = phi(i,j,k)
+            phi_cur_over_eps = phi_cur/eps
+
+            if (phi_cur .lt. -eps) then
+
+              volume = volume + dV
+
+            elseif (phi_cur .lt.  eps) then
+
+              one_minus_H = 0.5d0*( 1 - phi_cur_over_eps
+     &                                - one_over_pi
+     &                                 *sin(pi*phi_cur_over_eps))
+
+              volume = volume + one_minus_H*dV
+
+            endif
+
+          enddo
+        enddo
+      enddo
+c     } end loop over grid
+
+c     set result
+      pqsLsm3dVolumePhiLessThanZero = volume
+
+      return
+      end
+c } end function
+
+c***********************************************************************
+c
+c Compute volume of region where level set function is greater than 0.
+c
+c Parameters
+c ----------
+c phi: level set function
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c eps: width of numerical smoothing to use for Heaviside function
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c ib_lo: lower corner of index range for interior box
+c
+c ib_hi: upper corner of index range for interior box
+c
+c***********************************************************************
+      @REAL@ function pqsLsm3dVolumePhiGreaterThanZero(
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  ib_lo, ib_hi,
+     &  dx,
+     &  eps)
+***********************************************************************
+c { begin function
+      implicit none
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      integer ib_lo(1:3), ib_hi(1:3)
+      real*8 dx(1:3)
+      real*8 eps
+
+      integer i, j, k
+      real*8 phi_cur
+      real*8 phi_cur_over_eps
+      real*8 H
+      real*8 dV
+      real*8 pi
+      parameter (pi=3.14159265358979323846d0)
+      real*8 one_over_pi
+      parameter (one_over_pi=0.31830988618379d0)
+
+      real*8 volume
+
+c     compute dV
+      dV = dx(1) * dx(2) * dx(3)
+
+c     initialize volume to zero
+      volume = 0.0d0
+
+c     loop over included cells {
+      do k=ib_lo(3),ib_hi(3)
+        do j=ib_lo(2),ib_hi(2)
+          do i=ib_lo(1),ib_hi(1)
+
+            phi_cur = phi(i,j,k)
+            phi_cur_over_eps = phi_cur/eps
+
+            if (phi_cur .gt. eps) then
+
+              volume = volume + dV
+
+            elseif (phi_cur .gt.  -eps) then
+
+              H = 0.5d0*( 1 + phi_cur_over_eps
+     &                      + one_over_pi*sin(pi*phi_cur_over_eps))
+
+              volume = volume + H*dV
+
+          endif
+
+          enddo
+        enddo
+      enddo
+c     } end loop over grid
+
+c     set result
+      pqsLsm3dVolumePhiGreaterThanZero = volume
+
+      return
+      end
+c } end function
