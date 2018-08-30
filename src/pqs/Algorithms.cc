@@ -86,8 +86,157 @@ double Algorithms::computePrescribedCurvatureModelRHS(
         const shared_ptr<hier::Patch> patch,
         const int phi_id) const
 {
-    patch->getPatchData(phi_id);
-    return 1.0;
+    // --- Preparations
+
+    // Maximum stable time step
+    double max_stable_dt;
+
+    // Get geometry parameters
+    shared_ptr<geom::CartesianPatchGeometry> patch_geom =
+            SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
+                patch->getPatchGeometry());
+    const double* dx = patch_geom->getDx();
+
+    // ------- Get pointers to data and index space ranges
+
+    // RHS
+    shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                    patch->getPatchData(d_lse_rhs_id));
+
+    hier::Box rhs_ghostbox = rhs_data->getGhostBox();
+    const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
+    const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo, rhs_ghostbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi, rhs_ghostbox_upper);
+
+    PQS_REAL* rhs = rhs_data->getPointer();
+
+    // phi
+    shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                    patch->getPatchData(phi_id));
+
+    hier::Box phi_ghostbox = phi_data->getGhostBox();
+    const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
+    const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
+
+    PQS_REAL* phi = phi_data->getPointer();
+
+    // fill box
+    hier::Box fillbox = patch->getBox();
+    const hier::IntVector fillbox_lower = fillbox.lower();
+    const hier::IntVector fillbox_upper = fillbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo, fillbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi, fillbox_upper);
+
+    // --- Compute RHS and maximum stable time step
+
+    if (d_contact_angle == 0.0) {
+        if (patch->getDim().getValue() == 2) {
+            PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &d_pcm_pressure,
+                &d_pcm_surface_tension);
+        } else {
+            PQS_3D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &d_pcm_pressure,
+                &d_pcm_surface_tension);
+        }
+    } else {
+        // --- Get pointers to data and index space ranges for
+        //     psi and grad(psi)
+
+        // psi
+        shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(d_psi_id));
+
+        hier::Box psi_ghostbox = psi_data->getGhostBox();
+        const hier::IntVector psi_ghostbox_lower = psi_ghostbox.lower();
+        const hier::IntVector psi_ghostbox_upper = psi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_lo, psi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_hi, psi_ghostbox_upper);
+
+        PQS_REAL* psi = psi_data->getPointer();
+
+        // grad(psi)
+        shared_ptr< pdat::CellData<PQS_REAL> > grad_psi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(d_grad_psi_id));
+
+        hier::Box grad_psi_ghostbox = grad_psi_data->getGhostBox();
+        const hier::IntVector grad_psi_ghostbox_lower =
+                grad_psi_ghostbox.lower();
+        const hier::IntVector grad_psi_ghostbox_upper =
+                grad_psi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(grad_psi_ghostbox_lo,
+                grad_psi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(grad_psi_ghostbox_hi,
+                grad_psi_ghostbox_upper);
+
+        if (patch->getDim().getValue() == 2) {
+            // Get pointers to data arrays for grad(phi)
+            PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
+            PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
+
+            PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                psi,
+                psi_ghostbox_lo, psi_ghostbox_hi,
+                grad_psi_x, grad_psi_y,
+                grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &d_pcm_pressure,
+                &d_pcm_surface_tension,
+                &d_contact_angle);
+
+        } else {
+            // Get pointers to data arrays for grad(phi)
+            PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
+            PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
+            PQS_REAL* grad_psi_z = grad_psi_data->getPointer(2);
+
+            PQS_3D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
+                &max_stable_dt,
+                rhs,
+                rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi,
+                phi_ghostbox_lo, phi_ghostbox_hi,
+                psi,
+                psi_ghostbox_lo, psi_ghostbox_hi,
+                grad_psi_x, grad_psi_y, grad_psi_z,
+                grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
+                fillbox_lo, fillbox_hi,
+                dx,
+                &d_pcm_pressure,
+                &d_pcm_surface_tension,
+                &d_contact_angle);
+        }
+    }
+
+    return max_stable_dt;
+
 } // Algorithms::computePrescribedCurvatureModelRHS()
 
 double Algorithms::computeSlightlyCompressibleModelRHS(
