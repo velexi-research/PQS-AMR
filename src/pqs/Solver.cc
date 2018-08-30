@@ -138,6 +138,16 @@ void Solver::equilibrateInterface(
         const double curvature,
         const PQS_ALGORITHM_TYPE algorithm_type)
 {
+    // --- Check arguments
+
+    if ( (algorithm_type != PRESCRIBED_CURVATURE_MODEL) &&
+         (algorithm_type != SLIGHTLY_COMPRESSIBLE_MODEL) ) {
+        PQS_ERROR(this, "equilibrateInterface",
+                  string("Invalid PQS algorithm (") +
+                  to_string(algorithm_type) +
+                  string(")"));
+    }
+
     // --- Preparations
 
     // Initialize loop variables
@@ -173,7 +183,10 @@ void Solver::equilibrateInterface(
         double dt;
 
         // Compute volume of non-wettting phase
-        double volume = 1.0;  // TODO
+        double volume = 0.0;
+        if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
+            volume = 1.0;  // TODO
+        }
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
         for (int rk_stage = 1; rk_stage <= d_time_integration_order; rk_stage++)
@@ -240,11 +253,6 @@ void Solver::equilibrateInterface(
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computeSlightlyCompressibleModelRHS(
                                         patch, phi_id, volume);
-                    } else {
-                        PQS_ERROR(this, "equilibrateInterface",
-                                  string("Invalid PQS algorithm (") +
-                                  to_string(algorithm_type) +
-                                  string(")"));
                     }
 
                     // Update maximum stable time step
