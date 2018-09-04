@@ -8,11 +8,11 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c Compute area of region where level set function is less than 0.
+c Compute area of region where signed distance function is less than 0.
 c
 c Parameters
 c ----------
-c phi: level set function
+c phi: signed distance function
 c
 c dx: array containing grid spacing in each coordinate direction
 c
@@ -101,11 +101,12 @@ c } end function
 
 c***********************************************************************
 c
-c Compute area of region where level set function is greater than 0.
+c Compute area of region where signed distance function is greater
+c than 0.
 c
 c Parameters
 c ----------
-c phi: level set function
+c phi: signed distance function
 c
 c dx: array containing grid spacing in each coordinate direction
 c

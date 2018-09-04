@@ -36,11 +36,11 @@ extern "C" {
 
 /*!
  *
- * Compute area of region where level set function is less than 0.
+ * Compute area of region where signed distance function is less than 0.
  *
  * Parameters
  * ----------
- * phi: level set function
+ * phi: signed distance function
  *
  * dx: array containing grid spacing in each coordinate direction
  *
@@ -69,11 +69,11 @@ PQS_REAL PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(
 
 /*!
  *
- * Compute area of region where level set function is greater than 0.
+ * Compute area of region where signed distance function is greater than 0.
  *
  * Parameters
  * ----------
- * phi: level set function
+ * phi: signed distance function
  *
  * dx: array containing grid spacing in each coordinate direction
  *
