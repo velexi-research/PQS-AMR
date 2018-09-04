@@ -15,8 +15,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_fixture_h
-#define INCLUDED_PQS_fixture_h
+#ifndef INCLUDED_PQS_pqs_fixture_h
+#define INCLUDED_PQS_pqs_fixture_h
 
 // --- Headers, namespaces, and type declarations
 
@@ -103,4 +103,4 @@ protected:
 
 } // pqsTests namespace
 
-#endif // INCLUDED_PQS_fixture_h
+#endif // INCLUDED_PQS_pqs_fixture_h
