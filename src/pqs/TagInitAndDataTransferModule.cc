@@ -247,9 +247,11 @@ void TagInitAndDataTransferModule::initializeLevelData(
     if (allocate_data) {
         patch_level->allocatePatchData(d_phi_pqs_id);
         patch_level->allocatePatchData(d_psi_id);
+        patch_level->allocatePatchData(d_control_volume_id);
     } else {
         patch_level->setTime(init_data_time, d_phi_pqs_id);
         patch_level->setTime(init_data_time, d_psi_id);
+        patch_level->setTime(init_data_time, d_control_volume_id);
     }
 
     if (initial_time) {
@@ -286,6 +288,7 @@ void TagInitAndDataTransferModule::initializeLevelData(
     if (old_patch_level!=NULL) {
         old_patch_level->deallocatePatchData(d_phi_pqs_id);
         old_patch_level->deallocatePatchData(d_psi_id);
+        old_patch_level->deallocatePatchData(d_control_volume_id);
     }
 } // TagInitAndDataTransferModule::initializeLevelData()
 

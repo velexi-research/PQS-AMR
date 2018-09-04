@@ -838,7 +838,6 @@ void Solver::setupSimulationVariables()
         var_db->registerVariableAndContext(control_volume_variable,
                                            samr_context,
                                            zero_ghost_cell_width);
-    d_intermediate_variables.setFlag(d_control_volume_id);
 
 } // Solver::setupSimulationVariables()
 
