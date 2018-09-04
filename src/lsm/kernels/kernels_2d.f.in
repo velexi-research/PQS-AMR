@@ -2,7 +2,7 @@ c***********************************************************************
 c
 c kernels_2d.f
 c
-c F77 routines for Level Set Method computations in 2 space dimensions
+c F77 routines for Level Set Method computations in two space dimensions
 c
 c***********************************************************************
 
@@ -25,6 +25,10 @@ c
 c ib_lo: lower corner of index range for interior box
 c
 c ib_hi: upper corner of index range for interior box
+c
+c Return value
+c ------------
+c area of region where phi < 0
 c
 c***********************************************************************
       @REAL@ function pqsLsm2dAreaPhiLessThanZero(
@@ -114,6 +118,10 @@ c
 c ib_lo: lower corner of index range for interior box
 c
 c ib_hi: upper corner of index range for interior box
+c
+c Return value
+c ------------
+c area of region where phi > 0
 c
 c***********************************************************************
       @REAL@ function pqsLsm2dAreaPhiGreaterThanZero(
