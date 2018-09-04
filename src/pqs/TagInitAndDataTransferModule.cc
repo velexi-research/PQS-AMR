@@ -653,7 +653,6 @@ void TagInitAndDataTransferModule::computeControlVolumes() const
             hier::BoxContainer coarsened_boxes = next_finer_level->getBoxes();
             hier::IntVector coarsen_ratio =
                     next_finer_level->getRatioToCoarserLevel();
-            coarsen_ratio /= patch_level->getRatioToCoarserLevel();
             coarsened_boxes.coarsen(coarsen_ratio);
 
             // Set control volume to 0 wherever there is a nonempty intersection
