@@ -238,17 +238,18 @@ void pqsTest::initializeGeometryAndHierarchy(
 
     int max_levels = 3;
     patch_hierarchy_config_db->putInteger("max_levels", max_levels);
-    patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
+    shared_ptr<tbox::Database> ratio_to_coarser_db =
+            patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
     for (int ln=1; ln <= max_levels; ln++) {
         std::string level_name = std::string("level_") + std::to_string(ln);
 
         if (num_dimensions == 2) {
             int ratio_to_coarser[2] = {2, 2};
-            patch_hierarchy_config_db->putIntegerArray(level_name,
+            ratio_to_coarser_db->putIntegerArray(level_name,
                                                        ratio_to_coarser, 2);
         } else {
             int ratio_to_coarser[3] = {2, 2, 2};
-            patch_hierarchy_config_db->putIntegerArray(level_name,
+            ratio_to_coarser_db->putIntegerArray(level_name,
                                                        ratio_to_coarser, 3);
         }
     }
