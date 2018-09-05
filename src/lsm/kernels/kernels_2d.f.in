@@ -72,13 +72,14 @@ c     loop over interior cells {
         do i=ib_lo(1),ib_hi(1)
 
           phi_cur = phi(i,j)
-          phi_cur_over_eps = phi_cur/eps
 
           if (phi_cur .lt. -eps) then
 
             area = area + dA
 
           elseif (phi_cur .lt.  eps) then
+
+            phi_cur_over_eps = phi_cur/eps
 
             one_minus_H = 0.5d0*( 1 - phi_cur_over_eps
      &                              - one_over_pi
@@ -166,13 +167,14 @@ c     loop over interior cells {
         do i=ib_lo(1),ib_hi(1)
 
           phi_cur = phi(i,j)
-          phi_cur_over_eps = phi_cur/eps
 
           if (phi_cur .gt. eps) then
 
             area = area + dA
 
           elseif (phi_cur .gt.  -eps) then
+
+            phi_cur_over_eps = phi_cur/eps
 
             H = 0.5d0*( 1 + phi_cur_over_eps
      &                    + one_over_pi*sin(pi*phi_cur_over_eps))
