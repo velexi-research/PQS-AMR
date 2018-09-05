@@ -65,7 +65,7 @@ PQS_REAL PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const int *ib_lo,
     const int * ib_hi,
     const double *dx,
-    const double *eps)
+    const double *eps);
 
 /*!
  *
@@ -98,7 +98,7 @@ PQS_REAL PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const int *ib_lo,
     const int * ib_hi,
     const double *dx,
-    const double *eps)
+    const double *eps);
 
 #ifdef __cplusplus
 }
