@@ -90,7 +90,7 @@ c     loop over interior cells {
 
         enddo
       enddo
-c     } end loop over grid
+c     } end loop over interior cells
 
 c     set result
       pqsLsm2dAreaPhiLessThanZero = area
@@ -183,7 +183,7 @@ c     loop over interior cells {
 
         enddo
       enddo
-c     } end loop over grid
+c     } end loop over interior cells
 
 c     set result
       pqsLsm2dAreaPhiGreaterThanZero = area
