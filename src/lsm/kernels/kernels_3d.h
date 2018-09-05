@@ -30,9 +30,9 @@ extern "C" {
  *      ----------                       ------------
  */
 #define PQS_LSM_3D_VOLUME_PHI_LESS_THAN_ZERO \
-                                         pqsLsm3dVolumePhiLessThanZero_
+                                         pqslsm3dvolumephilessthanzero_
 #define PQS_LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO \
-                                         pqsLsm3dVolumePhiGreaterThanZero_
+                                         pqslsm3dvolumephigreaterthanzero_
 
 /*!
  *

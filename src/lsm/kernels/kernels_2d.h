@@ -30,9 +30,9 @@ extern "C" {
  *      ----------                       ------------
  */
 #define PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO \
-                                         pqsLsm2dAreaPhiLessThanZero_
+                                         pqslsm2dareaphilessthanzero_
 #define PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO \
-                                         pqsLsm2dAreaPhiGreaterThanZero_
+                                         pqslsm2dareaphigreaterthanzero_
 
 /*!
  *
