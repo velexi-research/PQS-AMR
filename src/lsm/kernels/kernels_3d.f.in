@@ -66,7 +66,7 @@ c     compute dV
 c     initialize volume to zero
       volume = 0.0d0
 
-c     loop over included cells {
+c     loop over interior cells {
       do k=ib_lo(3),ib_hi(3)
         do j=ib_lo(2),ib_hi(2)
           do i=ib_lo(1),ib_hi(1)
@@ -159,7 +159,7 @@ c     compute dV
 c     initialize volume to zero
       volume = 0.0d0
 
-c     loop over included cells {
+c     loop over interior cells {
       do k=ib_lo(3),ib_hi(3)
         do j=ib_lo(2),ib_hi(2)
           do i=ib_lo(1),ib_hi(1)

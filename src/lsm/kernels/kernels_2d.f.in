@@ -67,7 +67,7 @@ c     compute dA
 c     initialize area to zero
       area = 0.0d0
 
-c     loop over included cells {
+c     loop over interior cells {
       do j=ib_lo(2),ib_hi(2)
         do i=ib_lo(1),ib_hi(1)
 
@@ -161,7 +161,7 @@ c     compute dA
 c     initialize area to zero
       area = 0.0d0
 
-c     loop over included cells {
+c     loop over interior cells {
       do j=ib_lo(2),ib_hi(2)
         do i=ib_lo(1),ib_hi(1)
 
