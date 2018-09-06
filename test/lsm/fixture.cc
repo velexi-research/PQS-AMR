@@ -18,7 +18,7 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
-#include <memory>
+#include <iosfwd>
 #include <stddef.h>
 #include <string>
 

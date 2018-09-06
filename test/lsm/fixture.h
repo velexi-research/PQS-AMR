@@ -21,7 +21,6 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
-#include <iosfwd>
 
 // Google Test
 #include "gtest/gtest.h"
