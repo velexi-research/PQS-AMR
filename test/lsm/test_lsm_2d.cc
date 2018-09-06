@@ -70,9 +70,9 @@ TEST_F(lsmTest, test_compute_area_phi_lt_zero)
     SET_PHI_CIRCLE(phi, phi_gb_lo, phi_gb_hi,
                    ib_lo, ib_hi,
                    x_lo, dx, &radius);
-    area = PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
-                                              ib_lo, ib_hi,
-                                              dx, &eps);
+    area = LSM_2D_AREA_PHI_LESS_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
+                                          ib_lo, ib_hi,
+                                          dx, &eps);
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     lsmTest::tearDownGridFunction();
@@ -89,9 +89,9 @@ TEST_F(lsmTest, test_compute_area_phi_lt_zero)
     SET_PHI_CIRCLE(phi, phi_gb_lo, phi_gb_hi,
                    ib_lo, ib_hi,
                    x_lo, dx, &radius);
-    area = PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
-                                              ib_lo, ib_hi,
-                                              dx, &eps);
+    area = LSM_2D_AREA_PHI_LESS_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
+                                          ib_lo, ib_hi,
+                                          dx, &eps);
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     lsmTest::tearDownGridFunction();
@@ -108,9 +108,9 @@ TEST_F(lsmTest, test_compute_area_phi_lt_zero)
     SET_PHI_CIRCLE(phi, phi_gb_lo, phi_gb_hi,
                    ib_lo, ib_hi,
                    x_lo, dx, &radius);
-    area = PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
-                                              ib_lo, ib_hi,
-                                              dx, &eps);
+    area = LSM_2D_AREA_PHI_LESS_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
+                                          ib_lo, ib_hi,
+                                          dx, &eps);
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     lsmTest::tearDownGridFunction();
@@ -146,9 +146,9 @@ TEST_F(lsmTest, test_compute_area_phi_gt_zero)
     SET_PHI_CIRCLE(phi, phi_gb_lo, phi_gb_hi,
                    ib_lo, ib_hi,
                    x_lo, dx, &radius);
-    area = PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
-                                                 ib_lo, ib_hi,
-                                                 dx, &eps);
+    area = LSM_2D_AREA_PHI_GREATER_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
+                                             ib_lo, ib_hi,
+                                             dx, &eps);
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     lsmTest::tearDownGridFunction();
@@ -165,9 +165,9 @@ TEST_F(lsmTest, test_compute_area_phi_gt_zero)
     SET_PHI_CIRCLE(phi, phi_gb_lo, phi_gb_hi,
                    ib_lo, ib_hi,
                    x_lo, dx, &radius);
-    area = PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
-                                                 ib_lo, ib_hi,
-                                                 dx, &eps);
+    area = LSM_2D_AREA_PHI_GREATER_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
+                                             ib_lo, ib_hi,
+                                             dx, &eps);
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     lsmTest::tearDownGridFunction();
@@ -184,9 +184,9 @@ TEST_F(lsmTest, test_compute_area_phi_gt_zero)
     SET_PHI_CIRCLE(phi, phi_gb_lo, phi_gb_hi,
                    ib_lo, ib_hi,
                    x_lo, dx, &radius);
-    area = PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
-                                                 ib_lo, ib_hi,
-                                                 dx, &eps);
+    area = LSM_2D_AREA_PHI_GREATER_THAN_ZERO(phi, phi_gb_lo, phi_gb_hi,
+                                             ib_lo, ib_hi,
+                                             dx, &eps);
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     lsmTest::tearDownGridFunction();
