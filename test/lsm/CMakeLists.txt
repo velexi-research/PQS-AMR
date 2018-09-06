@@ -31,7 +31,7 @@ endif (SINGLE_PRECISION)
 
 # Generate fortran files
 configure_file(kernels/kernels_2d.f.in kernels/kernels_2d.f)
-#configure_file(kernels/kernels_3d.f.in kernels/kernels_3d.f)
+configure_file(kernels/kernels_3d.f.in kernels/kernels_3d.f)
 
 # ----------------------------------------------------------------------
 # Build targets
