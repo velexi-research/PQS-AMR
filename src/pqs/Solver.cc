@@ -48,11 +48,12 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities/error.h"
+#include "PQS/lsm/Toolbox.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/Solver.h"
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
+#include "PQS/utilities/error.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class Patch; } }
@@ -148,6 +149,15 @@ void Solver::equilibrateInterface(
                   string(")"));
     }
 
+    // Get dimensionality of problem
+    const int dim = d_patch_hierarchy->getDim().getValue();
+    if ((dim != 2) && (dim != 3)) {
+        PQS_ERROR(this, "equilibrateInterface",
+                  string("Invalid number of spatial dimensions (=") +
+                  to_string(dim) +
+                  string("). Valid values: 2, 3."));
+    }
+
     // --- Preparations
 
     // Initialize loop variables
@@ -185,7 +195,10 @@ void Solver::equilibrateInterface(
         // Compute volume of non-wettting phase
         double volume = 0.0;
         if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-            volume = 1.0;  // TODO
+            lsm::Toolbox::computeVolume(d_patch_hierarchy,
+                                        d_phi_lsm_current_id,
+                                        d_control_volume_id,
+                                        -1);  // compute volume for phi < 0
         }
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
@@ -343,6 +356,11 @@ void Solver::equilibrateInterface(
         t += dt;
         //delta_phi =
         //delta_saturation =
+
+        // --- Update data in d_phi_lsm_current
+
+        // Copy phi data from LSM to PQS context
+        d_tag_init_and_data_xfer_module->copyDataLSMNextToLSMCurrent();
     }
 
     // --- Clean up
