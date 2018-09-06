@@ -36,11 +36,11 @@ extern "C" {
 
 /*!
  *
- * Compute volume of region where signed distance function is less than 0.
+ * Compute volume of region where level set function is less than 0.
  *
  * Parameters
  * ----------
- * phi: signed distance function
+ * phi: level set function
  *
  * dx: array containing grid spacing in each coordinate direction
  *
@@ -57,6 +57,15 @@ extern "C" {
  * Return value
  * ------------
  * volume of region where phi < 0
+ *
+ * Notes
+ * -----
+ * - When phi is a signed distance function, the numerical width of the
+ *   Heaviside function as a function of spatial position is approximately
+ *   equal to (2 * eps).
+ *
+ * Notes
+ * -----
  */
 PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
     const PQS_REAL* phi,
@@ -69,11 +78,11 @@ PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
 
 /*!
  *
- * Compute volume of region where signed distance function is greater than 0.
+ * Compute volume of region where level set function is greater than 0.
  *
  * Parameters
  * ----------
- * phi: signed distance function
+ * phi: level set function
  *
  * dx: array containing grid spacing in each coordinate direction
  *
@@ -90,6 +99,12 @@ PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
  * Return value
  * ------------
  * volume of region where phi > 0
+ *
+ * Notes
+ * -----
+ * - When phi is a signed distance function, the numerical width of the
+ *   Heaviside function as a function of spatial position is approximately
+ *   equal to (2 * eps).
  */
 PQS_REAL LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
     const PQS_REAL* phi,

@@ -35,11 +35,11 @@ extern "C" {
 
 /*!
  *
- * Compute area of region where signed distance function is less than 0.
+ * Compute area of region where level set function is less than 0.
  *
  * Parameters
  * ----------
- * phi: signed distance function
+ * phi: level set function
  *
  * dx: array containing grid spacing in each coordinate direction
  *
@@ -56,6 +56,12 @@ extern "C" {
  * Return value
  * ------------
  * area of region where phi < 0
+ *
+ * Notes
+ * -----
+ * - When phi is a signed distance function, the numerical width of the
+ *   Heaviside function as a function of spatial position is approximately
+ *   equal to (2 * eps).
  */
 PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const PQS_REAL* phi,
@@ -68,11 +74,11 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
 
 /*!
  *
- * Compute area of region where signed distance function is greater than 0.
+ * Compute area of region where level set function is greater than 0.
  *
  * Parameters
  * ----------
- * phi: signed distance function
+ * phi: level set function
  *
  * dx: array containing grid spacing in each coordinate direction
  *
@@ -89,6 +95,12 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
  * Return value
  * ------------
  * area of region where phi > 0
+ *
+ * Notes
+ * -----
+ * - When phi is a signed distance function, the numerical width of the
+ *   Heaviside function as a function of spatial position is approximately
+ *   equal to (2 * eps).
  */
 PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const PQS_REAL* phi,

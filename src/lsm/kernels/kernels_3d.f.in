@@ -9,16 +9,16 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c Compute volume of region where signed distance function is less
+c Compute volume of region where level set function is less
 c than 0.
 c
 c Parameters
 c ----------
-c phi: signed distance function
+c phi: level set function
 c
 c dx: array containing grid spacing in each coordinate direction
 c
-c eps: width of numerical smoothing to use for Heaviside function
+c eps: numerical width Heaviside function (as a function of phi)
 c
 c *_gb_lo: lower corner of index range for ghostbox
 c
@@ -27,6 +27,16 @@ c
 c ib_lo: lower corner of index range for interior box
 c
 c ib_hi: upper corner of index range for interior box
+c
+c Return value
+c ------------
+c volume of region where phi < 0
+c
+c Notes
+c -----
+c - When phi is a signed distance function, the numerical width of the
+c   Heaviside function as a function of spatial position is approximately
+c   equal to (2 * eps).
 c
 c***********************************************************************
       @REAL@ function lsm3dVolumePhiLessThanZero(
@@ -103,16 +113,16 @@ c } end function
 
 c***********************************************************************
 c
-c Compute volume of region where signed distance function is greater
+c Compute volume of region where level set function is greater
 c than 0.
 c
 c Parameters
 c ----------
-c phi: signed distance function
+c phi: level set function
 c
 c dx: array containing grid spacing in each coordinate direction
 c
-c eps: width of numerical smoothing to use for Heaviside function
+c eps: numerical width Heaviside function (as a function of phi)
 c
 c *_gb_lo: lower corner of index range for ghostbox
 c
@@ -121,6 +131,16 @@ c
 c ib_lo: lower corner of index range for interior box
 c
 c ib_hi: upper corner of index range for interior box
+c
+c Return value
+c ------------
+c volume of region where phi > 0
+c
+c Notes
+c -----
+c - When phi is a signed distance function, the numerical width of the
+c   Heaviside function as a function of spatial position is approximately
+c   equal to (2 * eps).
 c
 c***********************************************************************
       @REAL@ function lsm3dVolumePhiGreaterThanZero(
