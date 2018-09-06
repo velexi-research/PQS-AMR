@@ -1,5 +1,5 @@
 # --------------------------------------------------------------
-# Customizations for lsm_kernels library
+# Customizations for pqs_lsm_kernels library
 # --------------------------------------------------------------
 
 # CMake initialization: No customizations
@@ -37,7 +37,7 @@ file(GLOB SOURCE_FILES
      ${CMAKE_CURRENT_SOURCE_DIR}/*.c
      ${CMAKE_CURRENT_SOURCE_DIR}/*.f
      ${CMAKE_CURRENT_BINARY_DIR}/*.f)
-add_library(lsm_kernels ${SOURCE_FILES})
+add_library(pqs_lsm_kernels ${SOURCE_FILES})
 
 # Copy header files to build directory (whenever header files change)
 file(GLOB HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
@@ -64,4 +64,4 @@ install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}/lsm
         FILES_MATCHING PATTERN "*.h")
 
 # Library
-install(TARGETS lsm_kernels DESTINATION ${INSTALL_LIBRARY_DIR})
+install(TARGETS pqs_lsm_kernels DESTINATION ${INSTALL_LIBRARY_DIR})

@@ -40,6 +40,7 @@ add_executable(pqs-amr-no-solid-phase ${SOURCE_FILES})
 add_dependencies(pqs-amr-no-solid-phase
                  pqs_utilities
                  pqs pqs_kernels
+                 pqs_lsm pqs_lsm_kernels
                  pqs_math pqs_math_kernels
                  samrai)
 
@@ -52,6 +53,7 @@ target_include_directories(pqs-amr-no-solid-phase
 target_link_libraries(pqs-amr-no-solid-phase
     pqs_utilities
     pqs pqs_kernels
+    pqs_lsm pqs_lsm_kernels
     pqs_math pqs_math_kernels
     ${SAMRAI_LIBS}
     ${HDF5_C_LIBRARIES}

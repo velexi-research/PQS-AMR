@@ -1,5 +1,5 @@
 # --------------------------------------------------------------
-# Customizations for lsm library
+# Customizations for pqs_lsm library
 # --------------------------------------------------------------
 
 # CMake initialization: No customizations
@@ -14,10 +14,10 @@
 file(GLOB SOURCE_FILES
      ${CMAKE_CURRENT_SOURCE_DIR}/*.h
      ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
-add_library(lsm ${SOURCE_FILES})
+add_library(pqs_lsm ${SOURCE_FILES})
 
 # Set search path for header files
-target_include_directories(lsm
+target_include_directories(pqs_lsm
     PUBLIC ${MPI_CXX_INCLUDE_PATH}
     PUBLIC ${SAMRAI_INCLUDE_DIR})
 
@@ -44,4 +44,4 @@ install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}/lsm
         FILES_MATCHING PATTERN "*.h")
 
 # Library
-install(TARGETS lsm DESTINATION ${INSTALL_LIBRARY_DIR})
+install(TARGETS pqs_lsm DESTINATION ${INSTALL_LIBRARY_DIR})
