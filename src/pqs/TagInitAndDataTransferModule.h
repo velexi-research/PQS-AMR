@@ -30,78 +30,6 @@
  * <h3> USAGE </h3>
  *
  * TODO
- *
- * <h4> Method (A) </h4>
- *
- * <h3> User-specified parameters (input database field) </h3>
- *
- * <h4> Sample Input File </h4>
- *
- *  <pre>
- *  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- *  LevelSetMethodAlgorithm{
- *
- *    LevelSetFunctionIntegrator {
- *      start_time  = 0.0
- *      end_time    = 0.5
- *
- *      cfl_number               = 0.5
- *      spatial_derivative_type  = "WENO"
- *      spatial_derivative_order = 5
- *      tvd_runge_kutta_order    = 3
- *
- *      reinitialization_interval = 0
- *      reinitialization_max_iters = 20
- *      reinitialization_stop_dist = 0.2
- *      orthogonalization_interval = 0
- *      orthogonalization_max_iters = 20
- *      orthogonalization_stop_dist = 0.2
- *
- *      lower_bc_phi_0 = 1, 1, 1
- *      upper_bc_phi_0 = 1, 1, 1
- *
- *      use_AMR = FALSE
- *      refinement_cutoff_value = 0.25
- *      tag_buffer = 2,2,2,2,2,2
- *
- *      verbose = false
- *
- *    } // end of LevelSetFunctionIntegrator database
- *
- *
- *    LevelSetMethodGriddingAlgorithm {
- *      max_levels = 4
- *
- *      ratio_to_coarser {
- *         level_1            = 2, 2
- *         level_2            = 2, 2
- *         level_3            = 2, 2
- *      }
- *
- *      largest_patch_size {
- *        level_0 = 50,50
- *        level_1 = 100,100
- *        // all finer levels will use same values as level_1...
- *      }
- *
- *      tagging_method = "GRADIENT_DETECTOR","REFINE_BOXES"
- *
- *      RefineBoxes {
- *        level_0 = [(15,0),(29,14)]
- *        level_1 = [(65,10),(114,40)]
- *      }
- *
- *      LoadBalancer {
- *        // load balancer input parameters
- *      }
- *
- *    } // end of LevelSetMethodGriddingAlgorithm database
- *
- *  } // end of LevelSetMethodAlgorithm database
- *
- *  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- *  </pre>
- *
  */
 
 // --- Headers, namespaces, and type declarations
@@ -229,7 +157,7 @@ public:
     virtual void copyDataPQStoLSM() const;
 
     /*!
-     * Copy data from LSM (next) to PQS context.
+     * Copy data from LSM (current) to PQS context.
      *
      * Parameters
      * ----------
@@ -240,6 +168,19 @@ public:
      * None
      */
     virtual void copyDataLSMtoPQS() const;
+
+    /*!
+     * Copy data from LSM next to LSM current context.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void copyDataLSMNextToLSMCurrent() const;
 
     /*!
      * Fill ghostcells for Patches in PatchLevel.
@@ -658,6 +599,9 @@ protected:
 
     shared_ptr<xfer::RefineAlgorithm> d_xfer_lsm_to_pqs;
     vector< shared_ptr<xfer::RefineSchedule> > d_xfer_lsm_to_pqs_schedule;
+
+    shared_ptr<xfer::RefineAlgorithm> d_xfer_next_to_current;
+    vector< shared_ptr<xfer::RefineSchedule> > d_xfer_next_to_current_schedule;
 
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
     vector< shared_ptr<xfer::RefineSchedule> >
