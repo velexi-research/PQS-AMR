@@ -31,7 +31,7 @@ c ------------
 c area of region where phi < 0
 c
 c***********************************************************************
-      @REAL@ function pqsLsm2dAreaPhiLessThanZero(
+      @REAL@ function lsm2dAreaPhiLessThanZero(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  ib_lo, ib_hi,
@@ -94,7 +94,7 @@ c     loop over interior cells {
 c     } end loop over interior cells
 
 c     set result
-      pqsLsm2dAreaPhiLessThanZero = area
+      lsm2dAreaPhiLessThanZero = area
 
       return
       end
@@ -126,7 +126,7 @@ c ------------
 c area of region where phi > 0
 c
 c***********************************************************************
-      @REAL@ function pqsLsm2dAreaPhiGreaterThanZero(
+      @REAL@ function lsm2dAreaPhiGreaterThanZero(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  ib_lo, ib_hi,
@@ -188,7 +188,7 @@ c     loop over interior cells {
 c     } end loop over interior cells
 
 c     set result
-      pqsLsm2dAreaPhiGreaterThanZero = area
+      lsm2dAreaPhiGreaterThanZero = area
 
       return
       end

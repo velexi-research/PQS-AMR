@@ -29,10 +29,10 @@ extern "C" {
  *      C/C++ code                       Fortran code
  *      ----------                       ------------
  */
-#define PQS_LSM_3D_VOLUME_PHI_LESS_THAN_ZERO \
-                                         pqslsm3dvolumephilessthanzero_
-#define PQS_LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO \
-                                         pqslsm3dvolumephigreaterthanzero_
+#define LSM_3D_VOLUME_PHI_LESS_THAN_ZERO \
+                                         lsm3dvolumephilessthanzero_
+#define LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO \
+                                         lsm3dvolumephigreaterthanzero_
 
 /*!
  *
@@ -58,7 +58,7 @@ extern "C" {
  * ------------
  * volume of region where phi < 0
  */
-PQS_REAL PQS_LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
+PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
     const PQS_REAL* phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
@@ -91,7 +91,7 @@ PQS_REAL PQS_LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
  * ------------
  * volume of region where phi > 0
  */
-PQS_REAL PQS_LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
+PQS_REAL LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
     const PQS_REAL* phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,

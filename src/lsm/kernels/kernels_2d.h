@@ -29,10 +29,9 @@ extern "C" {
  *      C/C++ code                       Fortran code
  *      ----------                       ------------
  */
-#define PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO \
-                                         pqslsm2dareaphilessthanzero_
-#define PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO \
-                                         pqslsm2dareaphigreaterthanzero_
+#define LSM_2D_AREA_PHI_LESS_THAN_ZERO   lsm2dareaphilessthanzero_
+#define LSM_2D_AREA_PHI_GREATER_THAN_ZERO \
+                                         lsm2dareaphigreaterthanzero_
 
 /*!
  *
@@ -58,7 +57,7 @@ extern "C" {
  * ------------
  * area of region where phi < 0
  */
-PQS_REAL PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(
+PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const PQS_REAL* phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
@@ -91,7 +90,7 @@ PQS_REAL PQS_LSM_2D_AREA_PHI_LESS_THAN_ZERO(
  * ------------
  * area of region where phi > 0
  */
-PQS_REAL PQS_LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
+PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const PQS_REAL* phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,

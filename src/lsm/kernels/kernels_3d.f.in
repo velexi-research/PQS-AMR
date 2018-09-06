@@ -29,7 +29,7 @@ c
 c ib_hi: upper corner of index range for interior box
 c
 c***********************************************************************
-      @REAL@ function pqsLsm3dVolumePhiLessThanZero(
+      @REAL@ function lsm3dVolumePhiLessThanZero(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  ib_lo, ib_hi,
@@ -95,7 +95,7 @@ c     loop over interior cells {
 c     } end loop over interior cells
 
 c     set result
-      pqsLsm3dVolumePhiLessThanZero = volume
+      lsm3dVolumePhiLessThanZero = volume
 
       return
       end
@@ -123,7 +123,7 @@ c
 c ib_hi: upper corner of index range for interior box
 c
 c***********************************************************************
-      @REAL@ function pqsLsm3dVolumePhiGreaterThanZero(
+      @REAL@ function lsm3dVolumePhiGreaterThanZero(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  ib_lo, ib_hi,
@@ -188,7 +188,7 @@ c     loop over interior cells {
 c     } end loop over interior cells
 
 c     set result
-      pqsLsm3dVolumePhiGreaterThanZero = volume
+      lsm3dVolumePhiGreaterThanZero = volume
 
       return
       end
