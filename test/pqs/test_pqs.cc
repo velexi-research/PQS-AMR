@@ -19,7 +19,6 @@
 
 // Standard library
 #include <memory>
-#include <stddef.h>
 #include <sstream>
 
 // Google Test
@@ -126,15 +125,16 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
     // --- Exercise functionality
 
     // Construct PQS::pqs::Solver object
-    solver = new pqs::Solver(config_db,
-                             pore_init_strategy,
-                             interface_init_strategy,
-                             patch_hierarchy);
+    solver = shared_ptr<pqs::Solver>(
+            new pqs::Solver(config_db,
+                            pore_init_strategy,
+                            interface_init_strategy,
+                            patch_hierarchy));
 
     // --- Check results
 
     // Status code
-    EXPECT_NE(solver, (pqs::Solver*) NULL);
+    EXPECT_NE(solver, nullptr);
 
     // Solver parameters
     EXPECT_EQ(solver->getInitialCurvature(),
@@ -179,13 +179,14 @@ TEST_F(pqsTest, test_Solver_Solver_without_patch_hierarchy)
     // --- Exercise functionality
 
     // Construct PQS::pqs::Solver object
-    solver = new pqs::Solver(config_db, pore_init_strategy,
-                             interface_init_strategy);
+    solver = shared_ptr<pqs::Solver>(
+            new pqs::Solver(config_db, pore_init_strategy,
+                            interface_init_strategy));
 
     // --- Check results
 
     // Status code
-    EXPECT_NE(solver, (pqs::Solver*) NULL);
+    EXPECT_NE(solver, nullptr);
 
     // Solver parameters
     EXPECT_EQ(solver->getInitialCurvature(),

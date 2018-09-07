@@ -71,7 +71,7 @@ protected:
     shared_ptr<pqs::InterfaceInitStrategy> interface_init_strategy;
 
     // PQS::pqs::Solver
-    pqs::Solver *solver;
+    shared_ptr<pqs::Solver> solver;
 
     // --- Fixture set up and tear down
 

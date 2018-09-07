@@ -36,7 +36,6 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/utilities/error.h"
-#include "PQS/pqs/Solver.h"
 
 // PQS test
 #include "fixture.h"
@@ -132,7 +131,7 @@ pqsTest::pqsTest() {
     // --- Initialize PQS objects
 
     // Solver
-    solver = NULL;
+    solver = shared_ptr<pqs::Solver>(NULL);
 
     // TestPoreInitModule (implements PoreInitStrategy)
     pore_init_strategy = shared_ptr<pqs::PoreInitStrategy>(
@@ -149,10 +148,7 @@ pqsTest::~pqsTest() {
     grid_geometry.reset();
 
     // Clean up PQS objects
-    if (solver) {
-        delete solver;
-        solver = NULL;
-    }
+    solver.reset();
     pore_init_strategy.reset();
     interface_init_strategy.reset();
     config_db.reset();

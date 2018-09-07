@@ -66,8 +66,10 @@ TEST_F(pqsTest, test_Solver_equilibrateInterface_2d_PCM)
         config_db->getDatabase("SAMRAI");
 
     // Construct PQS::pqs::Solver object
-    solver = new pqs::Solver(config_db, pore_init_strategy,
-                             interface_init_strategy);
+    solver = shared_ptr<pqs::Solver>(
+            new pqs::Solver(config_db, pore_init_strategy,
+                            interface_init_strategy,
+                            patch_hierarchy));
 
     // mean curvature
     double curvature = 1.0;
@@ -101,8 +103,10 @@ TEST_F(pqsTest, test_Solver_equilibrateInterface_2d_SCM)
         config_db->getDatabase("SAMRAI");
 
     // Construct PQS::pqs::Solver object
-    solver = new pqs::Solver(config_db, pore_init_strategy,
-                             interface_init_strategy);
+    solver = shared_ptr<pqs::Solver>(
+            new pqs::Solver(config_db, pore_init_strategy,
+                            interface_init_strategy,
+                            patch_hierarchy));
 
     // mean curvature
     double curvature = 1.0;
