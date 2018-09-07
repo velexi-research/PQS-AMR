@@ -1,7 +1,7 @@
-/*! \file fixture.cc
+/*! \file fixture_kernels.cc
  *
  * \brief
- * Implementation of fixture for unit tests for PQS::lsm package
+ * Implementation of fixture for unit tests for PQS::lsm kernels
  */
 
 /*
@@ -34,12 +34,8 @@
 
 namespace lsmTests {
 
-// Static data members
-int lsmTest::s_num_tests = 0;
-int lsmTest::s_num_tests_remaining = lsmTest::s_num_tests;
-
 // Methods
-lsmTest::lsmTest() {
+lsmKernelTest::lsmKernelTest() {
     // Initialize num_dimensions and N to invalid values
     num_dimensions = 0;
     N = 0;
@@ -61,30 +57,30 @@ lsmTest::lsmTest() {
     // Initialize grid_setup_complete to false
     grid_setup_complete = false;
 
-} // lsmTest::lsmTest()
+} // lsmKernelTest::lsmKernelTest()
 
-lsmTest::~lsmTest() {
+lsmKernelTest::~lsmKernelTest() {
     // Tear down grid
     tearDownGrid();
 
     // Tear down grid functdion
     tearDownGridFunction();
 
-} // lsmTest::~lsmTest()
+} // lsmKernelTest::~lsmKernelTest()
 
-void lsmTest::setUpGrid()
+void lsmKernelTest::setUpGrid()
 {
     // --- Check prerequisites
 
     if ((num_dimensions != 2) && (num_dimensions != 3)) {
-        PQS_ERROR_STATIC("lsmTest", "setUpGrid",
+        PQS_ERROR_STATIC("lsmKernelTest", "setUpGrid",
                   string("'num_dimensions' (= ") +
                   to_string(num_dimensions) +
                   string(") must be equal to 2 or 3"));
     }
 
     if (N <= 0) {
-        PQS_ERROR_STATIC("lsmTest", "setUpGrid",
+        PQS_ERROR_STATIC("lsmKernelTest", "setUpGrid",
                   string("'N' (= ") + to_string(N) +
                   string(") must positive"));
     }
@@ -120,9 +116,9 @@ void lsmTest::setUpGrid()
     // Set grid_setup_complete to true
     grid_setup_complete = true;
 
-} // lsmTest::setUpGrid()
+} // lsmKernelTest::setUpGrid()
 
-void lsmTest::tearDownGrid() {
+void lsmKernelTest::tearDownGrid() {
     // Clean up geometry parameters
     if (x_lo) {
         delete [] x_lo;
@@ -158,13 +154,13 @@ void lsmTest::tearDownGrid() {
     // Set grid_setup_complete to false
     grid_setup_complete = false;
 
-} // lsmTest::tearDownGrid()
+} // lsmKernelTest::tearDownGrid()
 
-void lsmTest::setUpGridFunction()
+void lsmKernelTest::setUpGridFunction()
 {
     // Check prerequisites
     if (!grid_setup_complete) {
-        PQS_ERROR_STATIC("lsmTest", "setUpGridFunction",
+        PQS_ERROR_STATIC("lsmKernelTest", "setUpGridFunction",
             "setUpGrid() must be called before setUpGridFunction()");
     }
 
@@ -178,15 +174,15 @@ void lsmTest::setUpGridFunction()
     }
     phi = new double[grid_size];
 
-} // lsmTest::setUpGridFunction()
+} // lsmKernelTest::setUpGridFunction()
 
-void lsmTest::tearDownGridFunction()
+void lsmKernelTest::tearDownGridFunction()
 {
     // Free memory for phi
     if (phi) {
         delete [] phi;
         phi = NULL;
     }
-} // lsmTest::tearDownGridFunction()
+} // lsmKernelTest::tearDownGridFunction()
 
 } // lsmTests namespace

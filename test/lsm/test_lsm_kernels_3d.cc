@@ -30,7 +30,7 @@
 #include "PQS/lsm/kernels_3d.h"
 
 // PQS test
-#include "fixture.h"
+#include "fixture_kernels.h"
 #include "kernels/kernels_3d.h"
 
 
@@ -45,7 +45,7 @@ using namespace std;
 namespace lsmTests {
 
 // Test case: compute volume phi < 0 (no control volume)
-TEST_F(lsmTest, test_compute_volume_phi_lt_zero)
+TEST_F(lsmKernelTest, test_compute_volume_phi_lt_zero)
 {
     // --- Preparations
 
@@ -61,8 +61,8 @@ TEST_F(lsmTest, test_compute_volume_phi_lt_zero)
 
     // radius = 0.25, N = 200
     N = 200;
-    lsmTest::setUpGrid();
-    lsmTest::setUpGridFunction();
+    lsmKernelTest::setUpGrid();
+    lsmKernelTest::setUpGridFunction();
 
     radius = 0.25;
     expected_volume = 4 * M_PI / 3 * radius * radius * radius;
@@ -75,13 +75,13 @@ TEST_F(lsmTest, test_compute_volume_phi_lt_zero)
                                               dx, &eps);
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
-    lsmTest::tearDownGridFunction();
-    lsmTest::tearDownGrid();
+    lsmKernelTest::tearDownGridFunction();
+    lsmKernelTest::tearDownGrid();
 
     // radius = 0.5, N = 100
     N = 100;
-    lsmTest::setUpGrid();
-    lsmTest::setUpGridFunction();
+    lsmKernelTest::setUpGrid();
+    lsmKernelTest::setUpGridFunction();
 
     radius = 0.5;
     expected_volume = 4 * M_PI / 3 * radius * radius * radius;
@@ -94,13 +94,13 @@ TEST_F(lsmTest, test_compute_volume_phi_lt_zero)
                                               dx, &eps);
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
-    lsmTest::tearDownGridFunction();
-    lsmTest::tearDownGrid();
+    lsmKernelTest::tearDownGridFunction();
+    lsmKernelTest::tearDownGrid();
 
     // radius = 0.75, N = 250
     N = 250;
-    lsmTest::setUpGrid();
-    lsmTest::setUpGridFunction();
+    lsmKernelTest::setUpGrid();
+    lsmKernelTest::setUpGridFunction();
 
     radius = 0.75;
     expected_volume = 4 * M_PI / 3 * radius * radius * radius;
@@ -113,15 +113,12 @@ TEST_F(lsmTest, test_compute_volume_phi_lt_zero)
                                               dx, &eps);
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
-    lsmTest::tearDownGridFunction();
-    lsmTest::tearDownGrid();
-
-    // --- Clean up
-    //
+    lsmKernelTest::tearDownGridFunction();
+    lsmKernelTest::tearDownGrid();
 }
 
 // Test case: compute volume phi > 0 (no control volume)
-TEST_F(lsmTest, test_compute_volume_phi_gt_zero)
+TEST_F(lsmKernelTest, test_compute_volume_phi_gt_zero)
 {
     // --- Preparations
 
@@ -137,8 +134,8 @@ TEST_F(lsmTest, test_compute_volume_phi_gt_zero)
 
     // radius = 0.25, N = 200
     N = 200;
-    lsmTest::setUpGrid();
-    lsmTest::setUpGridFunction();
+    lsmKernelTest::setUpGrid();
+    lsmKernelTest::setUpGridFunction();
 
     radius = 0.25;
     expected_volume = 8 - 4 * M_PI / 3 * radius * radius * radius;
@@ -151,13 +148,13 @@ TEST_F(lsmTest, test_compute_volume_phi_gt_zero)
                                                  dx, &eps);
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
-    lsmTest::tearDownGridFunction();
-    lsmTest::tearDownGrid();
+    lsmKernelTest::tearDownGridFunction();
+    lsmKernelTest::tearDownGrid();
 
     // radius = 0.5, N = 100
     N = 100;
-    lsmTest::setUpGrid();
-    lsmTest::setUpGridFunction();
+    lsmKernelTest::setUpGrid();
+    lsmKernelTest::setUpGridFunction();
 
     radius = 0.5;
     expected_volume = 8 - 4 * M_PI / 3 * radius * radius * radius;
@@ -170,13 +167,13 @@ TEST_F(lsmTest, test_compute_volume_phi_gt_zero)
                                                  dx, &eps);
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
-    lsmTest::tearDownGridFunction();
-    lsmTest::tearDownGrid();
+    lsmKernelTest::tearDownGridFunction();
+    lsmKernelTest::tearDownGrid();
 
     // radius = 0.75, N = 250
     N = 250;
-    lsmTest::setUpGrid();
-    lsmTest::setUpGridFunction();
+    lsmKernelTest::setUpGrid();
+    lsmKernelTest::setUpGridFunction();
 
     radius = 0.75;
     expected_volume = 8 - 4 * M_PI / 3 * radius * radius * radius;
@@ -189,11 +186,8 @@ TEST_F(lsmTest, test_compute_volume_phi_gt_zero)
                                                  dx, &eps);
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
-    lsmTest::tearDownGridFunction();
-    lsmTest::tearDownGrid();
-
-    // --- Clean up
-    //
+    lsmKernelTest::tearDownGridFunction();
+    lsmKernelTest::tearDownGrid();
 }
 
 } // lsmTests namespace

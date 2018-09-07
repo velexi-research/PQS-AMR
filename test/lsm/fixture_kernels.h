@@ -1,7 +1,7 @@
-/*! \file fixture.h
+/*! \file fixture_kernels.h
  *
  * \brief
- * Fixture for unit tests for PQS::lsm package
+ * Fixture for unit tests for PQS::lsm kernels
  */
 
 /*
@@ -38,7 +38,7 @@ using namespace std;
 
 namespace lsmTests {
 
-class lsmTest: public ::testing::Test
+class lsmKernelTest: public ::testing::Test
 {
 protected:
     // --- Fixture data
@@ -65,12 +65,12 @@ protected:
     // --- Fixture set up and tear down
 
     // Constructor (set up)
-    lsmTest();
+    lsmKernelTest();
 
     // Destructor (tear down)
     //
     // Free heap memory used by unit tests.
-    virtual ~lsmTest();
+    virtual ~lsmKernelTest();
 
     // --- Helper methods
 
