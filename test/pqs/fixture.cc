@@ -262,6 +262,6 @@ void pqsTest::initializeGeometryAndHierarchy(
         new hier::PatchHierarchy("TestPatchHierarchy", grid_geometry,
                                  patch_hierarchy_config_db));
 
-} // pqsTest::configureGeometryAndHierarchy()
+} // pqsTest::initializeGeometryAndHierarchy()
 
 } // pqsTests namespace
