@@ -27,7 +27,7 @@
 #include "PQS/utilities/error.h"
 
 // PQS test
-#include "fixture.h"
+#include "fixture_kernels.h"
 
 
 // --- Fixtures
