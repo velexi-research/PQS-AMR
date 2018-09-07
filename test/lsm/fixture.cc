@@ -164,12 +164,7 @@ lsmTest::~lsmTest() {
     }
 } // lsmTest::~lsmTest()
 
-void lsmTest::constructSolver(
-        shared_ptr<tbox::Database> config_db,
-        shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
-        shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-        const int num_dimensions,
-        const double radius)
+void lsmTest::constructSolver(const int num_dimensions, const double radius)
 {
     // --- Check arguments
 
@@ -218,7 +213,7 @@ void lsmTest::constructSolver(
 
         // Box
         int box_lower[2] = {0, 0};
-        int box_upper[2] = {19, 19};
+        int box_upper[2] = {99, 99};
         const tbox::Dimension dim(geometry_config_db->getInteger("dim"));
         tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
         geometry_config_db->putDatabaseBoxArray("domain_boxes",
@@ -232,7 +227,7 @@ void lsmTest::constructSolver(
 
         // Box
         int box_lower[3] = {0, 0, 0};
-        int box_upper[3] = {19, 19, 19};
+        int box_upper[3] = {99, 99, 99};
         tbox::DatabaseBox domain_boxes(dim, box_lower, box_upper);
         geometry_config_db->putDatabaseBoxArray("domain_boxes",
                                                 &domain_boxes, 1);
@@ -240,7 +235,7 @@ void lsmTest::constructSolver(
 
     // --- PatchHierarchy configuration
 
-    int max_levels = 3;
+    int max_levels = 1;  // TODO: add multi-level tests
     patch_hierarchy_config_db->putInteger("max_levels", max_levels);
     shared_ptr<tbox::Database> ratio_to_coarser_db =
             patch_hierarchy_config_db->putDatabase("ratio_to_coarser");

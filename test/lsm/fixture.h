@@ -86,11 +86,7 @@ protected:
     /*
      * Construct pqs::Solver object with phi initialized to test configuration.
      */
-    void constructSolver(
-            shared_ptr<tbox::Database> config_db,
-            shared_ptr<geom::CartesianGridGeometry>& grid_geometry,
-            shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
-            const int num_dimensions, const double radius);
+    void constructSolver(const int num_dimensions, const double radius);
 
     // --- Test management
     //
