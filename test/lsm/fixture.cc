@@ -239,17 +239,35 @@ void lsmTest::constructSolver(const int num_dimensions, const double radius)
     patch_hierarchy_config_db->putInteger("max_levels", max_levels);
     shared_ptr<tbox::Database> ratio_to_coarser_db =
             patch_hierarchy_config_db->putDatabase("ratio_to_coarser");
-    for (int ln=1; ln <= max_levels; ln++) {
-        std::string level_name = std::string("level_") + std::to_string(ln);
+    for (int level_num = 1; level_num <= max_levels; level_num++) {
+        std::string level_name = std::string("level_") +
+                                 std::to_string(level_num);
 
         if (num_dimensions == 2) {
-            int ratio_to_coarser[2] = {2, 2};
+            const int ratio_to_coarser[2] = {2, 2};
             ratio_to_coarser_db->putIntegerArray(level_name,
                                                        ratio_to_coarser, 2);
         } else {
-            int ratio_to_coarser[3] = {2, 2, 2};
+            const int ratio_to_coarser[3] = {2, 2, 2};
             ratio_to_coarser_db->putIntegerArray(level_name,
                                                        ratio_to_coarser, 3);
+        }
+    }
+
+    shared_ptr<tbox::Database> largest_patch_size_db =
+            patch_hierarchy_config_db->putDatabase("largest_patch_size");
+    for (int level_num = 0; level_num < max_levels; level_num++) {
+        std::string level_name = std::string("level_") +
+                                 std::to_string(level_num);
+
+        if (num_dimensions == 2) {
+            const int largest_patch_size[2] = {50, 50};
+            largest_patch_size_db->putIntegerArray(level_name,
+                                                   largest_patch_size, 2);
+        } else {
+            const int largest_patch_size[3] = {50, 50, 50};
+            largest_patch_size_db->putIntegerArray(level_name,
+                                                   largest_patch_size, 3);
         }
     }
 
