@@ -382,6 +382,19 @@ public:
     virtual int getInterfacePatchDataId() const;
 
     /*!
+     * Get PatchData ID for control volume.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * PatchData ID for control volume
+     */
+    virtual int getControlVolumePatchDataId() const;
+
+    /*!
      * Print the values of the data members the object.
      *
      * Parameters

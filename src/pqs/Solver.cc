@@ -420,6 +420,11 @@ int Solver::getInterfacePatchDataId() const
     return d_phi_pqs_id;
 } // Solver::getInterfacePatchDataId()
 
+int Solver::getControlVolumePatchDataId() const
+{
+    return d_control_volume_id;
+} // Solver::getControlVolumePatchDataId()
+
 void Solver::printClassData(ostream& os) const
 {
     os << endl;
