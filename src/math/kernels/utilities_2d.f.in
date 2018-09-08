@@ -1,0 +1,75 @@
+c***********************************************************************
+c
+c utilities_2d.f
+c
+c F77 routines for math utility functions
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute max norm of the difference between 'u' and 'v'.
+c
+c Parameters
+c ----------
+c u: first function in the expression |u - v|
+c
+c v: second function in the expression |u - v|
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c ib_lo: lower corner of index range for interior box
+c
+c ib_hi: upper corner of index range for interior box
+c
+c Return value
+c ------------
+c max norm of (u - v)
+c
+c***********************************************************************
+      @REAL@ function maxNormDiff2d(
+     &  u,
+     &  u_gb_lo, u_gb_hi,
+     &  v,
+     &  v_gb_lo, v_gb_hi,
+     &  ib_lo, ib_hi)
+***********************************************************************
+c { begin function
+      implicit none
+
+      integer u_gb_lo(1:2), u_gb_hi(1:2)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2))
+
+      integer v_gb_lo(1:2), v_gb_hi(1:2)
+      @REAL@ v(v_gb_lo(1):v_gb_hi(1),
+     &         v_gb_lo(2):v_gb_hi(2))
+
+      integer ib_lo(1:2), ib_hi(1:2)
+
+      integer i, j
+      real*8 max_norm
+
+c     initialize max_norm to zero
+      max_norm = 0.0d0
+
+c     loop over interior cells {
+      do j=ib_lo(2),ib_hi(2)
+        do i=ib_lo(1),ib_hi(1)
+
+          if (abs(u(i,j) - v(i,j)) .gt. max_norm) then
+            max_norm = abs(u(i,j) - v(i,j))
+          endif
+
+        enddo
+      enddo
+c     } end loop over interior cells
+
+c     set result
+      maxNormDiff2d = max_norm
+
+      return
+      end
+c } end function
