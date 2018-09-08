@@ -29,7 +29,7 @@ c ------------
 c max norm of (u - v)
 c
 c***********************************************************************
-      @REAL@ function maxNormDiff2d(
+      @REAL@ function pqsMath2dMaxNormDiff(
      &  u,
      &  u_gb_lo, u_gb_hi,
      &  v,
@@ -68,7 +68,7 @@ c     loop over interior cells {
 c     } end loop over interior cells
 
 c     set result
-      maxNormDiff2d = max_norm
+      pqsMath2dMaxNormDiff = max_norm
 
       return
       end
