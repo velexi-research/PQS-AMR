@@ -49,14 +49,6 @@ using namespace SAMRAI;
 namespace PQS {
 namespace math {
 
-//! @{
-/*!
- ************************************************************************
- *
- * @name Utility functions
- *
- ************************************************************************/
-
 /*!
  * Compute max norm of (u - v).
  *
