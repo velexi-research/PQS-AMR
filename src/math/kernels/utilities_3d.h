@@ -28,7 +28,7 @@ extern "C" {
  *      C/C++ code                       Fortran code
  *      ----------                       ------------
  */
-#define PQS_MATH_3D_MAX_NORM_DIFF        maxNormDiff3d_
+#define PQS_MATH_3D_MAX_NORM_DIFF        pqsmath3dmaxnormdiff_
 
 /*!
  *
