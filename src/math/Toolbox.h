@@ -74,7 +74,7 @@ namespace math {
  * ------------
  * max norm of (u - v)
  */
-PQS_REAL maxNormDiff(
+PQS_REAL computeMaxNormDiff(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int u_id,
         const int v_id,
