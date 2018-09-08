@@ -1,7 +1,7 @@
-/*! \file Toolbox.h
+/*! \file LSMToolbox.h
  *
  * \brief
- * Header file for Toolbox class.
+ * Header file for LSMToolbox class.
  */
 
 /*
@@ -15,10 +15,10 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_lsm_Toolbox_h
-#define INCLUDED_PQS_lsm_Toolbox_h
+#ifndef INCLUDED_PQS_math_LSMToolbox_h
+#define INCLUDED_PQS_math_LSMToolbox_h
 
-/*! \class PQS::pqs::Toolbox
+/*! \class PQS::math::LSMToolbox
  *
  * \brief
  * TODO: add description
@@ -36,7 +36,7 @@
 
 // PQS headers
 #include "PQS/PQS_config.h"
-#include "PQS/lsm/ReinitializationAlgorithm.h"
+//#include "PQS/math/ReinitializationAlgorithm.h"
 
 // Namespaces
 using namespace std;
@@ -45,26 +45,26 @@ using namespace SAMRAI;
 // Class/type declarations
 
 
-// --- PQS::lsm::Toolbox Class
+// --- PQS::math::LSMToolbox Class
 
 namespace PQS {
-namespace lsm {
+namespace math {
 
-class Toolbox {
+class LSMToolbox {
 
 public:
 
     //! @{
 
     /*!
-     * This constructor for Toolbox creates a TODO
+     * This constructor for LSMToolbox creates a TODO
      */
-    Toolbox();
+    LSMToolbox();
 
     /*!
      * Empty default destructor.
      */
-    virtual ~Toolbox() {};
+    virtual ~LSMToolbox() {};
 
     //! @}
 
@@ -165,7 +165,7 @@ protected:
 
     // --- Components
 
-    shared_ptr<lsm::ReinitializationAlgorithm> d_reinitialization_alg;
+    //shared_ptr<math::ReinitializationAlgorithm> d_reinitialization_alg;
 
 private:
 
@@ -177,7 +177,7 @@ private:
      * rhs: object to copy
      *
      */
-    Toolbox(const Toolbox& rhs){}
+    LSMToolbox(const LSMToolbox& rhs){}
 
     /*
      * Private assignment operator to prevent use.
@@ -191,13 +191,13 @@ private:
      * return object
      *
      */
-    const Toolbox& operator=(const Toolbox& rhs) {
+    const LSMToolbox& operator=(const LSMToolbox& rhs) {
         return *this;
     }
 
-};  // PQS::lsm::Toolbox class
+};  // PQS::math::LSMToolbox class
 
-}  // PQS::lsm namespace
+}  // PQS::math namespace
 }  // PQS namespace
 
 #endif

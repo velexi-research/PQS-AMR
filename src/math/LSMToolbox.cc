@@ -1,7 +1,7 @@
-/*! \file Toolbox.cc
+/*! \file LSMToolbox.cc
  *
  * \brief
- * Implementation file for Toolbox class.
+ * Implementation file for LSMToolbox class.
  */
 
 /*
@@ -38,26 +38,26 @@
 
 // PQS headers
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/lsm/Toolbox.h"
-#include "PQS/lsm/kernels_2d.h"
-#include "PQS/lsm/kernels_3d.h"
+#include "PQS/math/LSMToolbox.h"
+#include "PQS/math/level_set_method_2d.h"
+#include "PQS/math/level_set_method_3d.h"
 #include "PQS/utilities/error.h"
 #include "PQS/utilities/macros.h"
 
 // Class/type declarations
 
 
-// --- Implementation for PQS::lsm::Toolbox methods
+// --- Implementation for PQS::math::LSMToolbox methods
 
 namespace PQS {
-namespace lsm {
+namespace math {
 
 // Constructor
-Toolbox::Toolbox() {
+LSMToolbox::LSMToolbox() {
     // Check parameters
 }
 
-PQS_REAL Toolbox::computeVolume(
+PQS_REAL LSMToolbox::computeVolume(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int phi_id,
         const int control_volume_id,
@@ -67,7 +67,7 @@ PQS_REAL Toolbox::computeVolume(
 
     const int dim = patch_hierarchy->getDim().getValue();
     if ((dim != 2) && (dim != 3)) {
-        PQS_ERROR_STATIC("lsm::Toolbox", "computeVolume",
+        PQS_ERROR_STATIC("math::LSMToolbox", "computeVolume",
                          string("Invalid dimension (=") + to_string(dim) +
                          string("for patch_hierarchy. Valid dimensions: 2, 3"));
     }
@@ -90,7 +90,7 @@ PQS_REAL Toolbox::computeVolume(
             // loop over patches
             shared_ptr<hier::Patch> patch = *pi;
             if (patch==NULL) {
-                PQS_ERROR_STATIC("lsm::Toolbox", "computeVolume",
+                PQS_ERROR_STATIC("math::LSMToolbox", "computeVolume",
                                  "Null patch pointer");
             }
 
@@ -183,7 +183,7 @@ PQS_REAL Toolbox::computeVolume(
             tbox::SAMRAI_MPI::getSAMRAIWorld().AllReduce(&volume,1, MPI_SUM);
 
     if (status != 0) {
-        PQS_ERROR_STATIC("lsm::Toolbox", "computeVolume",
+        PQS_ERROR_STATIC("math::LSMToolbox", "computeVolume",
                          string("AllReduce error code=") + to_string(status));
     }
 
@@ -192,18 +192,18 @@ PQS_REAL Toolbox::computeVolume(
 
 
 // printClassData()
-void Toolbox::printClassData(ostream& os) const
+void LSMToolbox::printClassData(ostream& os) const
 {
     os << endl
        << "===================================" << endl;
-    os << "PQS::lsm::Toolbox" << endl;
+    os << "PQS::math::LSMToolbox" << endl;
 
     os << "Object Pointers" << endl;
     os << "---------------" << endl;
-    os << "(Toolbox*) this = " << (Toolbox*) this << endl;
+    os << "(LSMToolbox*) this = " << (LSMToolbox*) this << endl;
 
     os << "===================================" << endl << endl;
 }
 
-} // PQS::lsm namespace
+} // PQS::math namespace
 } // PQS namespace

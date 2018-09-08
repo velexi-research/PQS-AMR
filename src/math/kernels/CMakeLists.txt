@@ -28,6 +28,8 @@ configure_file(spatial_derivatives_2d.f.in spatial_derivatives_2d.f)
 configure_file(spatial_derivatives_3d.f.in spatial_derivatives_3d.f)
 configure_file(time_integration_2d.f.in time_integration_2d.f)
 configure_file(time_integration_3d.f.in time_integration_3d.f)
+configure_file(level_set_method_2d.f.in level_set_method_2d.f)
+configure_file(level_set_method_3d.f.in level_set_method_3d.f)
 
 # --------------------------------------------------------------
 # Build targets

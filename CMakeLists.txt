@@ -172,9 +172,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/math)
 # pqs
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/pqs)
 
-# lsm
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/lsm)
-
 # PQS examples
 add_subdirectory(${PROJECT_SOURCE_DIR}/examples)
 
