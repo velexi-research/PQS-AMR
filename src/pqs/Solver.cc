@@ -30,10 +30,13 @@
 // SAMRAI
 #include "SAMRAI/geom/CartesianGridGeometry.h"
 #include "SAMRAI/hier/ComponentSelector.h"
+#include "SAMRAI/hier/Box.h"
+#include "SAMRAI/hier/Index.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
+#include "SAMRAI/math/HierarchyCellDataOpsReal.h"
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/mesh/ChopAndPackLoadBalancer.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
@@ -48,7 +51,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/lsm/Toolbox.h"
+#include "PQS/math/LSMToolbox.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/Solver.h"
@@ -160,6 +163,12 @@ void Solver::equilibrateInterface(
 
     // --- Preparations
 
+    // Create SAMRAI::math::HierarchyCellDataOpsReal object
+    shared_ptr< SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL> > math_ops =
+            shared_ptr< SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL> >(
+                    new SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL>(
+                             d_patch_hierarchy));
+
     // Initialize loop variables
     double t = 0.0;
     int step = 0;
@@ -178,8 +187,10 @@ void Solver::equilibrateInterface(
         patch_level->allocatePatchData(d_intermediate_variables);
     }
 
-    // Copy phi data from PQS to LSM context
-    d_tag_init_and_data_xfer_module->copyDataPQStoLSM();
+    // Copy phi data from LSM to PQS context
+    math_ops->copyData(d_phi_lsm_current_id, d_phi_pqs_id);
+    // TODO: remove
+    //d_tag_init_and_data_xfer_module->copyDataPQStoLSM();
 
     // --- Perform level set method computation
 
@@ -195,10 +206,10 @@ void Solver::equilibrateInterface(
         // Compute volume of non-wettting phase
         double volume = 0.0;
         if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-            lsm::Toolbox::computeVolume(d_patch_hierarchy,
-                                        d_phi_lsm_current_id,
-                                        d_control_volume_id,
-                                        -1);  // compute volume for phi < 0
+            math::LSMToolbox::computeVolume(d_patch_hierarchy,
+                                            d_phi_lsm_current_id,
+                                            d_control_volume_id,
+                                            -1);  // compute volume for phi < 0
         }
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
@@ -359,14 +370,21 @@ void Solver::equilibrateInterface(
 
         // --- Update data in d_phi_lsm_current
 
+        // Swap phi data from LSM curret and LSM next contexts
+        math_ops->swapData(d_phi_lsm_next_id, d_phi_lsm_current_id);
+
+        // TODO: remove
         // Copy phi data from LSM to PQS context
-        d_tag_init_and_data_xfer_module->copyDataLSMNextToLSMCurrent();
+        //d_tag_init_and_data_xfer_module->copyDataLSMNextToLSMCurrent();
     }
 
     // --- Clean up
 
     // Copy phi data from LSM to PQS context
-    d_tag_init_and_data_xfer_module->copyDataLSMtoPQS();
+    math_ops->copyData(d_phi_pqs_id, d_phi_lsm_current_id);
+    // TODO: remove
+    // d_tag_init_and_data_xfer_module->copyDataLSMtoPQS();
+
 
     // Deallocate PatchData
     for (int level_num = 0;
