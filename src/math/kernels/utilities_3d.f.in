@@ -62,7 +62,7 @@ c     loop over interior cells {
         do j=ib_lo(2),ib_hi(2)
           do i=ib_lo(1),ib_hi(1)
 
-            if (abs(u(i,j,k) - v(i,j,k)) .gt. max_norm) then
+            if (max_norm .lt. abs(u(i,j,k) - v(i,j,k))) then
               max_norm = abs(u(i,j,k) - v(i,j,k))
             endif
 
