@@ -52,6 +52,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/math/LSMToolbox.h"
 #include "PQS/math/Toolbox.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/pqs/Algorithms.h"
