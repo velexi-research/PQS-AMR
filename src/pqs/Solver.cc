@@ -20,6 +20,7 @@
 // Standard library
 #include <cstddef>
 #include <limits>
+#include <math.h>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -169,12 +170,20 @@ void Solver::equilibrateInterface(
                     new SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL>(
                              d_patch_hierarchy));
 
+    // Compute volume of pore space
+    const double pore_space_volume =
+            math::computeVolume(d_patch_hierarchy,
+                                d_psi_id,
+                                -1, // compute volume for psi < 0
+                                d_control_volume_id);
+
     // Initialize loop variables
     double t = 0.0;
     int step = 0;
+    double previous_saturation = 0.0;
 
     double delta_phi = 2 * d_lsm_min_delta_phi;
-    double delta_saturation = 2 * d_lsm_min_delta_saturation;
+    double delta_saturation = d_lsm_min_delta_saturation + 1;
 
     // Allocate PatchData
     for (int level_num = 0;
@@ -189,8 +198,6 @@ void Solver::equilibrateInterface(
 
     // Copy phi data from LSM to PQS context
     math_ops->copyData(d_phi_lsm_current_id, d_phi_pqs_id);
-    // TODO: remove
-    //d_tag_init_and_data_xfer_module->copyDataPQStoLSM();
 
     // --- Perform level set method computation
 
@@ -204,13 +211,11 @@ void Solver::equilibrateInterface(
         double dt;
 
         // Compute volume of non-wettting phase
-        double volume = 0.0;
-        if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-            math::computeVolume(d_patch_hierarchy,
-                                            d_phi_lsm_current_id,
-                                            d_control_volume_id,
-                                            -1);  // compute volume for phi < 0
-        }
+        double non_wetting_phase_volume =
+                math::computeVolume(d_patch_hierarchy,
+                                    d_phi_lsm_current_id,
+                                    -1, // compute volume for phi < 0
+                                    d_control_volume_id);
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
         for (int rk_stage = 1; rk_stage <= d_time_integration_order; rk_stage++)
@@ -241,7 +246,7 @@ void Solver::equilibrateInterface(
             }
 
             int ghost_cell_fill_context;
-            if (rk_stage == 0) {
+            if (rk_stage == 1) {
                 ghost_cell_fill_context = LSM_CURRENT;
             } else {
                 ghost_cell_fill_context = LSM_NEXT;
@@ -276,7 +281,8 @@ void Solver::equilibrateInterface(
                     } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computeSlightlyCompressibleModelRHS(
-                                        patch, phi_id, volume);
+                                        patch, phi_id,
+                                        non_wetting_phase_volume);
                     }
 
                     // Update maximum stable time step
@@ -299,7 +305,6 @@ void Solver::equilibrateInterface(
             // --- Advance phi
 
             if (d_time_integration_order == 1) {
-                // lsm_current --> lsm_next
                 math::TimeIntegration::RK1Step(
                         d_patch_hierarchy,
                         d_phi_lsm_next_id,
@@ -309,7 +314,6 @@ void Solver::equilibrateInterface(
 
             } else if (d_time_integration_order == 2) {
                 if (rk_stage == 1) {
-                    // lsm_current --> lsm_next
                     math::TimeIntegration::TVDRK2Stage1(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -318,7 +322,6 @@ void Solver::equilibrateInterface(
                             dt);
 
                 } else if (rk_stage == 2) {
-                    // lsm_next --> lsm_next
                     math::TimeIntegration::TVDRK2Stage2(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -329,7 +332,6 @@ void Solver::equilibrateInterface(
                 }
             } else if (d_time_integration_order == 3) {
                 if (rk_stage == 1) {
-                    // lsm_current --> lsm_next
                     math::TimeIntegration::TVDRK3Stage1(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -338,7 +340,6 @@ void Solver::equilibrateInterface(
                             dt);
 
                 } else if (rk_stage == 2) {
-                    // lsm_next --> lsm_next
                     math::TimeIntegration::TVDRK3Stage2(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -348,7 +349,6 @@ void Solver::equilibrateInterface(
                             dt);
 
                 } else if (rk_stage == 3) {
-                    // lsm_next --> lsm_next
                     math::TimeIntegration::TVDRK3Stage3(
                             d_patch_hierarchy,
                             d_phi_lsm_next_id,
@@ -362,29 +362,43 @@ void Solver::equilibrateInterface(
 
         // --- Update metrics used in stopping criteria
 
-        // TODO
-        step++;
+        // Compute max norm of change in phi
+        delta_phi = math::computeMaxNormDiff(d_patch_hierarchy,
+                                             d_phi_lsm_next_id,
+                                             d_phi_lsm_current_id,
+                                             d_control_volume_id);
+
+        // Compute change in saturation
+        if (d_lsm_min_delta_saturation) {
+            // Compute current saturation
+            double saturation = non_wetting_phase_volume / pore_space_volume;
+
+            // Compute change in saturation
+            delta_saturation = fabs(saturation - previous_saturation);
+
+            // Save previous saturation
+            previous_saturation = saturation;
+        }
+
+        cout << step << ":" << dt << ":" << delta_phi << ", "
+             << d_lsm_min_delta_phi << ", "
+             << non_wetting_phase_volume << ", "
+             << pore_space_volume << endl;
+
+        // --- Prepare for next iteration
+
+        // Update time and step
         t += dt;
-        //delta_phi =
-        //delta_saturation =
+        step++;
 
-        // --- Update data in d_phi_lsm_current
-
-        // Swap phi data from LSM curret and LSM next contexts
+        // Swap phi data from LSM current and LSM next contexts
         math_ops->swapData(d_phi_lsm_next_id, d_phi_lsm_current_id);
-
-        // TODO: remove
-        // Copy phi data from LSM to PQS context
-        //d_tag_init_and_data_xfer_module->copyDataLSMNextToLSMCurrent();
     }
 
     // --- Clean up
 
     // Copy phi data from LSM to PQS context
     math_ops->copyData(d_phi_pqs_id, d_phi_lsm_current_id);
-    // TODO: remove
-    // d_tag_init_and_data_xfer_module->copyDataLSMtoPQS();
-
 
     // Deallocate PatchData
     for (int level_num = 0;
@@ -442,6 +456,11 @@ int Solver::getControlVolumePatchDataId() const
 {
     return d_control_volume_id;
 } // Solver::getControlVolumePatchDataId()
+
+int Solver::getLSERHSPatchDataId() const
+{
+    return d_lse_rhs_id;
+} // Solver::getLSERHSPatchDataId()
 
 void Solver::printClassData(ostream& os) const
 {

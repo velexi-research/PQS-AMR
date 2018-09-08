@@ -395,6 +395,23 @@ public:
     virtual int getControlVolumePatchDataId() const;
 
     /*!
+     * Get PatchData ID for RHS of level set evolution equation.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * PatchData ID for RHS of level set evolution equation
+     *
+     * Notes
+     * -----
+     * - Intended to be used primarily for debugging purposes.
+     */
+    virtual int getLSERHSPatchDataId() const;
+
+    /*!
      * Print the values of the data members the object.
      *
      * Parameters
