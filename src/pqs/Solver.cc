@@ -51,7 +51,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/math/LSMToolbox.h"
+#include "PQS/math/Toolbox.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/Solver.h"
@@ -206,7 +206,7 @@ void Solver::equilibrateInterface(
         // Compute volume of non-wettting phase
         double volume = 0.0;
         if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-            math::LSMToolbox::computeVolume(d_patch_hierarchy,
+            math::computeVolume(d_patch_hierarchy,
                                             d_phi_lsm_current_id,
                                             d_control_volume_id,
                                             -1);  // compute volume for phi < 0

@@ -31,7 +31,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/math/LSMToolbox.h"
+#include "PQS/math/Toolbox.h"
 #include "PQS/pqs/Solver.h"
 
 // PQS test
@@ -49,8 +49,8 @@ using namespace PQS;
 
 namespace lsmTests {
 
-// Test case: PQS::math::LSMToolbox::computeVolume() in 2D
-TEST_F(lsmTest, test_LSMToolbox_computeVolume_2d)
+// Test case: PQS::math::computeVolume() in 2D
+TEST_F(lsmTest, test_Toolbox_computeVolume_2d)
 {
     // --- Preparations
 
@@ -69,7 +69,7 @@ TEST_F(lsmTest, test_LSMToolbox_computeVolume_2d)
     lsmTest::constructSolver(num_dimensions, radius);
 
     // interior of circle
-    area = math::LSMToolbox::computeVolume(
+    area = math::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             solver->getControlVolumePatchDataId(),
@@ -80,7 +80,7 @@ TEST_F(lsmTest, test_LSMToolbox_computeVolume_2d)
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     // exterior of circle
-    area = math::LSMToolbox::computeVolume(
+    area = math::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             solver->getControlVolumePatchDataId(),
