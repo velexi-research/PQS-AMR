@@ -54,7 +54,7 @@ namespace math {
  *
  * Parameters
  * ----------
- * patch_hierarchy: PatchHierarchy on which to perform computation
+ * patch_hierarchy: PatchHierarchy to perform computation on
  *
  * u_id: PatchData id for 'u'
  *
