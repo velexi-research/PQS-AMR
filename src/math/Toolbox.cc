@@ -173,8 +173,8 @@ PQS_REAL computeMaxNormDiff(
 PQS_REAL computeVolume(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int phi_id,
-        const int control_volume_id,
-        const int region_indicator)
+        const int region_indicator,
+        const int control_volume_id)
 {
     // --- Check arguments
 

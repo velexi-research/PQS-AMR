@@ -78,7 +78,7 @@ PQS_REAL computeMaxNormDiff(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int u_id,
         const int v_id,
-        const int control_volume_id);
+        const int control_volume_id = -1);
 
 /*!
  * Compute the volume of one of two following regions:
@@ -90,11 +90,11 @@ PQS_REAL computeMaxNormDiff(
  *
  * phi_id: PatchData id for phi
  *
- * control_volume_id: PatchData id for control volume
- *
  * region_indicator: integer indicating which region to integrate over
  *      - region_indicator >0:  integration region = {x | phi(x) > 0}
  *      - region_indicator <=0: integration region = {x | phi(x) <= 0}
+ *
+ * control_volume_id: PatchData id for control volume
  *
  * Return value
  * ------------
@@ -109,8 +109,8 @@ PQS_REAL computeMaxNormDiff(
 PQS_REAL computeVolume(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int phi_id,
-        const int control_volume_id,
-        const int region_indicator);
+        const int region_indicator = -1,
+        const int control_volume_id = -1);
 
 }  // PQS::math namespace
 }  // PQS namespace
