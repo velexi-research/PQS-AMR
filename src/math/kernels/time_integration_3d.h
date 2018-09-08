@@ -1,7 +1,7 @@
 /*! \file time_integration_3d.h
  *
  * \brief
- * Header files for numerical kernels for time integration.
+ * Header files for numerical kernels for time integration
  */
 
 /*

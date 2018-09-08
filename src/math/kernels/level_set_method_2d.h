@@ -1,7 +1,7 @@
 /*! \file level_set_method_2d.h
  *
  * \brief
- * Header file numerical kernels for Level Set Method computations in
+ * Header file for numerical kernels for Level Set Method computations in
  * two space dimensions
  */
 
@@ -16,8 +16,8 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_lsm_kernels_2d_h
-#define INCLUDED_PQS_lsm_kernels_2d_h
+#ifndef INCLUDED_PQS_math_level_set_method_2d_h
+#define INCLUDED_PQS_math_level_set_method_2d_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,4 +115,4 @@ PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
 }
 #endif
 
-#endif // INCLUDED_PQS_lsm_kernels_2d_h
+#endif // INCLUDED_PQS_math_level_set_method_2d_h
