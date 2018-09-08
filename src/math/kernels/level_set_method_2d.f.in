@@ -1,6 +1,6 @@
 c***********************************************************************
 c
-c kernels_2d.f
+c level_set_method_2d.f
 c
 c F77 routines for Level Set Method computations in two space dimensions
 c

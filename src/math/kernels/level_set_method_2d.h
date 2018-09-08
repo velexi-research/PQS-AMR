@@ -1,4 +1,4 @@
-/*! \file kernels_2d.h
+/*! \file level_set_method_2d.h
  *
  * \brief
  * Header file numerical kernels for Level Set Method computations in
