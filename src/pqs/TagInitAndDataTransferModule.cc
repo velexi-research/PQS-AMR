@@ -152,42 +152,6 @@ TagInitAndDataTransferModule::~TagInitAndDataTransferModule()
     }
 } // TagInitAndDataTransferModule::~TagInitAndDataTransferModule()
 
-void TagInitAndDataTransferModule::copyDataPQStoLSM() const
-{
-    for (int level_num = 0;
-            level_num < d_patch_hierarchy->getNumberOfLevels();
-            level_num++) {
-
-        d_xfer_pqs_to_lsm_schedule[level_num]->fillData(
-                0.0,    // not used
-                true);  // apply physical boundary conditions
-    }
-} // TagInitAndDataTransferModule::copyDataPQStoLSM()
-
-void TagInitAndDataTransferModule::copyDataLSMtoPQS() const
-{
-    for (int level_num = 0;
-            level_num < d_patch_hierarchy->getNumberOfLevels();
-            level_num++) {
-
-        d_xfer_lsm_to_pqs_schedule[level_num]->fillData(
-                0.0,    // not used
-                true);  // apply physical boundary conditions
-    }
-} // TagInitAndDataTransferModule::copyDataLSMtoPQS()
-
-void TagInitAndDataTransferModule::copyDataLSMNextToLSMCurrent() const
-{
-    for (int level_num = 0;
-            level_num < d_patch_hierarchy->getNumberOfLevels();
-            level_num++) {
-
-        d_xfer_next_to_current_schedule[level_num]->fillData(
-                0.0,    // not used
-                true);  // apply physical boundary conditions
-    }
-} // TagInitAndDataTransferModule::copyDataLSMNextToLSMCurrent()
-
 void TagInitAndDataTransferModule::fillGhostCells(
         const int context) const
 {
@@ -343,55 +307,6 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
     }
 
     // --- Reset data transfer schedules
-
-    // data transfer schedules for copying data between PQS and LSM contexts
-    d_xfer_pqs_to_lsm_schedule.resize(patch_hierarchy->getNumberOfLevels());
-    d_xfer_lsm_to_pqs_schedule.resize(patch_hierarchy->getNumberOfLevels());
-    d_xfer_next_to_current_schedule.resize(
-            patch_hierarchy->getNumberOfLevels());
-
-    for (int level_num = coarsest_level_num;
-            level_num <= finest_level_num;
-            level_num++) {
-
-        std::shared_ptr<hier::PatchLevel> patch_level =
-            patch_hierarchy->getPatchLevel(level_num);
-
-        if (level_num == 0) {
-            d_xfer_pqs_to_lsm_schedule[level_num] =
-                d_xfer_pqs_to_lsm->createSchedule(
-                    patch_level, NULL);  // TODO: change NULL to boundary
-                                         // condition module
-
-            d_xfer_lsm_to_pqs_schedule[level_num] =
-                d_xfer_lsm_to_pqs->createSchedule(
-                    patch_level, NULL);  // TODO: change NULL to boundary
-                                         // condition module
-                                         //
-            d_xfer_next_to_current_schedule[level_num] =
-                d_xfer_next_to_current->createSchedule(
-                    patch_level, NULL);  // TODO: change NULL to boundary
-                                         // condition module
-        } else {
-            d_xfer_pqs_to_lsm_schedule[level_num] =
-                d_xfer_pqs_to_lsm->createSchedule(
-                    patch_level, level_num-1,
-                    patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                             // condition module
-
-            d_xfer_lsm_to_pqs_schedule[level_num] =
-                d_xfer_lsm_to_pqs->createSchedule(
-                    patch_level, level_num-1,
-                    patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                             // condition module
-                                             //
-            d_xfer_next_to_current_schedule[level_num] =
-                d_xfer_next_to_current->createSchedule(
-                    patch_level, level_num-1,
-                    patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                             // condition module
-        }
-    }
 
     // data transfer schedules for filling ghost cells data
     d_xfer_fill_bdry_schedule_lsm_current.resize(
@@ -599,30 +514,6 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
         d_phi_pqs_id, d_phi_pqs_id, d_phi_scratch_id, phi_linear_refine_op);
     d_xfer_fill_new_level->registerRefine(
         d_psi_id, d_psi_id, d_psi_scratch_id, psi_linear_refine_op);
-
-    // Transfer data between PQS and LSM contexts
-    d_xfer_pqs_to_lsm =
-        std::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
-    d_xfer_pqs_to_lsm->registerRefine(d_phi_lsm_current_id,
-                                      d_phi_pqs_id,
-                                      d_phi_scratch_id,
-                                      phi_linear_refine_op);
-
-    d_xfer_lsm_to_pqs =
-        std::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
-    d_xfer_lsm_to_pqs->registerRefine(d_phi_pqs_id,
-                                      d_phi_lsm_current_id,
-                                      d_phi_scratch_id,
-                                      phi_linear_refine_op);
-
-    // Transfer data between LSM next and LSM current contexts
-    d_xfer_next_to_current =
-        std::shared_ptr<xfer::RefineAlgorithm>(new xfer::RefineAlgorithm);
-    d_xfer_next_to_current->registerRefine(d_phi_lsm_current_id,
-                                           d_phi_lsm_next_id,
-                                           d_phi_scratch_id,
-                                           phi_linear_refine_op);
-
 
     // Filling a ghost cells during time integration of level set functions
     d_xfer_fill_bdry_lsm_current =

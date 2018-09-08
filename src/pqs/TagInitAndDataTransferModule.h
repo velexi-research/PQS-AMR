@@ -144,45 +144,6 @@ public:
      ************************************************************************/
 
     /*!
-     * Copy data from PQS to LSM (current) context.
-     *
-     * Parameters
-     * ----------
-     * None
-     *
-     * Return value
-     * ------------
-     * None
-     */
-    virtual void copyDataPQStoLSM() const;
-
-    /*!
-     * Copy data from LSM (current) to PQS context.
-     *
-     * Parameters
-     * ----------
-     * None
-     *
-     * Return value
-     * ------------
-     * None
-     */
-    virtual void copyDataLSMtoPQS() const;
-
-    /*!
-     * Copy data from LSM next to LSM current context.
-     *
-     * Parameters
-     * ----------
-     * None
-     *
-     * Return value
-     * ------------
-     * None
-     */
-    virtual void copyDataLSMNextToLSMCurrent() const;
-
-    /*!
      * Fill ghostcells for Patches in PatchLevel.
      *
      * Parameters
@@ -593,15 +554,6 @@ protected:
 
     // Data transfer
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
-
-    shared_ptr<xfer::RefineAlgorithm> d_xfer_pqs_to_lsm;
-    vector< shared_ptr<xfer::RefineSchedule> > d_xfer_pqs_to_lsm_schedule;
-
-    shared_ptr<xfer::RefineAlgorithm> d_xfer_lsm_to_pqs;
-    vector< shared_ptr<xfer::RefineSchedule> > d_xfer_lsm_to_pqs_schedule;
-
-    shared_ptr<xfer::RefineAlgorithm> d_xfer_next_to_current;
-    vector< shared_ptr<xfer::RefineSchedule> > d_xfer_next_to_current_schedule;
 
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
     vector< shared_ptr<xfer::RefineSchedule> >
