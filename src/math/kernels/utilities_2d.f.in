@@ -50,7 +50,7 @@ c { begin function
       integer ib_lo(1:2), ib_hi(1:2)
 
       integer i, j
-      real*8 max_norm
+      @REAL@ max_norm
 
 c     initialize max_norm to zero
       max_norm = 0.0d0
