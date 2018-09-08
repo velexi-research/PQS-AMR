@@ -1,7 +1,7 @@
-/*! \file test_lsm_3d.cc
+/*! \file test_lsm_kernels_3d.cc
  *
  * \brief
- * Unit tests for PQS::lsm classes.
+ * Unit tests for numerical kernels for level set method in 3D
  */
 
 /*
@@ -27,7 +27,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/lsm/kernels_3d.h"
+#include "PQS/math/level_set_method_3d.h"
 
 // PQS test
 #include "fixture_kernels.h"

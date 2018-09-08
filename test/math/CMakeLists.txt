@@ -16,8 +16,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 # Build targets
 # ----------------------------------------------------------------------
 
-# math
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/math)
-
-# pqs
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/pqs)
+# lsm
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lsm)

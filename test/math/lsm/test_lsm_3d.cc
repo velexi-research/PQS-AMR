@@ -1,7 +1,7 @@
 /*! \file test_lsm_3d.cc
  *
  * \brief
- * Unit tests for PQS::lsm classes.
+ * Unit tests for level set method functionality in three space dimensions
  */
 
 /*
@@ -31,7 +31,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/lsm/Toolbox.h"
+#include "PQS/math/LSMToolbox.h"
 #include "PQS/pqs/Solver.h"
 
 // PQS test
@@ -49,8 +49,8 @@ using namespace PQS;
 
 namespace lsmTests {
 
-// Test case: PQS::lsm::Toolbox::computeVolume() in 3D
-TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
+// Test case: PQS::math::LSMToolbox::computeVolume() in 3D
+TEST_F(lsmTest, test_LSMToolbox_computeVolume_3d)
 {
     // --- Preparations
 
@@ -69,7 +69,7 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
     lsmTest::constructSolver(num_dimensions, radius);
 
     // interior of sphere
-    volume = lsm::Toolbox::computeVolume(
+    volume = math::LSMToolbox::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             solver->getControlVolumePatchDataId(),
@@ -80,7 +80,7 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
     // exterior of sphere
-    volume = lsm::Toolbox::computeVolume(
+    volume = math::LSMToolbox::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             solver->getControlVolumePatchDataId(),

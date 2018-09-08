@@ -25,12 +25,8 @@ file(GLOB TEST_SOURCE_FILES
 
 add_executable(${PQS_AMR_TESTS} EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
 target_link_libraries(${PQS_AMR_TESTS}
-                      pqs
-                      pqs_kernels
-                      pqs_lsm
-                      pqs_lsm_kernels
-                      pqs_math
-                      pqs_math_kernels
+                      pqs pqs_kernels
+                      pqs_math pqs_math_kernels
                       ${SAMRAI_LIBS}
                       ${HDF5_C_LIBRARY_hdf5}
                       ${MPI_LIBRARY}
