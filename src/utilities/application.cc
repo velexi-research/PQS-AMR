@@ -148,6 +148,10 @@ void run_pqs(
     // Get the base name for all name strings in application
     const string base_name = config_db->getString("base_name");
 
+    // Get debugging parameters
+    const bool enable_debug =
+            config_db->getBoolWithDefault("enable_debug", false);
+
     // Set up restart parameters
     const bool is_from_restart =
         config_db->getBoolWithDefault("is_from_restart", false);
@@ -169,6 +173,11 @@ void run_pqs(
 
     const bool write_viz_files =
             (viz_data_writer != NULL) && (viz_write_interval > 0);
+
+    if (write_viz_files && enable_debug) {
+        viz_data_writer->registerPlotQuantity(
+            "LSE RHS", "SCALAR", pqs_solver->getLSERHSPatchDataId());
+    }
 
     // Emit contents of config database to log file.
     tbox::plog << "Configuration database..." << endl;
