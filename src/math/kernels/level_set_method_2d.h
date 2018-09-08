@@ -29,7 +29,8 @@ extern "C" {
  *      C/C++ code                       Fortran code
  *      ----------                       ------------
  */
-#define LSM_2D_AREA_PHI_LESS_THAN_ZERO   lsm2dareaphilessthanzero_
+#define LSM_2D_AREA_PHI_LESS_THAN_ZERO \
+                                         lsm2dareaphilessthanzero_
 #define LSM_2D_AREA_PHI_GREATER_THAN_ZERO \
                                          lsm2dareaphigreaterthanzero_
 
