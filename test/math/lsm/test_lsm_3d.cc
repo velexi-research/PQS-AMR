@@ -31,7 +31,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/math/Toolbox.h"
+#include "PQS/math/LSMToolbox.h"
 #include "PQS/pqs/Solver.h"
 
 // PQS test
@@ -49,7 +49,7 @@ using namespace PQS;
 
 namespace lsmTests {
 
-// Test case: PQS::math::Toolbox::computeVolume() in 3D
+// Test case: PQS::math::LSMToolbox::computeVolume() in 3D
 TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
 {
     // --- Preparations
