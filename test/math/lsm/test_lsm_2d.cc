@@ -72,8 +72,8 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_2d)
     area = math::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
-            solver->getControlVolumePatchDataId(),
-            -1); // phi < 0
+            -1, // phi < 0
+            solver->getControlVolumePatchDataId());
 
     expected_area = M_PI * radius * radius;
 
@@ -83,8 +83,8 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_2d)
     area = math::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
-            solver->getControlVolumePatchDataId(),
-            1); // phi < 0
+            1, // phi > 0
+            solver->getControlVolumePatchDataId());
 
     expected_area = 4 - M_PI * radius * radius;
 

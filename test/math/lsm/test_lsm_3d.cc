@@ -72,8 +72,8 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
     volume = math::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
-            solver->getControlVolumePatchDataId(),
-            -1); // phi < 0
+            -1, // phi < 0
+            solver->getControlVolumePatchDataId());
 
     expected_volume = M_PI * 4 / 3 * radius * radius * radius;
 
@@ -83,8 +83,8 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
     volume = math::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
-            solver->getControlVolumePatchDataId(),
-            1); // phi < 0
+            1, // phi < 0
+            solver->getControlVolumePatchDataId());
 
     expected_volume = 8 - M_PI * 4 / 3 * radius * radius * radius;
 
