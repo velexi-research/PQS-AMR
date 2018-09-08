@@ -25,7 +25,6 @@
 #include "mpi.h"
 
 // SAMRAI headers
-#include "SAMRAI/geom/CartesianPatchGeometry.h"
 #include "SAMRAI/hier/Box.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
@@ -39,8 +38,6 @@
 // PQS headers
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/math/Toolbox.h"
-#include "PQS/math/level_set_method_2d.h"
-#include "PQS/math/level_set_method_3d.h"
 #include "PQS/math/utilities_2d.h"
 #include "PQS/math/utilities_3d.h"
 #include "PQS/utilities/error.h"
@@ -167,7 +164,7 @@ PQS_REAL computeMaxNormDiff(
     }
 
     return max_norm_diff;
-}
+}  // computeMaxNormDiff()
 
 } // PQS::math namespace
 } // PQS namespace
