@@ -49,8 +49,8 @@ using namespace PQS;
 
 namespace lsmTests {
 
-// Test case: PQS::math::LSMToolbox::computeVolume() in 3D
-TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
+// Test case: PQS::math::LSM::computeVolume() in 3D
+TEST_F(lsmTest, test_LSM_computeVolume_3d)
 {
     // --- Preparations
 
@@ -69,7 +69,7 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
     lsmTest::constructSolver(num_dimensions, radius);
 
     // interior of sphere
-    volume = math::computeVolume(
+    volume = math::LSM::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             -1, // phi < 0
@@ -80,7 +80,7 @@ TEST_F(lsmTest, test_Toolbox_computeVolume_3d)
     EXPECT_NEAR((volume - expected_volume)/expected_volume, 0, eps);
 
     // exterior of sphere
-    volume = math::computeVolume(
+    volume = math::LSM::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             1, // phi < 0

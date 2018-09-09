@@ -49,8 +49,8 @@ using namespace PQS;
 
 namespace lsmTests {
 
-// Test case: PQS::math::computeVolume() in 2D
-TEST_F(lsmTest, test_LSMToolbox_computeVolume_2d)
+// Test case: PQS::math::LSM::computeVolume() in 2D
+TEST_F(lsmTest, test_LSM_computeVolume_2d)
 {
     // --- Preparations
 
@@ -69,7 +69,7 @@ TEST_F(lsmTest, test_LSMToolbox_computeVolume_2d)
     lsmTest::constructSolver(num_dimensions, radius);
 
     // interior of circle
-    area = math::computeVolume(
+    area = math::LSM::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             -1, // phi < 0
@@ -80,7 +80,7 @@ TEST_F(lsmTest, test_LSMToolbox_computeVolume_2d)
     EXPECT_NEAR((area - expected_area)/expected_area, 0, eps);
 
     // exterior of circle
-    area = math::computeVolume(
+    area = math::LSM::computeVolume(
             solver->getPatchHierarchy(),
             solver->getInterfacePatchDataId(),
             1, // phi > 0
