@@ -75,4 +75,4 @@ PQS_REAL computeMaxNormDiff(
 }  // PQS::math namespace
 }  // PQS namespace
 
-#endif
+#endif // INCLUDED_PQS_math_Toolbox_h
