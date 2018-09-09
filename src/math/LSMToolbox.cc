@@ -38,11 +38,9 @@
 
 // PQS headers
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/math/LSMToolbox.h"
+#include "PQS/math/LSMToolbox.h"  // IWYU pragma: keep
 #include "PQS/math/level_set_method_2d.h"
 #include "PQS/math/level_set_method_3d.h"
-#include "PQS/math/utilities_2d.h"
-#include "PQS/math/utilities_3d.h"
 #include "PQS/utilities/error.h"
 #include "PQS/utilities/macros.h"
 
@@ -53,6 +51,7 @@
 
 namespace PQS {
 namespace math {
+namespace LSM {
 
 PQS_REAL computeVolume(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
@@ -185,7 +184,8 @@ PQS_REAL computeVolume(
     }
 
     return volume;
-}
+} // LSM::computeVolume()
 
+} // PQS::math::LSM namespace
 } // PQS::math namespace
 } // PQS namespace

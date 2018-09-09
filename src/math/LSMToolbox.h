@@ -48,6 +48,7 @@ using namespace SAMRAI;
 
 namespace PQS {
 namespace math {
+namespace LSM {
 
 /*!
  * Compute the volume of one of two following regions:
@@ -55,7 +56,7 @@ namespace math {
  *
  * Parameters
  * ----------
- * patch_hierarchy: PatchHierarchy on which to compute the volume
+ * patch_hierarchy: PatchHierarchy to perform computation on
  *
  * phi_id: PatchData id for phi
  *
@@ -81,7 +82,8 @@ PQS_REAL computeVolume(
         const int region_indicator = -1,
         const int control_volume_id = -1);
 
+}  // PQS::math::LSM namespace
 }  // PQS::math namespace
 }  // PQS namespace
 
-#endif
+#endif // INCLUDED_PQS_math_LSMToolbox_h
