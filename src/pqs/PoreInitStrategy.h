@@ -190,4 +190,4 @@ private:
 }  // PQS::pqs namespace
 }  // PQS namespace
 
-#endif INCLUDED_PQS_pqs_PoreInitStrategy_h
+#endif // INCLUDED_PQS_pqs_PoreInitStrategy_h
