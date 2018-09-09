@@ -173,10 +173,10 @@ void Solver::equilibrateInterface(
 
     // Compute volume of pore space
     const double pore_space_volume =
-            math::computeVolume(d_patch_hierarchy,
-                                d_psi_id,
-                                -1, // compute volume for psi < 0
-                                d_control_volume_id);
+            math::LSM::computeVolume(d_patch_hierarchy,
+                                     d_psi_id,
+                                     -1, // compute volume for psi < 0
+                                     d_control_volume_id);
 
     // Initialize loop variables
     double t = 0.0;
@@ -213,10 +213,10 @@ void Solver::equilibrateInterface(
 
         // Compute volume of non-wettting phase
         double non_wetting_phase_volume =
-                math::computeVolume(d_patch_hierarchy,
-                                    d_phi_lsm_current_id,
-                                    -1, // compute volume for phi < 0
-                                    d_control_volume_id);
+                math::LSM::computeVolume(d_patch_hierarchy,
+                                        d_phi_lsm_current_id,
+                                        -1, // compute volume for phi < 0
+                                        d_control_volume_id);
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
         for (int rk_stage = 1; rk_stage <= d_time_integration_order; rk_stage++)
