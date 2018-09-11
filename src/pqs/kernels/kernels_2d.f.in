@@ -28,13 +28,13 @@ c
 c surface_tension: surface tension of interface between wetting
 c     and non-wetting phases
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqs2dCurvatureModelZeroContactAngleRHS(
@@ -43,7 +43,7 @@ c***********************************************************************
      &  rhs_gb_lo, rhs_gb_hi,
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx,
      &  pressure,
      &  surface_tension)
@@ -61,7 +61,7 @@ c { begin subroutine
       @REAL@  phi(phi_gb_lo(1):phi_gb_hi(1),
      &            phi_gb_lo(2):phi_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
       real*8 dx(1:2)
 
       real*8 pressure
@@ -88,8 +88,8 @@ c     Preparations
       max_stable_dt = 1.0d37
 
 c     loop over grid
-      do j=fb_lo(2), fb_hi(2)
-        do i=fb_lo(1), fb_hi(1)
+      do j=patch_box_lo(2), patch_box_hi(2)
+        do i=patch_box_lo(1), patch_box_hi(1)
 
 c         --- Initialize rhs value
 
@@ -212,13 +212,13 @@ c
 c contact_angle: contact angle between solid-pore interface and
 c     the fluid-fluid interface
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c
 c***********************************************************************
@@ -232,7 +232,7 @@ c***********************************************************************
      &  psi_gb_lo, psi_gb_hi,
      &  grad_psi_x, grad_psi_y,
      &  grad_psi_gb_lo, grad_psi_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx,
      &  pressure,
      &  surface_tension,
@@ -261,7 +261,7 @@ c { begin subroutine
       @REAL@  grad_psi_y(grad_psi_gb_lo(1):grad_psi_gb_hi(1),
      &                   grad_psi_gb_lo(2):grad_psi_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
       real*8 dx(1:2)
 
       real*8 pressure
@@ -291,8 +291,8 @@ c     Preparations
       max_stable_dt = 1.0d37
 
 c     loop over grid
-      do j=fb_lo(2), fb_hi(2)
-        do i=fb_lo(1), fb_hi(1)
+      do j=patch_box_lo(2), patch_box_hi(2)
+        do i=patch_box_lo(1), patch_box_hi(1)
 
 c         --- Initialize rhs value
 
@@ -413,13 +413,13 @@ c
 c surface_tension: surface tension of interface between wetting
 c     and non-wetting phases
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqs2dCompressibleModelZeroContactAngleRHS(
@@ -428,7 +428,7 @@ c***********************************************************************
      &  rhs_gb_lo, rhs_gb_hi,
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx,
      &  volume,
      &  target_volume,
@@ -449,7 +449,7 @@ c { begin subroutine
       @REAL@  phi(phi_gb_lo(1):phi_gb_hi(1),
      &            phi_gb_lo(2):phi_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
       real*8 dx(1:2)
 
       real*8 volume
@@ -480,8 +480,8 @@ c     Preparations
       max_stable_dt = 1.0d37
 
 c     loop over grid
-      do j=fb_lo(2), fb_hi(2)
-        do i=fb_lo(1), fb_hi(1)
+      do j=patch_box_lo(2), patch_box_hi(2)
+        do i=patch_box_lo(1), patch_box_hi(1)
 
 c         --- Initialize rhs value
 
@@ -614,13 +614,13 @@ c
 c contact_angle: contact angle between solid-pore interface and
 c     the fluid-fluid interface
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c
 c***********************************************************************
@@ -634,7 +634,7 @@ c***********************************************************************
      &  psi_gb_lo, psi_gb_hi,
      &  grad_psi_x, grad_psi_y,
      &  grad_psi_gb_lo, grad_psi_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx,
      &  volume,
      &  target_volume,
@@ -666,7 +666,7 @@ c { begin subroutine
       @REAL@  grad_psi_y(grad_psi_gb_lo(1):grad_psi_gb_hi(1),
      &                   grad_psi_gb_lo(2):grad_psi_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
       real*8 dx(1:2)
 
       real*8 volume
@@ -700,8 +700,8 @@ c     Preparations
       max_stable_dt = 1.0d37
 
 c     loop over grid
-      do j=fb_lo(2), fb_hi(2)
-        do i=fb_lo(1), fb_hi(1)
+      do j=patch_box_lo(2), patch_box_hi(2)
+        do i=patch_box_lo(1), patch_box_hi(1)
 
 c         --- Initialize rhs value
 
