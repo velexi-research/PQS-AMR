@@ -16,13 +16,13 @@ c u: first function in the expression |u - v|
 c
 c v: second function in the expression |u - v|
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c ib_lo: lower corner of index range for interior box
+c patch_box_lo: lower corner of index range for patch box
 c
-c ib_hi: upper corner of index range for interior box
+c patch_box_hi: upper corner of index range for patch box
 c
 c Return value
 c ------------
@@ -34,7 +34,7 @@ c***********************************************************************
      &  u_gb_lo, u_gb_hi,
      &  v,
      &  v_gb_lo, v_gb_hi,
-     &  ib_lo, ib_hi)
+     &  patch_box_lo, patch_box_hi)
 ***********************************************************************
 c { begin function
       implicit none
@@ -47,7 +47,7 @@ c { begin function
       @REAL@ v(v_gb_lo(1):v_gb_hi(1),
      &         v_gb_lo(2):v_gb_hi(2))
 
-      integer ib_lo(1:2), ib_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       integer i, j
       @REAL@ max_norm
@@ -55,9 +55,9 @@ c { begin function
 c     initialize max_norm to zero
       max_norm = 0.0d0
 
-c     loop over interior cells {
-      do j=ib_lo(2),ib_hi(2)
-        do i=ib_lo(1),ib_hi(1)
+c     loop over patch box {
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
           if (max_norm .lt. abs(u(i,j) - v(i,j))) then
             max_norm = abs(u(i,j) - v(i,j))
@@ -65,7 +65,7 @@ c     loop over interior cells {
 
         enddo
       enddo
-c     } end loop over interior cells
+c     } end loop over patch box
 
 c     set result
       pqsMath2dMaxNormDiff = max_norm

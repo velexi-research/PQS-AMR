@@ -66,9 +66,9 @@ extern "C" {
  *
  * dt: step size
  *
- * *_gb: index range for ghostbox
+ * *_gb: index range for ghost box
  *
- * *_fb: index range for fillbox
+ * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -84,8 +84,8 @@ void PQS_MATH_3D_RK1_STEP(
   const PQS_REAL *rhs,
   const int *rhs_gb_lo,
   const int *rhs_gb_hi,
-  const int *fb_lo,
-  const int *fb_hi,
+  const int *patch_box_lo,
+  const int *patch_box_hi,
   const double *dt);
 
 /*!
@@ -102,9 +102,9 @@ void PQS_MATH_3D_RK1_STEP(
  *
  * dt: step size
  *
- * *_gb: index range for ghostbox
+ * *_gb: index range for ghost box
  *
- * *_fb: index range for fillbox
+ * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -124,8 +124,8 @@ void PQS_MATH_3D_TVD_RK2_STAGE1(
   const PQS_REAL *rhs,
   const int *rhs_gb_lo,
   const int *rhs_gb_hi,
-  const int *fb_lo,
-  const int *fb_hi,
+  const int *patch_box_lo,
+  const int *patch_box_hi,
   const double *dt);
 
 /*!
@@ -144,9 +144,9 @@ void PQS_MATH_3D_TVD_RK2_STAGE1(
  *
  * dt: step size
  *
- * *_gb: index range for ghostbox
+ * *_gb: index range for ghost box
  *
- * *_fb: index range for fillbox
+ * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -165,8 +165,8 @@ void PQS_MATH_3D_TVD_RK2_STAGE2(
   const PQS_REAL *rhs,
   const int *rhs_gb_lo,
   const int *rhs_gb_hi,
-  const int *fb_lo,
-  const int *fb_hi,
+  const int *patch_box_lo,
+  const int *patch_box_hi,
   const double *dt);
 
 /*!
@@ -183,9 +183,9 @@ void PQS_MATH_3D_TVD_RK2_STAGE2(
  *
  * dt: step size
  *
- * *_gb: index range for ghostbox
+ * *_gb: index range for ghost box
  *
- * *_fb: index range for fillbox
+ * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -205,8 +205,8 @@ void PQS_MATH_3D_TVD_RK3_STAGE1(
   const PQS_REAL *rhs,
   const int *rhs_gb_lo,
   const int *rhs_gb_hi,
-  const int *fb_lo,
-  const int *fb_hi,
+  const int *patch_box_lo,
+  const int *patch_box_hi,
   const double *dt);
 
 /*!
@@ -225,9 +225,9 @@ void PQS_MATH_3D_TVD_RK3_STAGE1(
  *
  * dt: step size
  *
- * *_gb: index range for ghostbox
+ * *_gb: index range for ghost box
  *
- * *_fb: index range for fillbox
+ * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -246,8 +246,8 @@ void PQS_MATH_3D_TVD_RK3_STAGE2(
   const PQS_REAL *rhs,
   const int *rhs_gb_lo,
   const int *rhs_gb_hi,
-  const int *fb_lo,
-  const int *fb_hi,
+  const int *patch_box_lo,
+  const int *patch_box_hi,
   const double *dt);
 
 /*!
@@ -266,9 +266,9 @@ void PQS_MATH_3D_TVD_RK3_STAGE2(
  *
  * dt: step size
  *
- * *_gb: index range for ghostbox
+ * *_gb: index range for ghost box
  *
- * *_fb: index range for fillbox
+ * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -287,8 +287,8 @@ void PQS_MATH_3D_TVD_RK3_STAGE3(
   const PQS_REAL *rhs,
   const int *rhs_gb_lo,
   const int *rhs_gb_hi,
-  const int *fb_lo,
-  const int *fb_hi,
+  const int *patch_box_lo,
+  const int *patch_box_hi,
   const double *dt);
 
 #ifdef __cplusplus

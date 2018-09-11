@@ -50,9 +50,9 @@ extern "C" {
  *
  * *_gb_hi: upper corner of index range for ghostbox
  *
- * ib_lo: lower corner of index range for interior box
+ * patch_box_lo: lower corner of index range for patch box
  *
- * ib_hi: upper corner of index range for interior box
+ * patch_box_hi: upper corner of index range for patch box
  *
  * Return value
  * ------------
@@ -68,8 +68,8 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const PQS_REAL* phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
-    const int *ib_lo,
-    const int *ib_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi,
     const double *dx,
     const double *eps);
 
@@ -89,9 +89,9 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
  *
  * *_gb_hi: upper corner of index range for ghostbox
  *
- * ib_lo: lower corner of index range for interior box
+ * patch_box_lo: lower corner of index range for patch box
  *
- * ib_hi: upper corner of index range for interior box
+ * patch_box_hi: upper corner of index range for patch box
  *
  * Return value
  * ------------
@@ -107,8 +107,8 @@ PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const PQS_REAL* phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
-    const int *ib_lo,
-    const int *ib_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi,
     const double *dx,
     const double *eps);
 

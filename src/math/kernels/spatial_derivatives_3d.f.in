@@ -35,9 +35,9 @@ c dx: array containing grid spacing in each coordinate direction
 c
 c idx: array containing index of grid point to compute gradient at
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
 c***********************************************************************
       subroutine pqsMath3dComputeGradENO1(
@@ -109,9 +109,9 @@ c dx: array containing grid spacing in each coordinate direction
 c
 c idx: array containing index of grid point to compute curvature at
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
 c***********************************************************************
       @REAL@ function pqsMath3dMeanCurvature(

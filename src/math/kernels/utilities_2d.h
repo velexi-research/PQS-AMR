@@ -40,13 +40,13 @@ extern "C" {
  *
  * v: second function in the expression |u - v|
  *
- * *_gb_lo: lower corner of index range for ghostbox
+ * *_gb_lo: lower corner of index range for ghost box
  *
- * *_gb_hi: upper corner of index range for ghostbox
+ * *_gb_hi: upper corner of index range for ghost box
  *
- * ib_lo: lower corner of index range for interior box
+ * patch_box_lo: lower corner of index range for patch box
  *
- * ib_hi: upper corner of index range for interior box
+ * patch_box_hi: upper corner of index range for patch box
  *
  * Return value
  * ------------
@@ -59,8 +59,8 @@ PQS_REAL PQS_MATH_2D_MAX_NORM_DIFF(
     const PQS_REAL* v,
     const int *v_gb_lo,
     const int *v_gb_hi,
-    const int *ib_lo,
-    const int *ib_hi);
+    const int *patch_box_lo,
+    const int *patch_box_hi);
 
 #ifdef __cplusplus
 }

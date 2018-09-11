@@ -20,13 +20,13 @@ c dx: array containing grid spacing in each coordinate direction
 c
 c eps: numerical width Heaviside function (as a function of phi)
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c ib_lo: lower corner of index range for interior box
+c patch_box_lo: lower corner of index range for patch box
 c
-c ib_hi: upper corner of index range for interior box
+c patch_box_hi: upper corner of index range for patch box
 c
 c Return value
 c ------------
@@ -42,7 +42,7 @@ c***********************************************************************
       @REAL@ function lsm3dVolumePhiLessThanZero(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
-     &  ib_lo, ib_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx,
      &  eps)
 ***********************************************************************
@@ -54,7 +54,7 @@ c { begin function
      &           phi_gb_lo(2):phi_gb_hi(2),
      &           phi_gb_lo(3):phi_gb_hi(3))
 
-      integer ib_lo(1:3), ib_hi(1:3)
+      integer patch_box_lo(1:3), patch_box_hi(1:3)
       real*8 dx(1:3)
       real*8 eps
 
@@ -76,10 +76,10 @@ c     compute dV
 c     initialize volume to zero
       volume = 0.0d0
 
-c     loop over interior cells {
-      do k=ib_lo(3),ib_hi(3)
-        do j=ib_lo(2),ib_hi(2)
-          do i=ib_lo(1),ib_hi(1)
+c     loop over patch box {
+      do k=patch_box_lo(3),patch_box_hi(3)
+        do j=patch_box_lo(2),patch_box_hi(2)
+          do i=patch_box_lo(1),patch_box_hi(1)
 
             phi_cur = phi(i,j,k)
 
@@ -102,7 +102,7 @@ c     loop over interior cells {
           enddo
         enddo
       enddo
-c     } end loop over interior cells
+c     } end loop over patch box
 
 c     set result
       lsm3dVolumePhiLessThanZero = volume
@@ -110,6 +110,7 @@ c     set result
       return
       end
 c } end function
+c***********************************************************************
 
 c***********************************************************************
 c
@@ -124,13 +125,13 @@ c dx: array containing grid spacing in each coordinate direction
 c
 c eps: numerical width Heaviside function (as a function of phi)
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c ib_lo: lower corner of index range for interior box
+c patch_box_lo: lower corner of index range for patch box
 c
-c ib_hi: upper corner of index range for interior box
+c patch_box_hi: upper corner of index range for patch box
 c
 c Return value
 c ------------
@@ -146,7 +147,7 @@ c***********************************************************************
       @REAL@ function lsm3dVolumePhiGreaterThanZero(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
-     &  ib_lo, ib_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx,
      &  eps)
 ***********************************************************************
@@ -158,7 +159,7 @@ c { begin function
      &           phi_gb_lo(2):phi_gb_hi(2),
      &           phi_gb_lo(3):phi_gb_hi(3))
 
-      integer ib_lo(1:3), ib_hi(1:3)
+      integer patch_box_lo(1:3), patch_box_hi(1:3)
       real*8 dx(1:3)
       real*8 eps
 
@@ -180,10 +181,10 @@ c     compute dV
 c     initialize volume to zero
       volume = 0.0d0
 
-c     loop over interior cells {
-      do k=ib_lo(3),ib_hi(3)
-        do j=ib_lo(2),ib_hi(2)
-          do i=ib_lo(1),ib_hi(1)
+c     loop over patch box {
+      do k=patch_box_lo(3),patch_box_hi(3)
+        do j=patch_box_lo(2),patch_box_hi(2)
+          do i=patch_box_lo(1),patch_box_hi(1)
 
             phi_cur = phi(i,j,k)
 
@@ -205,7 +206,7 @@ c     loop over interior cells {
           enddo
         enddo
       enddo
-c     } end loop over interior cells
+c     } end loop over patch box
 
 c     set result
       lsm3dVolumePhiGreaterThanZero = volume
@@ -213,3 +214,4 @@ c     set result
       return
       end
 c } end function
+c***********************************************************************

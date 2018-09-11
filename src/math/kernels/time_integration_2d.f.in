@@ -27,13 +27,13 @@ c rhs: right-hand side of time evolution equation
 c
 c dt: step size
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c Notes
 c -----
@@ -48,7 +48,7 @@ c***********************************************************************
      &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
      &  rhs_gb_lo, rhs_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
@@ -66,14 +66,14 @@ c { begin subroutine
       @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
      &           rhs_gb_lo(2):rhs_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       integer i, j
       real*8 dt
 
 c     { begin loop over grid
-      do j=fb_lo(2),fb_hi(2)
-        do i=fb_lo(1),fb_hi(1)
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
           u_next(i,j) = u_current(i,j) + dt*rhs(i,j)
 
@@ -101,13 +101,13 @@ c rhs: right-hand side of time evolution equation
 c
 c dt: step size
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c Notes
 c -----
@@ -121,7 +121,7 @@ c***********************************************************************
      &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
      &  rhs_gb_lo, rhs_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
@@ -139,7 +139,7 @@ c { begin subroutine
       @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
      &           rhs_gb_lo(2):rhs_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       real*8 dt
 
@@ -150,7 +150,7 @@ c     use pqsMath2dRK1Step() to compute first stage
      &                      u_current_gb_lo, u_current_gb_hi,
      &                      rhs,
      &                      rhs_gb_lo, rhs_gb_hi,
-     &                      fb_lo, fb_hi,
+     &                      patch_box_lo, patch_box_hi,
      &                      dt)
 
       return
@@ -175,13 +175,13 @@ c rhs: right-hand side of time evolution equation
 c
 c dt: step size
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK2Stage2(
@@ -193,7 +193,7 @@ c***********************************************************************
      &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
      &  rhs_gb_lo, rhs_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
@@ -215,14 +215,14 @@ c { begin subroutine
       @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
      &           rhs_gb_lo(2):rhs_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       integer i, j
       real*8 dt
 
 c     { begin loop over grid
-      do j=fb_lo(2),fb_hi(2)
-        do i=fb_lo(1),fb_hi(1)
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
           u_next(i,j) = 0.5d0*( u_current(i,j)
      &                        + u_stage1(i,j) + dt*rhs(i,j) )
@@ -251,13 +251,13 @@ c rhs: right-hand side of time evolution equation
 c
 c dt: step size
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c Notes
 c -----
@@ -271,7 +271,7 @@ c***********************************************************************
      &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
      &  rhs_gb_lo, rhs_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
@@ -289,7 +289,7 @@ c { begin subroutine
       @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
      &           rhs_gb_lo(2):rhs_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       real*8 dt
 
@@ -300,7 +300,7 @@ c     use pqsMath2dRK1Step() to compute first stage
      &                      u_current_gb_lo, u_current_gb_hi,
      &                      rhs,
      &                      rhs_gb_lo, rhs_gb_hi,
-     &                      fb_lo, fb_hi,
+     &                      patch_box_lo, patch_box_hi,
      &                      dt)
 
       return
@@ -325,13 +325,13 @@ c rhs: right-hand side of time evolution equation
 c
 c dt: step size
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage2(
@@ -343,7 +343,7 @@ c***********************************************************************
      &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
      &  rhs_gb_lo, rhs_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
@@ -365,14 +365,14 @@ c { begin subroutine
       @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
      &           rhs_gb_lo(2):rhs_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       integer i, j
       real*8 dt
 
 c     { begin loop over grid
-      do j=fb_lo(2),fb_hi(2)
-        do i=fb_lo(1),fb_hi(1)
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
           u_stage2(i,j) = 0.75d0*u_current(i,j)
      &                  + 0.25d0*( u_stage1(i,j) + dt*rhs(i,j) )
@@ -403,13 +403,13 @@ c rhs: right-hand side of time evolution equation
 c
 c dt: step size
 c
-c *_gb_lo: lower corner of index range for ghostbox
+c *_gb_lo: lower corner of index range for ghost box
 c
-c *_gb_hi: upper corner of index range for ghostbox
+c *_gb_hi: upper corner of index range for ghost box
 c
-c fb_lo: lower corner of index range for fillbox
+c patch_box_lo: lower corner of index range for patch box
 c
-c fb_hi: upper corner of index range for fillbox
+c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage3(
@@ -421,7 +421,7 @@ c***********************************************************************
      &  u_current_gb_lo, u_current_gb_hi,
      &  rhs,
      &  rhs_gb_lo, rhs_gb_hi,
-     &  fb_lo, fb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dt)
 c***********************************************************************
 c { begin subroutine
@@ -443,7 +443,7 @@ c { begin subroutine
       @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
      &           rhs_gb_lo(2):rhs_gb_hi(2))
 
-      integer fb_lo(1:2), fb_hi(1:2)
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       integer i, j
       real*8 dt
@@ -452,8 +452,8 @@ c { begin subroutine
       parameter (two_thirds = 2.d0/3.d0)
 
 c     { begin loop over grid
-      do j=fb_lo(2),fb_hi(2)
-        do i=fb_lo(1),fb_hi(1)
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
           u_next(i,j) = one_third*u_current(i,j)
      &                + two_thirds*( u_stage2(i,j) + dt*rhs(i,j) )
