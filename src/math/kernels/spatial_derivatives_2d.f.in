@@ -43,8 +43,7 @@ c***********************************************************************
       subroutine pqsMath2dComputeGradENO1(
      &  grad_phi_x_plus, grad_phi_x_minus,
      &  grad_phi_y_plus, grad_phi_y_minus,
-     &  phi,
-     &  phi_gb_lo, phi_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
      &  dx,
      &  idx)
 c***********************************************************************
@@ -102,8 +101,7 @@ c *_gb_hi: upper corner of index range for ghost box
 c
 c***********************************************************************
       @REAL@ function pqsMath2dMeanCurvature(
-     &  phi,
-     &  phi_gb_lo, phi_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
      &  dx,
      &  idx)
 c***********************************************************************
