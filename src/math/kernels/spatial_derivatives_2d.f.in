@@ -33,7 +33,7 @@ c phi: function to compute gradient of
 c
 c dx: array containing grid spacing in each coordinate direction
 c
-c idx: array containing index of grid point to compute curvature at
+c idx: array containing index of grid point to compute gradient at
 c
 c *_gb_lo: lower corner of index range for ghostbox
 c
