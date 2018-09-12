@@ -40,13 +40,13 @@ extern "C" {
  *
  * v: second function in the expression |u - v|
  *
- * *_gb_lo: lower corner of index range for ghost box
- *
- * *_gb_hi: upper corner of index range for ghost box
- *
  * patch_box_lo: lower corner of index range for patch box
  *
  * patch_box_hi: upper corner of index range for patch box
+ *
+ * *_gb_lo: lower corner of index range for ghost box
+ *
+ * *_gb_hi: upper corner of index range for ghost box
  *
  * Return value
  * ------------

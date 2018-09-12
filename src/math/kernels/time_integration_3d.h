@@ -64,11 +64,13 @@ extern "C" {
  *
  * rhs: right-hand side of time evolution equation
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dt: step size
  *
  * *_gb: index range for ghost box
- *
- * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -100,11 +102,13 @@ void PQS_MATH_3D_RK1_STEP(
  *
  * rhs: right-hand side of time evolution equation
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dt: step size
  *
  * *_gb: index range for ghost box
- *
- * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -142,11 +146,13 @@ void PQS_MATH_3D_TVD_RK2_STAGE1(
  *
  * rhs: right-hand side of time evolution equation
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dt: step size
  *
  * *_gb: index range for ghost box
- *
- * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -181,11 +187,13 @@ void PQS_MATH_3D_TVD_RK2_STAGE2(
  *
  * rhs: right-hand side of time evolution equation
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dt: step size
  *
  * *_gb: index range for ghost box
- *
- * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -223,11 +231,13 @@ void PQS_MATH_3D_TVD_RK3_STAGE1(
  *
  * rhs: right-hand side of time evolution equation
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dt: step size
  *
  * *_gb: index range for ghost box
- *
- * *_patch_box: index range for patch box
  *
  * Return value
  * ------------
@@ -264,11 +274,13 @@ void PQS_MATH_3D_TVD_RK3_STAGE2(
  *
  * rhs: right-hand side of time evolution equation
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dt: step size
  *
  * *_gb: index range for ghost box
- *
- * *_patch_box: index range for patch box
  *
  * Return value
  * ------------

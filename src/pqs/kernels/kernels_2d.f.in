@@ -21,6 +21,10 @@ c     Prescribed Curvature Model
 c
 c phi: level set function that defines fluid-fluid interface
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dx: array containing grid spacing in each coordinate direction
 c
 c pressure: reference pressure of non-wetting phase
@@ -31,10 +35,6 @@ c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqs2dCurvatureModelZeroContactAngleRHS(
@@ -202,6 +202,10 @@ c
 c grad_psi: gradient of level set function that defines solid-pore
 c     interface
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dx: array containing grid spacing in each coordinate direction
 c
 c pressure: reference pressure of non-wetting phase
@@ -215,10 +219,6 @@ c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqs2dCurvatureModelNonzeroContactAngleRHS(
@@ -399,6 +399,10 @@ c     Slightly Compressible Model
 c
 c phi: level set function that defines fluid-fluid interface
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dx: array containing grid spacing in each coordinate direction
 c
 c volume: volume of non-wetting phase
@@ -415,10 +419,6 @@ c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqs2dCompressibleModelZeroContactAngleRHS(
@@ -597,6 +597,10 @@ c
 c grad_psi: gradient of level set function that defines solid-pore
 c     interface
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dx: array containing grid spacing in each coordinate direction
 c
 c volume: volume of non-wetting phase
@@ -616,11 +620,6 @@ c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
-c
 c
 c***********************************************************************
       subroutine pqs2dCompressibleModelNonzeroContactAngleRHS(

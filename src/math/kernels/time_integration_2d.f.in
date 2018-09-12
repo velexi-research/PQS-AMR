@@ -25,15 +25,15 @@ c u_current: u(t)
 c
 c rhs: right-hand side of time evolution equation
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dt: step size
 c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c Notes
 c -----
@@ -99,15 +99,15 @@ c u_cur: u(t)
 c
 c rhs: right-hand side of time evolution equation
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dt: step size
 c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c Notes
 c -----
@@ -173,15 +173,15 @@ c u_cur: u(t)
 c
 c rhs: right-hand side of time evolution equation
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dt: step size
 c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK2Stage2(
@@ -249,15 +249,15 @@ c u_cur: u(t)
 c
 c rhs: right-hand side of time evolution equation
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dt: step size
 c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c Notes
 c -----
@@ -323,15 +323,15 @@ c u_cur: u(t)
 c
 c rhs: right-hand side of time evolution equation
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dt: step size
 c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage2(
@@ -401,15 +401,15 @@ c u_cur: u(t)
 c
 c rhs: right-hand side of time evolution equation
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dt: step size
 c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c***********************************************************************
       subroutine pqsMath2dTVDRK3Stage3(

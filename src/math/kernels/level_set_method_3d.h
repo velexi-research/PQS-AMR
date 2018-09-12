@@ -42,6 +42,10 @@ extern "C" {
  * ----------
  * phi: level set function
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dx: array containing grid spacing in each coordinate direction
  *
  * eps: width of numerical smoothing to use for Heaviside function
@@ -49,10 +53,6 @@ extern "C" {
  * *_gb_lo: lower corner of index range for ghostbox
  *
  * *_gb_hi: upper corner of index range for ghostbox
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
  *
  * Return value
  * ------------
@@ -84,6 +84,10 @@ PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
  * ----------
  * phi: level set function
  *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
  * dx: array containing grid spacing in each coordinate direction
  *
  * eps: width of numerical smoothing to use for Heaviside function
@@ -91,10 +95,6 @@ PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
  * *_gb_lo: lower corner of index range for ghostbox
  *
  * *_gb_hi: upper corner of index range for ghostbox
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
  *
  * Return value
  * ------------
