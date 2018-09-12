@@ -243,6 +243,9 @@ c *_gb_hi: upper corner of index range for ghost box
 c
 c Notes
 c -----
+c * The formulation of the reinitialization equation that uses
+c   sgn(phi_0) follows the development in Sussman et al (1994).
+c
 c * Uses a Godunov scheme to select the numerical discretization of the
 c   sgn(phi_0) |grad(phi)| term.
 c
@@ -386,6 +389,9 @@ c *_gb_hi: upper corner of index range for ghost box
 c
 c Notes
 c -----
+c * The formulation of the reinitialization equation that uses
+c   sgn(phi) follows the development in Peng et al (1999).
+c
 c * Uses a Godunov scheme to select the numerical discretization of the
 c   sgn(phi) |grad(phi)| term.
 c
