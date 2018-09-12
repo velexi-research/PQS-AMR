@@ -14,6 +14,10 @@ c Parameters
 c ----------
 c phi: level set function
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dx: array containing grid spacing in each coordinate direction
 c
 c eps: numerical width Heaviside function (as a function of phi)
@@ -21,10 +25,6 @@ c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c Return value
 c ------------
@@ -38,8 +38,7 @@ c   equal to (2 * eps).
 c
 c***********************************************************************
       @REAL@ function lsm2dAreaPhiLessThanZero(
-     &  phi,
-     &  phi_gb_lo, phi_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
      &  patch_box_lo, patch_box_hi,
      &  dx,
      &  eps)
@@ -116,6 +115,10 @@ c Parameters
 c ----------
 c phi: level set function
 c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
 c dx: array containing grid spacing in each coordinate direction
 c
 c eps: numerical width Heaviside function (as a function of phi)
@@ -123,10 +126,6 @@ c
 c *_gb_lo: lower corner of index range for ghost box
 c
 c *_gb_hi: upper corner of index range for ghost box
-c
-c patch_box_lo: lower corner of index range for patch box
-c
-c patch_box_hi: upper corner of index range for patch box
 c
 c Return value
 c ------------
@@ -140,8 +139,7 @@ c   equal to (2 * eps).
 c
 c***********************************************************************
       @REAL@ function lsm2dAreaPhiGreaterThanZero(
-     &  phi,
-     &  phi_gb_lo, phi_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
      &  patch_box_lo, patch_box_hi,
      &  dx,
      &  eps)
@@ -211,8 +209,7 @@ c***********************************************************************
 c***********************************************************************
 c
 c Compute the right-hand side of the reinitialization equation using
-c a Godunov scheme to select the numerical discretization of the
-c sgn(phi_0) |grad(phi)| term.
+c sgn(phi_0) in hyperbolic term of the reinitialization equation.
 c
 c Parameters
 c ----------
@@ -224,17 +221,24 @@ c
 c phi_0: level set function at initial iteration of reinitialization
 c      process
 c
-c *_gb_lo: lower corner of index range for ghost box
-c
-c *_gb_hi: upper corner of index range for ghost box
-c
 c patch_box_lo: lower corner of index range for patch box
 c
 c patch_box_hi: upper corner of index range for patch box
 c
+c dx: array containing grid spacing in each coordinate direction
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * Uses a Godunov scheme to select the numerical discretization of the
+c   sgn(phi_0) |grad(phi)| term.
+c
 c***********************************************************************
-      subroutine lsm2dComputeReinitializationEqnRHS(
-     &  rhs, &  rhs_gb_lo, rhs_gb_hi,
+      subroutine lsm2dComputeReinitializationEqnSgnPhi0RHS(
+     &  rhs, rhs_gb_lo, rhs_gb_hi,
      &  phi, phi_gb_lo, phi_gb_hi,
      &  phi_0, phi_0_gb_lo, phi_0_gb_hi,
      &  patch_box_lo, patch_box_hi,
@@ -243,94 +247,90 @@ c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_rhs_gb, ihi_rhs_gb, jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_phi_gb, ihi_phi_gb, jlo_phi_gb, jhi_phi_gb
-      integer ilo_phi_0_gb, ihi_phi_0_gb, jlo_phi_0_gb, jhi_phi_0_gb
-      integer ilo_grad_phi_plus_gb, ihi_grad_phi_plus_gb
-      integer jlo_grad_phi_plus_gb, jhi_grad_phi_plus_gb
-      integer ilo_grad_phi_minus_gb, ihi_grad_phi_minus_gb
-      integer jlo_grad_phi_minus_gb, jhi_grad_phi_minus_gb
-      integer ilo_patch_box, ihi_patch_box, jlo_patch_box, jhi_patch_box
-      real reinit_rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &                jlo_rhs_gb:jhi_rhs_gb)
-      real phi(ilo_phi_gb:ihi_phi_gb,
-     &         jlo_phi_gb:jhi_phi_gb)
-      real phi_0(ilo_phi_0_gb:ihi_phi_0_gb,
-     &          jlo_phi_0_gb:jhi_phi_0_gb)
-      real phi_x_plus(ilo_grad_phi_plus_gb:ihi_grad_phi_plus_gb,
-     &                jlo_grad_phi_plus_gb:jhi_grad_phi_plus_gb)
-      real phi_y_plus(ilo_grad_phi_plus_gb:ihi_grad_phi_plus_gb,
-     &                jlo_grad_phi_plus_gb:jhi_grad_phi_plus_gb)
-      real phi_x_minus(ilo_grad_phi_minus_gb:ihi_grad_phi_minus_gb,
-     &                 jlo_grad_phi_minus_gb:jhi_grad_phi_minus_gb)
-      real phi_y_minus(ilo_grad_phi_minus_gb:ihi_grad_phi_minus_gb,
-     &                 jlo_grad_phi_minus_gb:jhi_grad_phi_minus_gb)
-      real dx, dy
-      real phi_cur
-      integer DIM
-      parameter (DIM=2)
-      real grad_phi_plus_cur(1:DIM)
-      real grad_phi_minus_cur(1:DIM)
-      real grad_phi_star(1:DIM)
-      integer i,j
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2))
+
+      integer phi_0_gb_lo(1:2), phi_0_gb_hi(1:2)
+      @REAL@ phi_0(phi_0_gb_lo(1):phi_0_gb_hi(1),
+     &             phi_0_gb_lo(2):phi_0_gb_hi(2))
+
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
+      real*8 dx(1:2)
+
+      integer i, j
       integer dir
-      real sgn_phi
-      real norm_grad_phi_sq
+      integer idx(1:2)
+
       real dx_sq
-      real zero_tol
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+
+      @REAL@ phi_0_cur
+      @REAL@ grad_phi_plus_cur(1:2)
+      @REAL@ grad_phi_minus_cur(1:2)
+      @REAL@ grad_phi_star_sq(1:2)
+
+      @REAL@ sgn_phi_0
+      @REAL@ norm_grad_phi_sq
+
+      @REAL@ zero_tol
       parameter (zero_tol=@ZERO_TOL@)
-      real one
+      @REAL@ one
       parameter (one=1.d0)
 
-c     set value of dx_sq to be square of max{dx,dy}
-      dx_sq = max(dx,dy)
-      dx_sq = dx_sq*dx_sq
+c     --- Preparations
 
-c----------------------------------------------------
-c      compute RHS of reinitialization equation
-c      using Godunov's method
-c----------------------------------------------------
+c     set value of dx_sq to be square of max of grid spacing over all
+c     coordinate directions
+      dx_sq = maxval(dx)**2
+
+c     --- Compute RHS of reinitialization equation using Godunov's method
 
 c     { begin loop over grid
-      do j=jlo_patch_box,jhi_patch_box
-        do i=ilo_patch_box,ihi_patch_box
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
-c         cache phi and spatial derivative approximations
-          phi_cur = phi_0(i,j)
-          grad_phi_plus_cur(1) = phi_x_plus(i,j)
-          grad_phi_plus_cur(2) = phi_y_plus(i,j)
-          grad_phi_minus_cur(1) = phi_x_minus(i,j)
-          grad_phi_minus_cur(2) = phi_y_minus(i,j)
+          phi_0_cur = phi_0(i,j)
+
+c         compute forward and backward approximations of grad(phi)
+          idx(1) = i
+          idx(2) = j
+          call pqsMath2dComputeGradENO1(
+     &      grad_phi_x_plus, grad_phi_x_minus,
+     &      grad_phi_y_plus, grad_phi_y_minus,
+     &      phi, phi_gb_lo, phi_gb_hi,
+     &      dx, idx)
 
 c         { begin Godunov selection of grad_phi
-          do dir=1,DIM
+          do dir=1,2
 
-            if (phi_cur .gt. 0.d0) then
-              grad_phi_plus_cur(dir) = max(-grad_phi_plus_cur(dir),
-     &                                     0.d0)
-              grad_phi_minus_cur(dir) = max(grad_phi_minus_cur(dir),
-     &                                      0.d0)
+c           Rouy and Tourin formula (1992)
+            if (phi_0_cur .gt. 0.d0) then
+              grad_phi_star_sq(dir) = max(
+     &            max(grad_phi_minus_cur(dir)**2,0.d0),
+     &            min(grad_phi_plus_cur(dir)**2,0.d0))
             else
-              grad_phi_plus_cur(dir) = max(grad_phi_plus_cur(dir),
-     &                                     0.d0)
-              grad_phi_minus_cur(dir) = max(-grad_phi_minus_cur(dir),
-     &                                      0.d0)
+              grad_phi_star_sq(dir) = max(
+     &            min(grad_phi_minus_cur(dir)**2,0.d0),
+     &            max(grad_phi_plus_cur(dir)**2,0.d0))
             endif
 
-            grad_phi_star(dir) = max(grad_phi_plus_cur(dir),
-     &                               grad_phi_minus_cur(dir)) 
-
           enddo
-c         } end Godunov selection of phi_y in y-direction
+c         } end Godunov selection of grad_phi
 
-c         compute reinit_rhs(i,j) using smoothed sgn(phi)
-          if (abs(phi_cur) .gt. zero_tol) then
-            norm_grad_phi_sq = grad_phi_star(1)*grad_phi_star(1)
-     &                       + grad_phi_star(2)*grad_phi_star(2)
-            sgn_phi = phi_cur / sqrt(phi_cur*phi_cur + dx_sq)
-            reinit_rhs(i,j) = sgn_phi*(one - sqrt(norm_grad_phi_sq))
+c         compute rhs(i,j) using smoothed sgn(phi)
+          if (abs(phi_0_cur) .gt. zero_tol) then
+            norm_grad_phi_sq = grad_phi_star_sq(1) + grad_phi_star_sq(2)
+            sgn_phi_0 = phi_0_cur / sqrt(phi_0_cur**2 + dx_sq)
+            rhs(i,j) = sgn_phi_0 * (one - sqrt(norm_grad_phi_sq))
           else
-            reinit_rhs(i,j) = 0.d0
+            rhs(i,j) = 0.d0
           endif
 
         enddo
@@ -345,92 +345,96 @@ c***********************************************************************
 c***********************************************************************
 c
 c Compute the right-hand side of the reinitialization equation using
-c a Godunov scheme to select the numerical discretization of the
-c sgn(phi_0) |grad(phi)| term.
+c sgn(phi) in hyperbolic term of the reinitialization equation.
 c
 c Parameters
 c ----------
 c rhs: [output] right-hand side of reinitialization equation
 c
-c phi: level set function at current iteration of reinitialization
-c      process
+c phi: level set function
 c
-c phi_*_plus (in):        forward spatial derivatives for grad(phi)
+c patch_box_lo: lower corner of index range for patch box
 c
-c phi_*_minus (in):       backward spatial derivatives for grad(phi)
+c patch_box_hi: upper corner of index range for patch box
 c
-c *_gb (in):              index range for ghost box
-c *_patch_box (in):              index range for patch box
+c dx: array containing grid spacing in each coordinate direction
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * Uses a Godunov scheme to select the numerical discretization of the
+c   sgn(phi) |grad(phi)| term.
 c
 c***********************************************************************
-      subroutine lsm2dComputeReinitializationEqnRHSPeng(
-     &  rhs,
-     &  ilo_rhs_gb, ihi_rhs_gb, jlo_rhs_gb, jhi_rhs_gb,
-     &  phi,
-     &  ilo_phi_gb, ihi_phi_gb, jlo_phi_gb, jhi_phi_gb,
-     &  ilo_patch_box, ihi_patch_box, jlo_patch_box, jhi_patch_box,
+      subroutine lsm2dComputeReinitializationEqnSgnPhiRHS(
+     &  rhs, rhs_gb_lo, rhs_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  patch_box_lo, patch_box_hi,
      &  dx)
 c***********************************************************************
 c { begin subroutine
       implicit none
 
-      integer ilo_rhs_gb, ihi_rhs_gb, jlo_rhs_gb, jhi_rhs_gb
-      integer ilo_phi_gb, ihi_phi_gb, jlo_phi_gb, jhi_phi_gb
-      integer ilo_grad_phi_plus_gb, ihi_grad_phi_plus_gb
-      integer jlo_grad_phi_plus_gb, jhi_grad_phi_plus_gb
-      integer ilo_grad_phi_minus_gb, ihi_grad_phi_minus_gb
-      integer jlo_grad_phi_minus_gb, jhi_grad_phi_minus_gb
-      integer ilo_patch_box, ihi_patch_box, jlo_patch_box, jhi_patch_box
-      real reinit_rhs(ilo_rhs_gb:ihi_rhs_gb,
-     &                jlo_rhs_gb:jhi_rhs_gb)
-      real phi(ilo_phi_gb:ihi_phi_gb,
-     &         jlo_phi_gb:jhi_phi_gb)
-      real phi_x_plus(ilo_grad_phi_plus_gb:ihi_grad_phi_plus_gb,
-     &                jlo_grad_phi_plus_gb:jhi_grad_phi_plus_gb)
-      real phi_y_plus(ilo_grad_phi_plus_gb:ihi_grad_phi_plus_gb,
-     &                jlo_grad_phi_plus_gb:jhi_grad_phi_plus_gb)
-      real phi_x_minus(ilo_grad_phi_minus_gb:ihi_grad_phi_minus_gb,
-     &                 jlo_grad_phi_minus_gb:jhi_grad_phi_minus_gb)
-      real phi_y_minus(ilo_grad_phi_minus_gb:ihi_grad_phi_minus_gb,
-     &                 jlo_grad_phi_minus_gb:jhi_grad_phi_minus_gb)
-      real dx, dy
-      real phi_cur
-      integer DIM
-      parameter (DIM=2)
-      real grad_phi_plus_cur(1:DIM)
-      real grad_phi_minus_cur(1:DIM)
-      real grad_phi_star(1:DIM)
-      integer i,j
+      integer rhs_gb_lo(1:2), rhs_gb_hi(1:2)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2))
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2))
+
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
+      real*8 dx(1:2)
+
+      integer i, j
       integer dir
-      real sgn_phi
-      real norm_grad_phi_sq
+      integer idx(1:2)
+
       real dx_sq
-      real zero_tol
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+
+      @REAL@ phi_cur
+      @REAL@ grad_phi_plus_cur(1:2)
+      @REAL@ grad_phi_minus_cur(1:2)
+      @REAL@ grad_phi_star_sq(1:2)
+
+      @REAL@ sgn_phi
+      @REAL@ norm_grad_phi_sq
+
+      @REAL@ zero_tol
       parameter (zero_tol=@ZERO_TOL@)
-      real one
+      @REAL@ one
       parameter (one=1.d0)
 
-c     set value of dx_sq to be square of max{dx,dy}
-      dx_sq = max(dx,dy)
-      dx_sq = dx_sq*dx_sq
+c     --- Preparations
 
-c----------------------------------------------------
-c      compute RHS of reinitialization equation
-c      using Godunov's method
-c----------------------------------------------------
+c     set value of dx_sq to be square of max of grid spacing over all
+c     coordinate directions
+      dx_sq = maxval(dx)**2
+
+c     compute forward and backward approximations of grad(phi)
+      idx(1) = i
+      idx(2) = j
+      call pqsMath2dComputeGradENO1(
+     &  grad_phi_x_plus, grad_phi_x_minus,
+     &  grad_phi_y_plus, grad_phi_y_minus,
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  dx, idx)
+
+c     --- Compute RHS of reinitialization equation using Godunov's method
 
 c     { begin loop over grid
-      do j=jlo_patch_box,jhi_patch_box
-        do i=ilo_patch_box,ihi_patch_box
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
 
-c         cache phi and spatial derivative approximations
           phi_cur = phi(i,j)
-          grad_phi_plus_cur(1) = phi_x_plus(i,j)
-          grad_phi_plus_cur(2) = phi_y_plus(i,j)
-          grad_phi_minus_cur(1) = phi_x_minus(i,j)
-          grad_phi_minus_cur(2) = phi_y_minus(i,j)
 
-c         Compute forward and backward approximations of (phi)
+c         compute forward and backward approximations of (phi)
           idx(1) = i
           idx(2) = j
           call pqsMath2dComputeGradENO1(
@@ -440,35 +444,30 @@ c         Compute forward and backward approximations of (phi)
      &      dx, idx)
 
 c         { begin Godunov selection of grad_phi
-          do dir=1,DIM
+          do dir=1,2
 
+c           Rouy and Tourin formula (1992)
             if (phi_cur .gt. 0.d0) then
-              grad_phi_plus_cur(dir) = max(-grad_phi_plus_cur(dir),
-     &                                     0.d0)
-              grad_phi_minus_cur(dir) = max(grad_phi_minus_cur(dir),
-     &                                      0.d0)
+              grad_phi_star_sq(dir) = max(
+     &            max(grad_phi_minus_cur(dir)**2,0.d0),
+     &            min(grad_phi_plus_cur(dir)**2,0.d0))
             else
-              grad_phi_plus_cur(dir) = max(grad_phi_plus_cur(dir),
-     &                                     0.d0)
-              grad_phi_minus_cur(dir) = max(-grad_phi_minus_cur(dir),
-     &                                      0.d0)
+              grad_phi_star_sq(dir) = max(
+     &            min(grad_phi_minus_cur(dir)**2,0.d0),
+     &            max(grad_phi_plus_cur(dir)**2,0.d0))
             endif
-
-            grad_phi_star(dir) = max(grad_phi_plus_cur(dir),
-     &                               grad_phi_minus_cur(dir)) 
 
           enddo
 c         } end Godunov selection of grad_phi
 
-c         compute reinit_rhs(i,j) using smoothed sgn(phi)
+c         compute rhs(i,j) using smoothed sgn(phi)
           if (abs(phi_cur) .gt. zero_tol) then 
-            norm_grad_phi_sq = grad_phi_star(1)*grad_phi_star(1)
-     &                       + grad_phi_star(2)*grad_phi_star(2)
+            norm_grad_phi_sq = grad_phi_star_sq(1) + grad_phi_star_sq(2)
             sgn_phi = phi_cur
-     &              / sqrt(phi_cur*phi_cur + norm_grad_phi_sq*dx_sq)
-            reinit_rhs(i,j) = sgn_phi*(one - sqrt(norm_grad_phi_sq))
+     &              / sqrt(phi_cur**2 + norm_grad_phi_sq*dx_sq)
+            rhs(i,j) = sgn_phi * (one - sqrt(norm_grad_phi_sq))
           else
-            reinit_rhs(i,j) = 0.d0
+            rhs(i,j) = 0.d0
           endif
 
         enddo
