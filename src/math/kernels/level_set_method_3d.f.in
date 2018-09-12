@@ -215,3 +215,288 @@ c     set result
       end
 c } end function
 c***********************************************************************
+
+c***********************************************************************
+c
+c Compute the right-hand side of the reinitialization equation using
+c sgn(phi_0) in hyperbolic term of the reinitialization equation.
+c
+c Parameters
+c ----------
+c rhs: [output] right-hand side of reinitialization equation
+c
+c phi: level set function at current iteration of reinitialization
+c      process
+c
+c phi_0: level set function at initial iteration of reinitialization
+c      process
+c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * Uses a Godunov scheme to select the numerical discretization of the
+c   sgn(phi_0) |grad(phi)| term.
+c
+c***********************************************************************
+      subroutine lsm3dComputeReinitializationEqnSgnPhi0RHS(
+     &  rhs, rhs_gb_lo, rhs_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  phi_0, phi_0_gb_lo, phi_0_gb_hi,
+     &  patch_box_lo, patch_box_hi,
+     &  dx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer rhs_gb_lo(1:3), rhs_gb_hi(1:3)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2),
+     &           rhs_gb_lo(3):rhs_gb_hi(3))
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      integer phi_0_gb_lo(1:3), phi_0_gb_hi(1:3)
+      @REAL@ phi_0(phi_0_gb_lo(1):phi_0_gb_hi(1),
+     &             phi_0_gb_lo(2):phi_0_gb_hi(2),
+     &             phi_0_gb_lo(3):phi_0_gb_hi(3))
+
+      integer patch_box_lo(1:3), patch_box_hi(1:3)
+      real*8 dx(1:3)
+
+      integer i, j, k
+      integer dir
+      integer idx(1:3)
+
+      real dx_sq
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+      @REAL@ grad_phi_z_plus, grad_phi_z_minus
+
+      @REAL@ phi_0_cur
+      @REAL@ grad_phi_plus_cur(1:3)
+      @REAL@ grad_phi_minus_cur(1:3)
+      @REAL@ grad_phi_star_sq(1:3)
+
+      @REAL@ sgn_phi_0
+      @REAL@ norm_grad_phi_sq
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+      @REAL@ one
+      parameter (one=1.d0)
+
+c     --- Preparations
+
+c     set value of dx_sq to be square of max of grid spacing over all
+c     coordinate directions
+      dx_sq = maxval(dx)**2
+
+c     --- Compute RHS of reinitialization equation using Godunov's method
+
+c     { begin loop over grid
+      do k=patch_box_lo(3),patch_box_hi(3)
+        do j=patch_box_lo(2),patch_box_hi(2)
+          do i=patch_box_lo(1),patch_box_hi(1)
+
+            phi_0_cur = phi_0(i,j,k)
+
+c           compute forward and backward approximations of grad(phi)
+            idx(1) = i
+            idx(2) = j
+            idx(3) = k
+            call pqsMath3dComputeGradENO1(
+     &        grad_phi_x_plus, grad_phi_x_minus,
+     &        grad_phi_y_plus, grad_phi_y_minus,
+     &        grad_phi_z_plus, grad_phi_z_minus,
+     &        phi, phi_gb_lo, phi_gb_hi,
+     &        dx, idx)
+
+c           { begin Godunov selection of grad_phi
+            do dir=1,3
+
+c             TODO: fix calculation
+
+c             Rouy and Tourin formula (1992)
+              if (phi_0_cur .gt. 0.d0) then
+                grad_phi_star_sq(dir) = max(
+     &              max(grad_phi_minus_cur(dir)**2,0.d0),
+     &              min(grad_phi_plus_cur(dir)**2,0.d0))
+              else
+                grad_phi_star_sq(dir) = max(
+     &              min(grad_phi_minus_cur(dir)**2,0.d0),
+     &              max(grad_phi_plus_cur(dir)**2,0.d0))
+              endif
+
+            enddo
+c           } end Godunov selection of grad_phi
+
+c           compute rhs(i,j,k) using smoothed sgn(phi)
+            if (abs(phi_0_cur) .gt. zero_tol) then
+              norm_grad_phi_sq = grad_phi_star_sq(1) +
+     &            grad_phi_star_sq(2) + grad_phi_star_sq(3)
+              sgn_phi_0 = phi_0_cur / sqrt(phi_0_cur**2 + dx_sq)
+              rhs(i,j,k) = sgn_phi_0 * (one - sqrt(norm_grad_phi_sq))
+            else
+              rhs(i,j,k) = 0.d0
+            endif
+
+          enddo
+        enddo
+      enddo
+c     } end loop over grid
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute the right-hand side of the reinitialization equation using
+c sgn(phi) in hyperbolic term of the reinitialization equation.
+c
+c Parameters
+c ----------
+c rhs: [output] right-hand side of reinitialization equation
+c
+c phi: level set function
+c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * Uses a Godunov scheme to select the numerical discretization of the
+c   sgn(phi) |grad(phi)| term.
+c
+c***********************************************************************
+      subroutine lsm3dComputeReinitializationEqnSgnPhiRHS(
+     &  rhs, rhs_gb_lo, rhs_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  patch_box_lo, patch_box_hi,
+     &  dx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer rhs_gb_lo(1:3), rhs_gb_hi(1:3)
+      @REAL@ rhs(rhs_gb_lo(1):rhs_gb_hi(1),
+     &           rhs_gb_lo(2):rhs_gb_hi(2),
+     &           rhs_gb_lo(3):rhs_gb_hi(3))
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      integer patch_box_lo(1:3), patch_box_hi(1:3)
+      real*8 dx(1:3)
+
+      integer i, j, k
+      integer dir
+      integer idx(1:3)
+
+      real dx_sq
+
+      @REAL@ grad_phi_x_plus, grad_phi_x_minus
+      @REAL@ grad_phi_y_plus, grad_phi_y_minus
+      @REAL@ grad_phi_z_plus, grad_phi_z_minus
+
+      @REAL@ phi_cur
+      @REAL@ grad_phi_plus_cur(1:3)
+      @REAL@ grad_phi_minus_cur(1:3)
+      @REAL@ grad_phi_star_sq(1:3)
+
+      @REAL@ sgn_phi
+      @REAL@ norm_grad_phi_sq
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+      @REAL@ one
+      parameter (one=1.d0)
+
+c     --- Preparations
+
+c     set value of dx_sq to be square of max of grid spacing over all
+c     coordinate directions
+      dx_sq = maxval(dx)**2
+
+c     --- Compute RHS of reinitialization equation using Godunov's method
+
+c     { begin loop over grid
+      do k=patch_box_lo(3),patch_box_hi(3)
+        do j=patch_box_lo(2),patch_box_hi(2)
+          do i=patch_box_lo(1),patch_box_hi(1)
+
+            phi_cur = phi(i,j,k)
+
+c           compute forward and backward approximations of (phi)
+            idx(1) = i
+            idx(2) = j
+            idx(3) = k
+            call pqsMath3dComputeGradENO1(
+     &        grad_phi_x_plus, grad_phi_x_minus,
+     &        grad_phi_y_plus, grad_phi_y_minus,
+     &        grad_phi_z_plus, grad_phi_z_minus,
+     &        phi, phi_gb_lo, phi_gb_hi,
+     &        dx, idx)
+
+c           { begin Godunov selection of grad_phi
+            do dir=1,3
+
+c             TODO: fix calculation
+
+c             Rouy and Tourin formula (1992)
+              if (phi_cur .gt. 0.d0) then
+                grad_phi_star_sq(dir) = max(
+     &              max(grad_phi_minus_cur(dir)**2,0.d0),
+     &              min(grad_phi_plus_cur(dir)**2,0.d0))
+              else
+                grad_phi_star_sq(dir) = max(
+     &              min(grad_phi_minus_cur(dir)**2,0.d0),
+     &              max(grad_phi_plus_cur(dir)**2,0.d0))
+              endif
+
+            enddo
+c           } end Godunov selection of grad_phi
+
+c           compute rhs(i,j,k) using smoothed sgn(phi)
+            if (abs(phi_cur) .gt. zero_tol) then
+              norm_grad_phi_sq = grad_phi_star_sq(1) +
+     &            grad_phi_star_sq(2) + grad_phi_star_sq(3)
+              sgn_phi = phi_cur
+     &                / sqrt(phi_cur**2 + norm_grad_phi_sq*dx_sq)
+              rhs(i,j,k) = sgn_phi * (one - sqrt(norm_grad_phi_sq))
+            else
+              rhs(i,j,k) = 0.d0
+            endif
+
+          enddo
+        enddo
+      enddo
+c     } end loop over grid
+
+      return
+      end
+c } end subroutine
+c***********************************************************************

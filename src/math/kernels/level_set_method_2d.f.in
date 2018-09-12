@@ -310,6 +310,8 @@ c         compute forward and backward approximations of grad(phi)
 c         { begin Godunov selection of grad_phi
           do dir=1,2
 
+c           TODO: fix calculation
+
 c           Rouy and Tourin formula (1992)
             if (phi_0_cur .gt. 0.d0) then
               grad_phi_star_sq(dir) = max(
@@ -417,15 +419,6 @@ c     set value of dx_sq to be square of max of grid spacing over all
 c     coordinate directions
       dx_sq = maxval(dx)**2
 
-c     compute forward and backward approximations of grad(phi)
-      idx(1) = i
-      idx(2) = j
-      call pqsMath2dComputeGradENO1(
-     &  grad_phi_x_plus, grad_phi_x_minus,
-     &  grad_phi_y_plus, grad_phi_y_minus,
-     &  phi, phi_gb_lo, phi_gb_hi,
-     &  dx, idx)
-
 c     --- Compute RHS of reinitialization equation using Godunov's method
 
 c     { begin loop over grid
@@ -446,6 +439,8 @@ c         compute forward and backward approximations of (phi)
 c         { begin Godunov selection of grad_phi
           do dir=1,2
 
+c           TODO: fix calculation
+
 c           Rouy and Tourin formula (1992)
             if (phi_cur .gt. 0.d0) then
               grad_phi_star_sq(dir) = max(
@@ -461,7 +456,7 @@ c           Rouy and Tourin formula (1992)
 c         } end Godunov selection of grad_phi
 
 c         compute rhs(i,j) using smoothed sgn(phi)
-          if (abs(phi_cur) .gt. zero_tol) then 
+          if (abs(phi_cur) .gt. zero_tol) then
             norm_grad_phi_sq = grad_phi_star_sq(1) + grad_phi_star_sq(2)
             sgn_phi = phi_cur
      &              / sqrt(phi_cur**2 + norm_grad_phi_sq*dx_sq)
