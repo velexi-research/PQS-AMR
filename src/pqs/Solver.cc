@@ -736,7 +736,7 @@ void Solver::setupSimulationVariables()
     // Get dimensionality of problem
     tbox::Dimension dim = d_patch_hierarchy->getDim();
 
-    // Create IntVector for ghost cell widths
+    // Create IntVector for zero ghost cell widths
     hier::IntVector zero_ghost_cell_width(dim, 0);
 
     // Initialize PatchData component selectors
