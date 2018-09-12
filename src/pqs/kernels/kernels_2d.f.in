@@ -220,7 +220,6 @@ c patch_box_lo: lower corner of index range for patch box
 c
 c patch_box_hi: upper corner of index range for patch box
 c
-c
 c***********************************************************************
       subroutine pqs2dCurvatureModelNonzeroContactAngleRHS(
      &  max_stable_dt,
