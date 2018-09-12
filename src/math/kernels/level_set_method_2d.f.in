@@ -275,9 +275,8 @@ c { begin subroutine
       @REAL@ grad_phi_y_plus, grad_phi_y_minus
 
       @REAL@ phi_0_cur
-      @REAL@ grad_phi_plus_cur(1:2)
-      @REAL@ grad_phi_minus_cur(1:2)
-      @REAL@ grad_phi_star_sq(1:2)
+      @REAL@ grad_phi_x_star_sq
+      @REAL@ grad_phi_y_star_sq
 
       @REAL@ sgn_phi_0
       @REAL@ norm_grad_phi_sq
@@ -311,27 +310,31 @@ c         compute forward and backward approximations of grad(phi)
      &      dx, idx)
 
 c         { begin Godunov selection of grad_phi
-          do dir=1,2
 
-c           TODO: fix calculation
+c         Rouy and Tourin formula (1992)
+          if (phi_0_cur .gt. 0.d0) then
+            grad_phi_x_star_sq = max(
+     &          max(grad_phi_x_minus**2,0.d0),
+     &          min(grad_phi_x_plus**2,0.d0))
 
-c           Rouy and Tourin formula (1992)
-            if (phi_0_cur .gt. 0.d0) then
-              grad_phi_star_sq(dir) = max(
-     &            max(grad_phi_minus_cur(dir)**2,0.d0),
-     &            min(grad_phi_plus_cur(dir)**2,0.d0))
-            else
-              grad_phi_star_sq(dir) = max(
-     &            min(grad_phi_minus_cur(dir)**2,0.d0),
-     &            max(grad_phi_plus_cur(dir)**2,0.d0))
-            endif
+            grad_phi_y_star_sq = max(
+     &          max(grad_phi_y_minus**2,0.d0),
+     &          min(grad_phi_y_plus**2,0.d0))
+          else
+            grad_phi_x_star_sq = max(
+     &          min(grad_phi_x_minus**2,0.d0),
+     &          max(grad_phi_x_plus**2,0.d0))
 
-          enddo
+            grad_phi_y_star_sq = max(
+     &          min(grad_phi_y_minus**2,0.d0),
+     &          max(grad_phi_y_plus**2,0.d0))
+          endif
+
 c         } end Godunov selection of grad_phi
 
 c         compute rhs(i,j) using smoothed sgn(phi)
           if (abs(phi_0_cur) .gt. zero_tol) then
-            norm_grad_phi_sq = grad_phi_star_sq(1) + grad_phi_star_sq(2)
+            norm_grad_phi_sq = grad_phi_x_star_sq + grad_phi_y_star_sq
             sgn_phi_0 = phi_0_cur / sqrt(phi_0_cur**2 + dx_sq)
             rhs(i,j) = sgn_phi_0 * (one - sqrt(norm_grad_phi_sq))
           else
@@ -407,9 +410,8 @@ c { begin subroutine
       @REAL@ grad_phi_y_plus, grad_phi_y_minus
 
       @REAL@ phi_cur
-      @REAL@ grad_phi_plus_cur(1:2)
-      @REAL@ grad_phi_minus_cur(1:2)
-      @REAL@ grad_phi_star_sq(1:2)
+      @REAL@ grad_phi_x_star_sq
+      @REAL@ grad_phi_y_star_sq
 
       @REAL@ sgn_phi
       @REAL@ norm_grad_phi_sq
@@ -443,27 +445,31 @@ c         compute forward and backward approximations of (phi)
      &      dx, idx)
 
 c         { begin Godunov selection of grad_phi
-          do dir=1,2
 
-c           TODO: fix calculation
+c         Rouy and Tourin formula (1992)
+          if (phi_cur .gt. 0.d0) then
+            grad_phi_x_star_sq = max(
+     &          max(grad_phi_x_minus**2,0.d0),
+     &          min(grad_phi_x_plus**2,0.d0))
 
-c           Rouy and Tourin formula (1992)
-            if (phi_cur .gt. 0.d0) then
-              grad_phi_star_sq(dir) = max(
-     &            max(grad_phi_minus_cur(dir)**2,0.d0),
-     &            min(grad_phi_plus_cur(dir)**2,0.d0))
-            else
-              grad_phi_star_sq(dir) = max(
-     &            min(grad_phi_minus_cur(dir)**2,0.d0),
-     &            max(grad_phi_plus_cur(dir)**2,0.d0))
-            endif
+            grad_phi_y_star_sq = max(
+     &          max(grad_phi_y_minus**2,0.d0),
+     &          min(grad_phi_y_plus**2,0.d0))
+          else
+            grad_phi_x_star_sq = max(
+     &          min(grad_phi_x_minus**2,0.d0),
+     &          max(grad_phi_x_plus**2,0.d0))
 
-          enddo
+            grad_phi_y_star_sq = max(
+     &          min(grad_phi_y_minus**2,0.d0),
+     &          max(grad_phi_y_plus**2,0.d0))
+          endif
+
 c         } end Godunov selection of grad_phi
 
 c         compute rhs(i,j) using smoothed sgn(phi)
           if (abs(phi_cur) .gt. zero_tol) then
-            norm_grad_phi_sq = grad_phi_star_sq(1) + grad_phi_star_sq(2)
+            norm_grad_phi_sq = grad_phi_x_star_sq + grad_phi_y_star_sq
             sgn_phi = phi_cur
      &              / sqrt(phi_cur**2 + norm_grad_phi_sq*dx_sq)
             rhs(i,j) = sgn_phi * (one - sqrt(norm_grad_phi_sq))
