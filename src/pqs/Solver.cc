@@ -183,7 +183,7 @@ void Solver::equilibrateInterface(
     int step = 0;
     double previous_saturation = 0.0;
 
-    double delta_phi = 2 * d_lsm_min_delta_phi;
+    double delta_phi = d_lsm_min_delta_phi + 1;
     double delta_saturation = d_lsm_min_delta_saturation + 1;
 
     // Allocate PatchData
@@ -867,19 +867,19 @@ void Solver::setupSimulationVariables()
     */
 
     // RHS of level set evolution equation
-    shared_ptr< pdat::CellVariable<PQS_REAL> > lse_rhs_variable;
-    if (var_db->checkVariableExists("LSE RHS")) {
-        lse_rhs_variable =
+    shared_ptr< pdat::CellVariable<PQS_REAL> > rhs_variable;
+    if (var_db->checkVariableExists("rhs")) {
+        rhs_variable =
             SAMRAI_SHARED_PTR_CAST< pdat::CellVariable<PQS_REAL> >(
-                var_db->getVariable("LSE RHS"));
+                var_db->getVariable("rhs"));
     } else {
         const int depth = 1;
-        lse_rhs_variable = shared_ptr< pdat::CellVariable<PQS_REAL> >(
-            new pdat::CellVariable<PQS_REAL>(dim, "LSE RHS", depth));
+        rhs_variable = shared_ptr< pdat::CellVariable<PQS_REAL> >(
+            new pdat::CellVariable<PQS_REAL>(dim, "rhs", depth));
     }
     d_lse_rhs_id =
-        var_db->registerVariableAndContext(lse_rhs_variable,
-                                           computed_context,
+        var_db->registerVariableAndContext(rhs_variable,
+                                           lsm_current_context,
                                            zero_ghost_cell_width);
     d_intermediate_variables.setFlag(d_lse_rhs_id);
 
