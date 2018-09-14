@@ -63,7 +63,7 @@ PQS_REAL computeVolume(
 
     const int dim = patch_hierarchy->getDim().getValue();
     if ((dim != 2) && (dim != 3)) {
-        PQS_ERROR_STATIC("math::LSMLSMToolbox", "computeVolume",
+        PQS_ERROR_STATIC("math::LSM::Toolbox", "computeVolume",
                          string("Invalid dimension (=") + to_string(dim) +
                          string("for patch_hierarchy. Valid dimensions: 2, 3"));
     }
@@ -86,7 +86,7 @@ PQS_REAL computeVolume(
             // loop over patches
             shared_ptr<hier::Patch> patch = *pi;
             if (patch==NULL) {
-                PQS_ERROR_STATIC("math::LSMLSMToolbox", "computeVolume",
+                PQS_ERROR_STATIC("math::LSM::Toolbox", "computeVolume",
                                  "Null patch pointer");
             }
 
@@ -179,7 +179,7 @@ PQS_REAL computeVolume(
             tbox::SAMRAI_MPI::getSAMRAIWorld().AllReduce(&volume,1, MPI_SUM);
 
     if (status != 0) {
-        PQS_ERROR_STATIC("math::LSMLSMToolbox", "computeVolume",
+        PQS_ERROR_STATIC("math::LSM::Toolbox", "computeVolume",
                          string("AllReduce error code=") + to_string(status));
     }
 
