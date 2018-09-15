@@ -49,6 +49,7 @@
 #include "PQS/PQS_config.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
+#include "PQS/pqs/Solver.h"
 
 // Namespaces
 using namespace std;
@@ -86,6 +87,8 @@ public:
      *
      * patch_hierarchy: pointer to PatchHierarchy that object manages
      *
+     * pqs_solver: pointer to pqs::Solver object
+     *
      * pore_init_strategy: pointer to PoreInitStrategy object that
      *      implements algorithm for initializing level set function that
      *      defines solid-pore interface
@@ -116,6 +119,7 @@ public:
     TagInitAndDataTransferModule(
         const shared_ptr<tbox::Database>& config_db,
         const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        pqs::Solver* pqs_solver,
         const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
         const shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
@@ -236,7 +240,7 @@ public:
      *
      * - communication schedules for PatchLevels in the PatchHierarchy
      *
-     * - control volume values (TODO).
+     * - control volume values.
      *
      * Parameters
      * ----------
@@ -545,6 +549,13 @@ protected:
 
     // SAMRAI components
     shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
+
+    // PQS solver
+    //
+    // NOTE: pqs_solver is not a shared pointer because
+    //       pqs::TagInitAndDataTransferModule objects are created by
+    //       pqs::Solver objects
+    pqs::Solver* d_pqs_solver;
 
     // Pore initialization
     shared_ptr<pqs::PoreInitStrategy> d_pore_init_strategy;

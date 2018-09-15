@@ -118,16 +118,17 @@
 
 // PQS
 #include "PQS/PQS_config.h"
+#include "PQS/math/LSMAlgorithms.h"
 #include "PQS/pqs/Algorithms.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
-#include "PQS/pqs/TagInitAndDataTransferModule.h"
 
 // Namespaces
 using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations
+namespace PQS { namespace pqs { class TagInitAndDataTransferModule; } }
 
 
 // --- PQS::pqs::Solver Class
@@ -213,6 +214,42 @@ public:
      * Default destructor frees memory allocated for simulation.
      */
     virtual ~Solver();
+
+    //! @}
+
+    //! @{
+
+    /*!
+     ************************************************************************
+     *
+     * @name Solver management methods
+     *
+     ************************************************************************/
+
+
+    /*!
+     * Reset any internal information that depends on the PatchHierarchy
+     * or the data that resides on it.
+     *
+     * For the Solver class, 'resetHierarchyConfiguration()' updates the
+     * following:
+     *
+     * - call resetHierarchyConfiguration() for LSM::Algorithms object.
+     *
+     * Parameters
+     * ----------
+     * coarsest_level_num: number of coarsest PatchLevel to reset
+     *
+     * finest_level_num: number of finest PatchLevel to reset
+     *
+     * Return value
+     * ------------
+     * None
+     *
+     */
+    virtual void resetHierarchyConfiguration(
+            const int coarsest_level_num,
+            const int finest_level_num);
 
     //! @}
 
@@ -515,6 +552,9 @@ protected:
 
     // PQS algorithms
     shared_ptr<pqs::Algorithms> d_pqs_algorithms;
+
+    // LSM algorithms
+    shared_ptr<PQS::math::LSM::Algorithms> d_lsm_algorithms;
 
     // SAMR grid
     shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;

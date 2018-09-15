@@ -52,6 +52,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/math/LSMAlgorithms.h"
 #include "PQS/math/LSMToolbox.h"
 #include "PQS/math/Toolbox.h"
 #include "PQS/math/TimeIntegration.h"
@@ -109,15 +110,20 @@ Solver::Solver(
     // Set up simulation variables
     setupSimulationVariables();
 
-    // Set up grid management objects
-    setupGridManagement(config_db, pore_init_strategy, interface_init_strategy);
-
     // Construct pqs::Algorithms object
     shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
     d_pqs_algorithms = shared_ptr<pqs::Algorithms>(
             new pqs::Algorithms(pqs_config_db->getDatabase("Algorithms"),
                                 d_lse_rhs_id, d_psi_id, d_grad_psi_id));
+
+    // Construct math::LSM::Algorithms object
+    d_lsm_algorithms = shared_ptr<PQS::math::LSM::Algorithms>(
+            new PQS::math::LSM::Algorithms(d_patch_hierarchy,
+                                           d_max_stencil_width));
+
+    // Set up grid management objects
+    setupGridManagement(config_db, pore_init_strategy, interface_init_strategy);
 
     // Initialize simulation
     initializeSimulation();
@@ -139,6 +145,40 @@ Solver::~Solver()
         patch_level->deallocatePatchData(d_intermediate_variables);
     }
 } // Solver::~Solver()
+
+void Solver::resetHierarchyConfiguration(
+        const int coarsest_level_num,
+        const int finest_level_num)
+{
+    // --- Check arguments
+
+    if (coarsest_level_num < 0) {
+        PQS_ERROR(this, "resetHierarchyConfiguration",
+                  "'coarsest_level_num' must be non-negative");
+    }
+    if (coarsest_level_num > finest_level_num) {
+        PQS_ERROR(this, "resetHierarchyConfiguration",
+                  string("'coarsest_level_num' must be less ") +
+                  string("than or equal to 'finest_level_num'"));
+    }
+    for (int level_num = 0;
+            level_num <= finest_level_num;
+            level_num++) {
+
+        if (d_patch_hierarchy->getPatchLevel(level_num) == NULL) {
+            PQS_ERROR(this, "resetHierarchyConfiguration",
+                      string("PatchLevel ") +
+                      to_string(level_num) +
+                      string(" is NULL in PatchHierarchy"));
+        }
+    }
+
+    // --- Call resetHierarchyConfiguration() for LSM::Algorithms object
+
+    d_lsm_algorithms->resetHierarchyConfiguration(coarsest_level_num,
+                                                  finest_level_num);
+
+} // Solver::resetHierarchyConfiguration()
 
 void Solver::equilibrateInterface(
         const double curvature,
@@ -173,10 +213,10 @@ void Solver::equilibrateInterface(
 
     // Compute volume of pore space
     const double pore_space_volume =
-            math::LSM::computeVolume(d_patch_hierarchy,
-                                     d_psi_id,
-                                     -1, // compute volume for psi < 0
-                                     d_control_volume_id);
+            math::LSM::computeVolume(
+                    d_patch_hierarchy, d_psi_id,
+                    -1, // compute volume for psi < 0
+                    d_control_volume_id);
 
     // Initialize loop variables
     double t = 0.0;
@@ -213,10 +253,10 @@ void Solver::equilibrateInterface(
 
         // Compute volume of non-wettting phase
         double non_wetting_phase_volume =
-                math::LSM::computeVolume(d_patch_hierarchy,
-                                        d_phi_lsm_current_id,
-                                        -1, // compute volume for phi < 0
-                                        d_control_volume_id);
+                math::LSM::computeVolume(
+                        d_patch_hierarchy, d_phi_lsm_current_id,
+                        -1, // compute volume for phi < 0
+                        d_control_volume_id);
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
         for (int rk_stage = 1; rk_stage <= d_time_integration_order; rk_stage++)
@@ -945,6 +985,7 @@ void Solver::setupGridManagement(
             new pqs::TagInitAndDataTransferModule(
                 config_db->getDatabase("PQS"),
                 d_patch_hierarchy,
+                this,
                 pore_init_strategy,
                 interface_init_strategy,
                 d_phi_pqs_id,
