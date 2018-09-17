@@ -453,6 +453,35 @@ void Solver::equilibrateInterface(
     }
 } // Solver::equilibrateInterface()
 
+void Solver::reinitializeInterface(
+        const math::LSM::REINIT_ALGORITHM_TYPE algorithm_type,
+        const int max_time_steps,
+        const double steady_state_condition,
+        const double stop_distance)
+{
+    // --- Check arguments
+
+    if ( (algorithm_type != math::LSM::REINIT_EQN_SGN_PHI0) &&
+         (algorithm_type != math::LSM::REINIT_EQN_SGN_PHI) ) {
+        PQS_ERROR(this, "reinitializeInterface",
+                  string("Invalid reinitialization algorithm (") +
+                  to_string(algorithm_type) +
+                  string(")"));
+    }
+
+    // --- Use LSM::Algorithm object to reinitialize interface
+
+    d_lsm_algorithms->reinitializeLevelSetFunction(
+            d_phi_pqs_id,
+            d_control_volume_id,
+            d_time_integration_order,
+            algorithm_type,
+            max_time_steps,
+            steady_state_condition,
+            stop_distance);
+
+} // Solver::reinitializeInterface()
+
 double Solver::getCurvature() const
 {
     return d_curvature;

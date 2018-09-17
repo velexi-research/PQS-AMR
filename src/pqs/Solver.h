@@ -289,6 +289,41 @@ public:
     virtual void equilibrateInterface(const double curvature,
                                       const PQS_ALGORITHM_TYPE algorithm_type);
 
+    /*!
+     * Reinitialize fluid-fluid interface to be a signed distance function.
+     *
+     * Parameters
+     * ----------
+     * algorithm_type: algorithm to use to reinitialize interface.
+     *      Valid values: math::LSM::REINIT_EQN_SGN_PHI0,
+     *      math::LSM::REINIT_EQN_SGN_PHI.
+     *
+     * max_time_steps: maximum number of time steps to take
+     *
+     * steady_state_threshold: phi is considered to have reached steady-state
+     *      when max | (phi(t+dt) - phi(t)) / dt | < steady_state_threshold
+     *
+     * stop_distance: approximate distance out from interface that signed
+     *      distance is computed. When stop_distance <= 0, it is ignored.
+     *
+     * Return value
+     * ------------
+     * None
+     *
+     * Notes
+     * -----
+     * - TODO: phi0 vs phi
+     */
+    virtual void reinitializeInterface(
+            const math::LSM::REINIT_ALGORITHM_TYPE algorithm_type =
+                    math::LSM::REINIT_EQN_SGN_PHI0,
+            const int max_time_steps = 20,
+            const double steady_state_condition = 1e-4,
+            const double stop_distance = -1);
+
+    //! @}
+
+    //! @{
     //! @}
 
     //! @{
