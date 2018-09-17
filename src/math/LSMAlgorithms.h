@@ -200,7 +200,7 @@ public:
             const int phi_id,
             const int control_volume_id,
             const int time_integration_order,
-            const REINIT_ALGORITHM_TYPE reinit_alg_type,
+            const REINIT_ALGORITHM_TYPE algorithm_type,
             const int max_time_steps = 20,
             const double steady_state_condition = 1e-4,
             const double stop_distance = -1);
