@@ -208,7 +208,7 @@ void Algorithms::reinitializeLevelSetFunction(
 
     // Set phi_0_id
     int phi_0_id = -1;
-    if (reinit_alg_type == REINIT_EQN_SGN_PHI0) {
+    if (algorithm_type == REINIT_EQN_SGN_PHI0) {
         phi_0_id = phi_id;
     }
 

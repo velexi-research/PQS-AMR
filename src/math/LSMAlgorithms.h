@@ -181,7 +181,7 @@ public:
      *
      * time_integration_order: order of TVD Runge-Kutta time integration scheme
      *
-     * reinit_alg_type: type of reinitialization algorithm to use
+     * algorithm_type: type of reinitialization algorithm to use
      *
      * max_time_steps: maximum number of time steps to take
      *
@@ -220,7 +220,7 @@ public:
      * max_time_steps: maximum number of time steps to take
      *
      * steady_state_threshold: S is considered to have reached steady-state
-     *      when *      max | (S(t+dt) - S(t)) / dt | < steady_state_threshold
+     *      when max | (S(t+dt) - S(t)) / dt | < steady_state_threshold
      *
      * stop_distance: approximate distance out from interface that S is
      *      extended off of the zero level set of phi. When stop_distance <= 0,
