@@ -25,6 +25,7 @@
 #include <vector>
 
 // SAMRAI
+#include "SAMRAI/hier/BaseGridGeometry.h"
 #include "SAMRAI/hier/Box.h"
 #include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/Index.h"
@@ -49,8 +50,9 @@
 #include "PQS/utilities/error.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class BaseGridGeometry; } }
 namespace SAMRAI { namespace hier { class Patch; } }
+namespace SAMRAI { namespace hier { class RefineOperator; } }
+namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
 
 // --- Class implementation
