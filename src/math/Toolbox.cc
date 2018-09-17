@@ -38,8 +38,8 @@
 // PQS headers
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/math/Toolbox.h"  // IWYU pragma: keep
-#include "PQS/math/utilities_2d.h"
-#include "PQS/math/utilities_3d.h"
+#include "PQS/math/kernels/utilities_2d.h"
+#include "PQS/math/kernels/utilities_3d.h"
 #include "PQS/utilities/error.h"
 #include "PQS/utilities/macros.h"
 
