@@ -397,9 +397,6 @@ void Algorithms::reinitializeLevelSetFunction(
                                              d_lsm_algs_current_id,
                                              control_volume_id);
 
-        cout << step << ":" << dt << ":" << delta_phi << ", "
-             << steady_state_condition << endl;
-
         // --- Prepare for next iteration
 
         // Update time and step
