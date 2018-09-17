@@ -33,39 +33,16 @@ extern "C" {
                                          lsm2dareaphilessthanzero_
 #define LSM_2D_AREA_PHI_GREATER_THAN_ZERO \
                                          lsm2dareaphigreaterthanzero_
+#define LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS \
+                                         lsm2dcomputereiniteqnsgnphi0rhs_
+#define LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI_RHS \
+                                         lsm2dcomputereiniteqnsgnphirhs_
 
 /*!
- *
- * Compute area of region where level set function is less than 0.
- *
- * Parameters
- * ----------
- * phi: level set function
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dx: array containing grid spacing in each coordinate direction
- *
- * eps: width of numerical smoothing to use for Heaviside function
- *
- * *_gb_lo: lower corner of index range for ghostbox
- *
- * *_gb_hi: upper corner of index range for ghostbox
- *
- * Return value
- * ------------
- * area of region where phi < 0
- *
- * Notes
- * -----
- * - When phi is a signed distance function, the numerical width of the
- *   Heaviside function as a function of spatial position is approximately
- *   equal to (2 * eps).
+ * See documentation in level_set_method_2d.h
  */
 PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
-    const PQS_REAL* phi,
+    const PQS_REAL *phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
     const int *patch_box_lo,
@@ -74,43 +51,47 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const double *eps);
 
 /*!
- *
- * Compute area of region where level set function is greater than 0.
- *
- * Parameters
- * ----------
- * phi: level set function
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dx: array containing grid spacing in each coordinate direction
- *
- * eps: width of numerical smoothing to use for Heaviside function
- *
- * *_gb_lo: lower corner of index range for ghostbox
- *
- * *_gb_hi: upper corner of index range for ghostbox
- *
- * Return value
- * ------------
- * area of region where phi > 0
- *
- * Notes
- * -----
- * - When phi is a signed distance function, the numerical width of the
- *   Heaviside function as a function of spatial position is approximately
- *   equal to (2 * eps).
+ * See documentation in level_set_method_2d.h
  */
 PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
-    const PQS_REAL* phi,
+    const PQS_REAL *phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
     const int *patch_box_lo,
     const int *patch_box_hi,
     const double *dx,
     const double *eps);
+
+/*!
+ * See documentation in level_set_method_2d.h
+ */
+void LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
+    const PQS_REAL *rhs,
+    const int *rhs_gb_lo,
+    const int *rhs_gb_hi,
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const PQS_REAL *phi_0,
+    const int *phi_0_gb_lo,
+    const int *phi_0_gb_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi,
+    const double *dx);
+
+/*!
+ * See documentation in level_set_method_2d.h
+ */
+void LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI_RHS(
+    const PQS_REAL *rhs,
+    const int *rhs_gb_lo,
+    const int *rhs_gb_hi,
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi,
+    const double *dx);
 
 #ifdef __cplusplus
 }
