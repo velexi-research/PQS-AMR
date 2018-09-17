@@ -38,8 +38,8 @@
 #include "PQS/utilities/error.h"
 #include "PQS/utilities/macros.h"
 #include "PQS/pqs/Algorithms.h"
-#include "PQS/pqs/kernels_2d.h"
-#include "PQS/pqs/kernels_3d.h"
+#include "PQS/pqs/kernels/kernels_2d.h"
+#include "PQS/pqs/kernels/kernels_3d.h"
 
 // Class/type declarations
 

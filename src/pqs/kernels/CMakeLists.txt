@@ -44,7 +44,7 @@ file(GLOB HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 foreach(HEADER_FILE ${HEADER_FILES})
     get_filename_component(FILENAME ${HEADER_FILE} NAME)
     configure_file(${HEADER_FILE}
-                   ${BUILD_INCLUDE_DIR_PQS}/pqs/${FILENAME}
+                   ${BUILD_INCLUDE_DIR_PQS}/pqs/kernels/${FILENAME}
                    COPYONLY)
 endforeach(HEADER_FILE)
 
@@ -53,7 +53,7 @@ endforeach(HEADER_FILE)
 # ----------------------------------------------------------------------
 
 # Header files
-install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}/pqs
+install(DIRECTORY . DESTINATION ${INSTALL_INCLUDE_DIR_PQS}/pqs/kernels
         FILES_MATCHING PATTERN "*.h")
 
 # Library
