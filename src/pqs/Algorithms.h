@@ -143,7 +143,7 @@ public:
      * maximum stable timestep on Patch
      */
     double computePrescribedCurvatureModelRHS(
-        const shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch>& patch,
         const int phi_id) const;
 
     /*!
@@ -167,7 +167,7 @@ public:
      * maximum stable timestep on Patch
      */
     double computeSlightlyCompressibleModelRHS(
-        const shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch>& patch,
         const int phi_id,
         const double volume) const;
 

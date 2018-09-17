@@ -83,7 +83,7 @@ Algorithms::Algorithms(
 } // Algorithms::Algorithms()
 
 double Algorithms::computePrescribedCurvatureModelRHS(
-        const shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch>& patch,
         const int phi_id) const
 {
     // --- Preparations
@@ -240,7 +240,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 } // Algorithms::computePrescribedCurvatureModelRHS()
 
 double Algorithms::computeSlightlyCompressibleModelRHS(
-        const shared_ptr<hier::Patch> patch,
+        const shared_ptr<hier::Patch>& patch,
         const int phi_id,
         const double volume) const
 {
