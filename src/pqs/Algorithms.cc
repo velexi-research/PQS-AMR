@@ -88,6 +88,9 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 {
     // --- Preparations
 
+    // Get dimensionality of space
+    const int dim = patch->getDim().getValue();
+
     // Maximum stable time step
     double max_stable_dt;
 
@@ -135,7 +138,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
     // --- Compute RHS and maximum stable time step
 
     if (d_contact_angle == 0.0) {
-        if (patch->getDim().getValue() == 2) {
+        if (dim == 2) {
             PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
                 rhs,
@@ -146,7 +149,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 dx,
                 &d_pcm_pressure,
                 &d_pcm_surface_tension);
-        } else {
+        } else if (dim == 3) {
             PQS_3D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
                 rhs,
@@ -190,7 +193,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
         PQS_INT_VECT_TO_INT_ARRAY(grad_psi_ghostbox_hi,
                 grad_psi_ghostbox_upper);
 
-        if (patch->getDim().getValue() == 2) {
+        if (dim == 2) {
             // Get pointers to data arrays for grad(phi)
             PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
             PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
@@ -211,7 +214,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 &d_pcm_surface_tension,
                 &d_contact_angle);
 
-        } else {
+        } else if (dim == 3) {
             // Get pointers to data arrays for grad(phi)
             PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
             PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
@@ -245,6 +248,9 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
         const double volume) const
 {
     // --- Preparations
+
+    // Get dimensionality of space
+    const int dim = patch->getDim().getValue();
 
     // Maximum stable time step
     double max_stable_dt;
@@ -293,7 +299,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
     // --- Compute RHS and maximum stable time step
 
     if (d_contact_angle == 0.0) {
-        if (patch->getDim().getValue() == 2) {
+        if (dim == 2) {
             PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
                 rhs,
@@ -307,7 +313,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 &d_scm_pressure,
                 &d_scm_bulk_modulus,
                 &d_scm_surface_tension);
-        } else {
+        } else if (dim == 3) {
             PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
                 rhs,
@@ -354,7 +360,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
         PQS_INT_VECT_TO_INT_ARRAY(grad_psi_ghostbox_hi,
                 grad_psi_ghostbox_upper);
 
-        if (patch->getDim().getValue() == 2) {
+        if (dim == 2) {
             // Get pointers to data arrays for grad(phi)
             PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
             PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
@@ -378,7 +384,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 &d_scm_surface_tension,
                 &d_contact_angle);
 
-        } else {
+        } else if (dim == 3) {
             // Get pointers to data arrays for grad(phi)
             PQS_REAL* grad_psi_x = grad_psi_data->getPointer(0);
             PQS_REAL* grad_psi_y = grad_psi_data->getPointer(1);
