@@ -179,6 +179,10 @@ public:
      *
      * control_volume_id: PatchData id for control volume
      *
+     * time_integration_order: order of TVD Runge-Kutta time integration scheme
+     *
+     * reinit_alg_type: type of reinitialization algorithm to use
+     *
      * max_time_steps: maximum number of time steps to take
      *
      * steady_state_threshold: phi is considered to have reached steady-state
