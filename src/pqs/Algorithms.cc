@@ -97,7 +97,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 patch->getPatchGeometry());
     const double* dx = patch_geom->getDx();
 
-    // ------- Get pointers to data and index space ranges
+    // --- Get pointers to data and index space ranges
 
     // RHS
     shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
