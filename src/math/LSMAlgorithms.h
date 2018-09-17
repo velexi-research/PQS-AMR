@@ -43,9 +43,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"
-#include "PQS/pqs/Algorithms.h"
-#include "PQS/pqs/InterfaceInitStrategy.h"
-#include "PQS/pqs/PoreInitStrategy.h"
+#include "PQS/math/kernels/level_set_method_2d.h"
+#include "PQS/math/kernels/level_set_method_3d.h"
 
 // Namespaces
 using namespace std;
@@ -69,9 +68,18 @@ typedef enum {
     ENO1 = 1,
     ENO2 = 2,
     ENO3 = 3,
-    WENO5 = 5,
-    UNKNOWN = -1
+    WENO5 = 5
 } SPATIAL_DERIVATIVE_TYPE;
+
+/*! \enum REINIT_ALG_TYPE
+ *
+ * Enumerated type for the methods of computing spatial derivatives.
+ *
+ */
+typedef enum {
+    REINIT_EQN_SGN_PHI0 = 1,  // use phi_0 for sgn(phi) factor
+    REINIT_EQN_SGN_PHI = 2  // use phi for sgn(phi) factor
+} REINIT_ALG_TYPE;
 
 /*! \enum VARIABLE_CONTEXT
  *
@@ -105,7 +113,8 @@ public:
      *
      * Parameters
      * ----------
-     * patch_hierarchy: PatchHierarchy to use for simulation
+     * patch_hierarchy: PatchHierarchy to perform level set method
+     *      computations on
      *
      * max_stencil_width: TODO
      */
@@ -184,10 +193,10 @@ public:
      *   max_time_steps.
      */
     void reinitializeLevelSetFunction(
-            const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int phi_id,
             const int control_volume_id,
             const int time_integration_order,
+            const REINIT_ALG_TYPE reinit_alg_type,
             const int max_time_steps = 20,
             const double steady_state_condition = 1e-4,
             const double stop_distance = -1);
@@ -198,8 +207,6 @@ public:
      *
      * Parameters
      * ----------
-     * patch_hierarchy: PatchHierarchy to perform computation on
-     *
      * S_id: PatchData id for S
      *
      * phi_id: PatchData id for phi
@@ -221,7 +228,6 @@ public:
      *   max_time_steps.
      */
     void computeExtensionField(
-            const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
             const int S_id,
             const int phi_id,
             const int control_volume_id,
@@ -349,6 +355,46 @@ private:
      * None
      */
     void fillGhostCells(const int context) const;
+
+    /*!
+     ************************************************************************
+     *
+     * @name Helper functions
+     *
+     ************************************************************************/
+
+    /*!
+     * Compute RHS of reinitialization equation.
+     *
+     * Parameters
+     * ----------
+     * patch: Patch to compute RHS of reinitialization equation on
+     *
+     * rhs_id: PatchData id for RHS
+     *
+     * phi_id: PatchData id for phi
+     *
+     * phi_0_id: PatchData id for phi_0
+     *
+     * Notes
+     * -----
+     * - When phi_0_id is positive, the RHS of the reinitialization equation
+     *   is computed using sgn(phi_0) in hyperbolic term. Otherwise, the RHS
+     *   of the reinitialization equation is computed using sgn(phi) in
+     *   hyperbolic term.
+     */
+    void computeReinitEqnRHSOnPatch(
+            const shared_ptr<hier::Patch>& patch,
+            const int rhs_id,
+            const int phi_id,
+            const int phi_0_id = -1);
+
+    /*!
+     ************************************************************************
+     *
+     * @name Private constructors
+     *
+     ************************************************************************/
 
     /*
      * Private copy constructor to prevent use.

@@ -18,22 +18,27 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
+#include <cmath>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 // SAMRAI
+#include "SAMRAI/geom/CartesianPatchGeometry.h"
 #include "SAMRAI/hier/BaseGridGeometry.h"
 #include "SAMRAI/hier/Box.h"
 #include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/Index.h"
 #include "SAMRAI/hier/IntVector.h"
+#include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/math/HierarchyCellDataOpsReal.h"
+#include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/pdat/CellIterator.h"
 #include "SAMRAI/pdat/CellVariable.h"
 #include "SAMRAI/tbox/Dimension.h"
@@ -45,12 +50,14 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/math/LSMAlgorithms.h"
+#include "PQS/math/kernels/level_set_method_2d.h"
+#include "PQS/math/kernels/level_set_method_3d.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/math/Toolbox.h"
 #include "PQS/utilities/error.h"
+#include "PQS/utilities/macros.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class Patch; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
@@ -169,10 +176,10 @@ void Algorithms::resetHierarchyConfiguration(
 } // Algorithms::resetHierarchyConfiguration()
 
 void Algorithms::reinitializeLevelSetFunction(
-        const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int phi_id,
         const int control_volume_id,
         const int time_integration_order,
+        const REINIT_ALG_TYPE reinit_alg_type,
         const int max_time_steps,
         const double steady_state_condition,
         const double stop_distance)
@@ -188,6 +195,9 @@ void Algorithms::reinitializeLevelSetFunction(
                   string("). Valid values: 2, 3."));
     }
 
+    // TODO: Constraints on max_time_steps, steady_state_condition,
+    //       stop_distance
+
     // --- Preparations
 
     // Create SAMRAI::math::HierarchyCellDataOpsReal object
@@ -195,6 +205,18 @@ void Algorithms::reinitializeLevelSetFunction(
             shared_ptr< SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL> >(
                     new SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL>(
                              d_patch_hierarchy));
+
+    // Set phi_0_id
+    int phi_0_id = -1;
+    if (reinit_alg_type == REINIT_EQN_SGN_PHI0) {
+        phi_0_id = phi_id;
+    }
+
+    // Compute t_max
+    double t_max = std::numeric_limits<double>::max();
+    if (stop_distance > 0) {
+        t_max = stop_distance;
+    }
 
     // Initialize loop variables
     double t = 0.0;
@@ -216,14 +238,39 @@ void Algorithms::reinitializeLevelSetFunction(
     // Copy phi data from phi_id PatchData to lsm_algs PatchData
     math_ops->copyData(d_lsm_algs_current_id, phi_id);
 
-    // Compute time step
-    // TODO: dt = min(dx) / sqrt(dim)
-    double dt = 0.1;
+    // Compute time step = min(dx) / sqrt(dim)
+    double min_dx = std::numeric_limits<double>::max();
+    for (int level_num = 0;
+            level_num < d_patch_hierarchy->getNumberOfLevels();
+            level_num++) {
+
+        shared_ptr<hier::PatchLevel> patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num);
+
+        for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                pi!=patch_level->end(); pi++) {
+
+            shared_ptr<hier::Patch> patch = *pi;
+
+            shared_ptr<geom::CartesianPatchGeometry> patch_geom =
+                    SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
+                            patch->getPatchGeometry());
+
+            const double* dx = patch_geom->getDx();
+
+            for (int i = 0; i < dim; i++) {
+                if (min_dx > dx[i]) {
+                    min_dx = dx[i];
+                }
+            }
+        }
+    }
+
+    const double dt = min_dx / sqrt(dim);
 
     // --- Perform level set method computation
 
-    while ( (step < max_time_steps) &&
-            //(t < d_lsm_t_max) &&
+    while ( (step < max_time_steps) && (t < t_max) &&
             (delta_phi > steady_state_condition) ) {
 
         // --- Preparations
@@ -234,22 +281,22 @@ void Algorithms::reinitializeLevelSetFunction(
             // --- Preparations
 
             // Configuration for computation of RHS of evolution equation
-            int phi_id;
+            int phi_reinit_id;
             if (time_integration_order == 1) {
-                phi_id = d_lsm_algs_current_id;
+                phi_reinit_id = d_lsm_algs_current_id;
             } else if (time_integration_order == 2) {
                 if (rk_stage == 1) {
-                    phi_id = d_lsm_algs_current_id;
+                    phi_reinit_id = d_lsm_algs_current_id;
                 } else if (rk_stage == 2) {
-                    phi_id = d_lsm_algs_next_id;
+                    phi_reinit_id = d_lsm_algs_next_id;
                 }
             } else if (time_integration_order == 3) {
                 if (rk_stage == 1) {
-                    phi_id = d_lsm_algs_current_id;
+                    phi_reinit_id = d_lsm_algs_current_id;
                 } else if (rk_stage == 2) {
-                    phi_id = d_lsm_algs_next_id;
+                    phi_reinit_id = d_lsm_algs_next_id;
                 } else if (rk_stage == 3) {
-                    phi_id = d_lsm_algs_next_id;
+                    phi_reinit_id = d_lsm_algs_next_id;
                 }
             }
 
@@ -277,14 +324,10 @@ void Algorithms::reinitializeLevelSetFunction(
                 for (hier::PatchLevel::Iterator pi(patch_level->begin());
                         pi!=patch_level->end(); pi++) {
 
-                    shared_ptr<hier::Patch> patch = *pi;
-
-                    // Compute RHS of level set evolution equation on Patch
-                    // TODO: implement
-                    //d_pqs_algorithms->
-                    //        computeSlightlyCompressibleModelRHS(
-                    //                patch, phi_id,
-                    //                non_wetting_phase_volume);
+                    computeReinitEqnRHSOnPatch(*pi,
+                                               d_lsm_algs_rhs_id,
+                                               phi_reinit_id,
+                                               phi_0_id);
                 }
             }
 
@@ -385,7 +428,6 @@ void Algorithms::reinitializeLevelSetFunction(
 } // Algorithms::reinitializeLevelSetFunctions()
 
 void Algorithms::computeExtensionField(
-        const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int S_id,
         const int phi_id,
         const int control_volume_id,
@@ -556,6 +598,106 @@ void Algorithms::fillGhostCells(const int context) const
         }
     }
 } // Algorithms::fillGhostCells()
+
+void Algorithms::computeReinitEqnRHSOnPatch(
+        const shared_ptr<hier::Patch>& patch,
+        const int rhs_id,
+        const int phi_id,
+        const int phi_0_id)
+{
+    // --- Preparations
+
+    // Get dimensionality of space
+    const int dim = patch->getDim().getValue();
+
+    // Get geometry parameters
+    shared_ptr<geom::CartesianPatchGeometry> patch_geom =
+        SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
+                    patch->getPatchGeometry());
+
+    const double* dx = patch_geom->getDx();
+
+    // --- Get pointers to data and index space ranges
+
+    // RHS
+    shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                    patch->getPatchData(rhs_id));
+
+    hier::Box rhs_ghostbox = rhs_data->getGhostBox();
+    const hier::IntVector rhs_ghostbox_lower = rhs_ghostbox.lower();
+    const hier::IntVector rhs_ghostbox_upper = rhs_ghostbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_lo, rhs_ghostbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(rhs_ghostbox_hi, rhs_ghostbox_upper);
+
+    PQS_REAL* rhs = rhs_data->getPointer();
+
+    // phi
+    shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                    patch->getPatchData(phi_id));
+
+    hier::Box phi_ghostbox = phi_data->getGhostBox();
+    const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
+    const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
+
+    PQS_REAL* phi = phi_data->getPointer();
+
+    // patch box
+    hier::Box patch_box = patch->getBox();
+    const hier::IntVector patch_box_lower = patch_box.lower();
+    const hier::IntVector patch_box_upper = patch_box.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(patch_box_lo, patch_box_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(patch_box_hi, patch_box_upper);
+
+    // Compute RHS of reinitialization equation on Patch
+
+    if (phi_0_id > 0) {
+        // phi_0
+        shared_ptr< pdat::CellData<PQS_REAL> > phi_0_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(phi_0_id));
+        hier::Box phi_0_ghostbox = phi_0_data->getGhostBox();
+        const hier::IntVector phi_0_ghostbox_lower = phi_0_ghostbox.lower();
+        const hier::IntVector phi_0_ghostbox_upper = phi_0_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(phi_0_ghostbox_lo, phi_0_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(phi_0_ghostbox_hi, phi_0_ghostbox_upper);
+
+        PQS_REAL* phi_0 = phi_0_data->getPointer();
+
+        if (dim == 2) {
+            LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
+                rhs, rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                phi_0, phi_0_ghostbox_lo, phi_0_ghostbox_hi,
+                patch_box_lo, patch_box_hi,
+                dx);
+        } else if (dim == 3) {
+            LSM_3D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
+                rhs, rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                phi_0, phi_0_ghostbox_lo, phi_0_ghostbox_hi,
+                patch_box_lo, patch_box_hi,
+                dx);
+        }
+    } else {
+        if (dim == 2) {
+            LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI_RHS(
+                rhs, rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                patch_box_lo, patch_box_hi,
+                dx);
+        } else if (dim == 3) {
+            LSM_3D_COMPUTE_REINIT_EQN_SGN_PHI_RHS(
+                rhs, rhs_ghostbox_lo, rhs_ghostbox_hi,
+                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                patch_box_lo, patch_box_hi,
+                dx);
+        }
+    }
+} // Algorithms::computeReinitEqnRHSOnPatch()
 
 } // PQS::math::LSM namespace
 } // PQS::math namespace
