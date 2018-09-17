@@ -71,7 +71,7 @@ typedef enum {
     WENO5 = 5
 } SPATIAL_DERIVATIVE_TYPE;
 
-/*! \enum REINIT_ALG_TYPE
+/*! \enum REINIT_ALGORITHM_TYPE
  *
  * Enumerated type for the methods of computing spatial derivatives.
  *
@@ -79,7 +79,7 @@ typedef enum {
 typedef enum {
     REINIT_EQN_SGN_PHI0 = 1,  // use phi_0 for sgn(phi) factor
     REINIT_EQN_SGN_PHI = 2  // use phi for sgn(phi) factor
-} REINIT_ALG_TYPE;
+} REINIT_ALGORITHM_TYPE;
 
 /*! \enum VARIABLE_CONTEXT
  *
@@ -200,7 +200,7 @@ public:
             const int phi_id,
             const int control_volume_id,
             const int time_integration_order,
-            const REINIT_ALG_TYPE reinit_alg_type,
+            const REINIT_ALGORITHM_TYPE reinit_alg_type,
             const int max_time_steps = 20,
             const double steady_state_condition = 1e-4,
             const double stop_distance = -1);
