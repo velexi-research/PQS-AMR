@@ -39,8 +39,8 @@
 // PQS headers
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/math/LSMToolbox.h"  // IWYU pragma: keep
-#include "PQS/math/level_set_method_2d.h"
-#include "PQS/math/level_set_method_3d.h"
+#include "PQS/math/kernels/level_set_method_2d.h"
+#include "PQS/math/kernels/level_set_method_3d.h"
 #include "PQS/utilities/error.h"
 #include "PQS/utilities/macros.h"
 
