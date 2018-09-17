@@ -27,7 +27,7 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/math/level_set_method_2d.h"
+#include "PQS/math/kernels/level_set_method_2d.h"
 
 // PQS test
 #include "fixture_kernels.h"
