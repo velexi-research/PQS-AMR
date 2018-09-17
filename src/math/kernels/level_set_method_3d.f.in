@@ -332,28 +332,28 @@ c           { begin Godunov selection of grad_phi
 c             Rouy and Tourin formula (1992)
             if (phi_0_cur .gt. 0.d0) then
               grad_phi_x_star_sq = max(
-     &            max(grad_phi_x_minus**2,0.d0),
-     &            min(grad_phi_x_plus**2,0.d0))
+     &            max(grad_phi_x_minus,0.d0)**2,
+     &            min(grad_phi_x_plus,0.d0)**2)
 
               grad_phi_y_star_sq = max(
-     &            max(grad_phi_y_minus**2,0.d0),
-     &            min(grad_phi_y_plus**2,0.d0))
+     &            max(grad_phi_y_minus,0.d0)**2,
+     &            min(grad_phi_y_plus,0.d0)**2)
 
               grad_phi_z_star_sq = max(
-     &            max(grad_phi_z_minus**2,0.d0),
-     &            min(grad_phi_z_plus**2,0.d0))
+     &            max(grad_phi_z_minus,0.d0)**2,
+     &            min(grad_phi_z_plus,0.d0)**2)
             else
               grad_phi_x_star_sq = max(
-     &            min(grad_phi_x_minus**2,0.d0),
-     &            max(grad_phi_x_plus**2,0.d0))
+     &            min(grad_phi_x_minus,0.d0)**2,
+     &            max(grad_phi_x_plus,0.d0)**2)
 
               grad_phi_y_star_sq = max(
-     &            min(grad_phi_y_minus**2,0.d0),
-     &            max(grad_phi_y_plus**2,0.d0))
+     &            min(grad_phi_y_minus,0.d0)**2,
+     &            max(grad_phi_y_plus,0.d0)**2)
 
               grad_phi_z_star_sq = max(
-     &            min(grad_phi_z_minus**2,0.d0),
-     &            max(grad_phi_z_plus**2,0.d0))
+     &            min(grad_phi_z_minus,0.d0)**2,
+     &            max(grad_phi_z_plus,0.d0)**2)
             endif
 
 c           } end Godunov selection of grad_phi
