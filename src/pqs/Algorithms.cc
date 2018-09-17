@@ -125,12 +125,12 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 
     PQS_REAL* phi = phi_data->getPointer();
 
-    // fill box
-    hier::Box fillbox = patch->getBox();
-    const hier::IntVector fillbox_lower = fillbox.lower();
-    const hier::IntVector fillbox_upper = fillbox.upper();
-    PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo, fillbox_lower);
-    PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi, fillbox_upper);
+    // patch box
+    hier::Box patch_box = patch->getBox();
+    const hier::IntVector patch_box_lower = patch_box.lower();
+    const hier::IntVector patch_box_upper = patch_box.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(patch_box_lo, patch_box_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(patch_box_hi, patch_box_upper);
 
     // --- Compute RHS and maximum stable time step
 
@@ -142,7 +142,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 rhs_ghostbox_lo, rhs_ghostbox_hi,
                 phi,
                 phi_ghostbox_lo, phi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &d_pcm_pressure,
                 &d_pcm_surface_tension);
@@ -153,7 +153,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 rhs_ghostbox_lo, rhs_ghostbox_hi,
                 phi,
                 phi_ghostbox_lo, phi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &d_pcm_pressure,
                 &d_pcm_surface_tension);
@@ -205,7 +205,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 psi_ghostbox_lo, psi_ghostbox_hi,
                 grad_psi_x, grad_psi_y,
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &d_pcm_pressure,
                 &d_pcm_surface_tension,
@@ -227,7 +227,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 psi_ghostbox_lo, psi_ghostbox_hi,
                 grad_psi_x, grad_psi_y, grad_psi_z,
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &d_pcm_pressure,
                 &d_pcm_surface_tension,
@@ -283,12 +283,12 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
 
     PQS_REAL* phi = phi_data->getPointer();
 
-    // fill box
-    hier::Box fillbox = patch->getBox();
-    const hier::IntVector fillbox_lower = fillbox.lower();
-    const hier::IntVector fillbox_upper = fillbox.upper();
-    PQS_INT_VECT_TO_INT_ARRAY(fillbox_lo, fillbox_lower);
-    PQS_INT_VECT_TO_INT_ARRAY(fillbox_hi, fillbox_upper);
+    // patch box
+    hier::Box patch_box = patch->getBox();
+    const hier::IntVector patch_box_lower = patch_box.lower();
+    const hier::IntVector patch_box_upper = patch_box.upper();
+    PQS_INT_VECT_TO_INT_ARRAY(patch_box_lo, patch_box_lower);
+    PQS_INT_VECT_TO_INT_ARRAY(patch_box_hi, patch_box_upper);
 
     // --- Compute RHS and maximum stable time step
 
@@ -300,7 +300,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 rhs_ghostbox_lo, rhs_ghostbox_hi,
                 phi,
                 phi_ghostbox_lo, phi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &volume,
                 &d_scm_target_volume,
@@ -314,7 +314,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 rhs_ghostbox_lo, rhs_ghostbox_hi,
                 phi,
                 phi_ghostbox_lo, phi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &volume,
                 &d_scm_target_volume,
@@ -369,7 +369,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 psi_ghostbox_lo, psi_ghostbox_hi,
                 grad_psi_x, grad_psi_y,
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &volume,
                 &d_scm_target_volume,
@@ -394,7 +394,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 psi_ghostbox_lo, psi_ghostbox_hi,
                 grad_psi_x, grad_psi_y, grad_psi_z,
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
-                fillbox_lo, fillbox_hi,
+                patch_box_lo, patch_box_hi,
                 dx,
                 &volume,
                 &d_scm_target_volume,
