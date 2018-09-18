@@ -94,9 +94,9 @@ void PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const int *patch_box_lo,
     const int *patch_box_hi,
     const double *dx,
+    const double *pressure,
     const double *volume,
     const double *target_volume,
-    const double *pressure,
     const double *bulk_modulus,
     const double *surface_tension);
 
@@ -122,9 +122,9 @@ void PQS_3D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const int *patch_box_lo,
     const int *patch_box_hi,
     const double *dx,
+    const double *pressure,
     const double *volume,
     const double *target_volume,
-    const double *pressure,
     const double *bulk_modulus,
     const double *surface_tension,
     const double *contact_angle);

@@ -234,13 +234,7 @@ c patch_box_hi: upper corner of index range for patch box
 c
 c dx: array containing grid spacing in each coordinate direction
 c
-c volume: volume of non-wetting phase
-c
-c target_volume: target volume for non-wetting phase
-c
 c pressure: reference pressure of non-wetting phase
-c
-c bulk_modulus: bulk modulus of non-wetting phase
 c
 c surface_tension: surface tension of interface between wetting
 c     and non-wetting phases
@@ -466,11 +460,11 @@ c patch_box_hi: upper corner of index range for patch box
 c
 c dx: array containing grid spacing in each coordinate direction
 c
+c pressure: reference pressure of non-wetting phase
+c
 c volume: volume of non-wetting phase
 c
 c target_volume: target volume for non-wetting phase
-c
-c pressure: reference pressure of non-wetting phase
 c
 c bulk_modulus: bulk modulus of non-wetting phase
 c
@@ -490,9 +484,9 @@ c***********************************************************************
      &  phi_gb_lo, phi_gb_hi,
      &  patch_box_lo, patch_box_hi,
      &  dx,
+     &  pressure,
      &  volume,
      &  target_volume,
-     &  pressure,
      &  bulk_modulus,
      &  surface_tension)
 c***********************************************************************
@@ -514,9 +508,9 @@ c { begin subroutine
       integer patch_box_lo(1:3), patch_box_hi(1:3)
       real*8 dx(1:3)
 
+      real*8 pressure
       real*8 volume
       real*8 target_volume
-      real*8 pressure
       real*8 bulk_modulus
       real*8 surface_tension
 
@@ -690,11 +684,11 @@ c patch_box_hi: upper corner of index range for patch box
 c
 c dx: array containing grid spacing in each coordinate direction
 c
+c pressure: reference pressure of non-wetting phase
+c
 c volume: volume of non-wetting phase
 c
 c target_volume: target volume for non-wetting phase
-c
-c pressure: reference pressure of non-wetting phase
 c
 c bulk_modulus: bulk modulus of non-wetting phase
 c
@@ -721,9 +715,9 @@ c***********************************************************************
      &  grad_psi_gb_lo, grad_psi_gb_hi,
      &  patch_box_lo, patch_box_hi,
      &  dx,
+     &  pressure,
      &  volume,
      &  target_volume,
-     &  pressure,
      &  bulk_modulus,
      &  surface_tension,
      &  contact_angle)
@@ -762,9 +756,9 @@ c { begin subroutine
       integer patch_box_lo(1:3), patch_box_hi(1:3)
       real*8 dx(1:3)
 
+      real*8 pressure
       real*8 volume
       real*8 target_volume
-      real*8 pressure
       real*8 bulk_modulus
       real*8 surface_tension
       real*8 contact_angle
