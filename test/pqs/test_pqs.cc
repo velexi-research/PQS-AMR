@@ -78,9 +78,6 @@ TEST_F(pqsTest, test_config_db_structure)
     shared_ptr<tbox::Database> algorithms_config_db =
         pqs_config_db->getDatabase("Algorithms");
 
-    // PrescribedCurvatureModel database
-    EXPECT_TRUE(algorithms_config_db->isDatabase("PrescribedCurvatureModel"));
-
     // SlightlyCompressibleModel database
     EXPECT_TRUE(algorithms_config_db->isDatabase("SlightlyCompressibleModel"));
 
