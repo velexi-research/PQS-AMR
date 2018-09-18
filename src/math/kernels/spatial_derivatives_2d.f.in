@@ -131,9 +131,10 @@ c     Compute gradients and Hessian
       phi_x = 0.5 * (phi(i+1,j) - phi(i-1,j)) / dx(1)
       phi_y = 0.5 * (phi(i,j+1) - phi(i,j-1)) / dx(2)
 
-      phi_xx = (phi(i+1,j) + phi(i-1,j) - 2*phi(i,j)) / dx(1)**2
-      phi_yy = (phi(i,j+1) + phi(i,j-1) - 2*phi(i,j)) / dx(2)**2
-      phi_xy = ( phi(i+1,j+1) - phi(i-1,j+1)
+      phi_xx = (phi(i+1,j) - 2*phi(i,j) + phi(i-1,j)) / dx(1)**2
+      phi_yy = (phi(i,j+1) - 2*phi(i,j) + phi(i,j-1)) / dx(2)**2
+      phi_xy = 0.25 *
+     &         ( phi(i+1,j+1) - phi(i-1,j+1)
      &         - phi(i+1,j-1) + phi(i-1,j-1) ) / (dx(1) * dx(2))
 
 c     Compute mean curvature
