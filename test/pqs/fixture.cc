@@ -98,13 +98,11 @@ pqsTest::pqsTest() {
     // Prescribed Curvature Model database
     shared_ptr<tbox::Database> pcm_config_db =
         algorithms_config_db->putDatabase("PrescribedCurvatureModel");
-    pcm_config_db->putDouble("pressure", 1.0);
     pcm_config_db->putDouble("surface_tension", 0.1);
 
     // Slightly Compressible Model database
     shared_ptr<tbox::Database> scm_config_db =
         algorithms_config_db->putDatabase("SlightlyCompressibleModel");
-    scm_config_db->putDouble("pressure", 1.0);
     scm_config_db->putDouble("bulk_modulus", 1.0);
     scm_config_db->putDouble("target_volume", 0.5);
     scm_config_db->putDouble("surface_tension", 0.1);
