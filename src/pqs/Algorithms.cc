@@ -19,7 +19,7 @@
 
 // Standard library
 #include <memory>
-#include <sstream>
+#include <ostream>
 #include <stddef.h>
 #include <string>
 
@@ -84,12 +84,19 @@ Algorithms::Algorithms(
 
 double Algorithms::computePrescribedCurvatureModelRHS(
         const shared_ptr<hier::Patch>& patch,
-        const int phi_id) const
+        const int phi_id,
+        const int psi_id,
+        const int grad_psi_id,
+        const double target_curvature) const
 {
     // --- Preparations
 
     // Get dimensionality of space
     const int dim = patch->getDim().getValue();
+
+    // Compute pressure required to interface to have target curvature at
+    // steady-state
+    const double pressure = d_surface_tension * target_curvature;
 
     // Maximum stable time step
     double max_stable_dt;
@@ -147,8 +154,8 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 phi_ghostbox_lo, phi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
-                &d_pcm_pressure,
-                &d_pcm_surface_tension);
+                &pressure,
+                &d_surface_tension);
         } else if (dim == 3) {
             PQS_3D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -158,8 +165,8 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 phi_ghostbox_lo, phi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
-                &d_pcm_pressure,
-                &d_pcm_surface_tension);
+                &pressure,
+                &d_surface_tension);
         }
     } else {
         // --- Get pointers to data and index space ranges for
@@ -210,8 +217,8 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
-                &d_pcm_pressure,
-                &d_pcm_surface_tension,
+                &pressure,
+                &d_surface_tension,
                 &d_contact_angle);
 
         } else if (dim == 3) {
@@ -232,8 +239,8 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
-                &d_pcm_pressure,
-                &d_pcm_surface_tension,
+                &pressure,
+                &d_surface_tension,
                 &d_contact_angle);
         }
     }
@@ -245,12 +252,19 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 double Algorithms::computeSlightlyCompressibleModelRHS(
         const shared_ptr<hier::Patch>& patch,
         const int phi_id,
+        const int psi_id,
+        const int grad_psi_id,
+        const double target_curvature,
         const double volume) const
 {
     // --- Preparations
 
     // Get dimensionality of space
     const int dim = patch->getDim().getValue();
+
+    // Compute pressure required to interface to have target curvature at
+    // steady-state
+    const double pressure = d_surface_tension * target_curvature;
 
     // Maximum stable time step
     double max_stable_dt;
@@ -308,11 +322,11 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 phi_ghostbox_lo, phi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
+                &pressure,
                 &volume,
                 &d_scm_target_volume,
-                &d_scm_pressure,
                 &d_scm_bulk_modulus,
-                &d_scm_surface_tension);
+                &d_surface_tension);
         } else if (dim == 3) {
             PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -322,11 +336,11 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 phi_ghostbox_lo, phi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
+                &pressure,
                 &volume,
                 &d_scm_target_volume,
-                &d_scm_pressure,
                 &d_scm_bulk_modulus,
-                &d_scm_surface_tension);
+                &d_surface_tension);
         }
     } else {
         // --- Get pointers to data and index space ranges for
@@ -377,11 +391,11 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
+                &pressure,
                 &volume,
                 &d_scm_target_volume,
-                &d_scm_pressure,
                 &d_scm_bulk_modulus,
-                &d_scm_surface_tension,
+                &d_surface_tension,
                 &d_contact_angle);
 
         } else if (dim == 3) {
@@ -402,11 +416,11 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 grad_psi_ghostbox_lo, grad_psi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 dx,
+                &pressure,
                 &volume,
                 &d_scm_target_volume,
-                &d_scm_pressure,
                 &d_scm_bulk_modulus,
-                &d_scm_surface_tension,
+                &d_surface_tension,
                 &d_contact_angle);
         }
     }
@@ -435,25 +449,10 @@ void Algorithms::verifyConfigurationDatabase(
                   "'config_db' must not be NULL");
     }
 
-    // --- Verify "PrescribedCurvatureModel" database
-
-    if (!config_db->isDatabase("PrescribedCurvatureModel")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'PrescribedCurvatureModel' database ") +
-                  string("missing from 'config_db'"));
-    }
-    shared_ptr<tbox::Database> pcm_config_db =
-            config_db->getDatabase("PrescribedCurvatureModel");
-
-    if (!pcm_config_db->isDouble("pressure")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'pressure' missing from ") +
-                  string("'PrescribedCurvatureModel' database"));
-    }
-    if (!pcm_config_db->isDouble("surface_tension")) {
+    if (!config_db->isDouble("surface_tension")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   string("'surface_tension' missing from ") +
-                  string("'PrescribedCurvatureModel' database"));
+                  string("'Algorithms' database"));
     }
 
     // --- Verify "SlightlyCompressibleModel" database
@@ -466,19 +465,9 @@ void Algorithms::verifyConfigurationDatabase(
     shared_ptr<tbox::Database> scm_config_db =
             config_db->getDatabase("SlightlyCompressibleModel");
 
-    if (!scm_config_db->isDouble("pressure")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'pressure' missing from ") +
-                  string("'SlightlyCompressibleModel' database"));
-    }
     if (!scm_config_db->isDouble("target_volume")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   string("'target_volume' missing from ") +
-                  string("'SlightlyCompressibleModel' database"));
-    }
-    if (!scm_config_db->isDouble("surface_tension")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'surface_tension' missing from ") +
                   string("'SlightlyCompressibleModel' database"));
     }
     if (!scm_config_db->isDouble("bulk_modulus")) {
@@ -500,20 +489,13 @@ void Algorithms::loadConfiguration(
 
     // --- Load configuration parameters
 
-    // Prescribed Curvature Model parameters
-    shared_ptr<tbox::Database> pcm_config_db =
-            config_db->getDatabase("PrescribedCurvatureModel");
-
-    d_pcm_pressure = pcm_config_db->getDouble("pressure");
-    d_pcm_surface_tension = pcm_config_db->getDouble("surface_tension");
+    d_surface_tension = config_db->getDouble("surface_tension");
 
     // Slightly Compressible Model parameters
     shared_ptr<tbox::Database> scm_config_db =
             config_db->getDatabase("SlightlyCompressibleModel");
 
-    d_scm_pressure = scm_config_db->getDouble("pressure");
     d_scm_target_volume = scm_config_db->getDouble("target_volume");
-    d_scm_surface_tension = scm_config_db->getDouble("surface_tension");
     d_scm_bulk_modulus = scm_config_db->getDouble("bulk_modulus");
 
     // Contact angle parameters

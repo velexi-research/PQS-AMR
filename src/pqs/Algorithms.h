@@ -34,10 +34,15 @@
  * Configuration Parameters
  * ------------------------
  *
- * "P_reference": reference pressure
- * "V_target": target volume of phase where phi < 0
- * "surface_tensions": surface tension
- * "bulk_modulus": dimensionless bulk modulus
+ * ### Prescribed Curvature Model
+ * ------------------------------
+ * surface_tension: surface tension of fluid-fluid interface
+ *
+ * ### Slightly Compressible Model
+ * -------------------------------
+ * bulk_modulus: dimensionless bulk modulus
+ * target_volume: target volume of non-wetting phase (phi < 0)
+ * surface_tension: surface tension of fluid-fluid interface
  *
  */
 
@@ -138,13 +143,18 @@ public:
      * grad_psi_id: PatchData ID for gradient of level set function that
      *     defines solid-pore interface
      *
+     * target_curvature: target curvature for fluid-fluid interface
+     *
      * Return value
      * ------------
      * maximum stable timestep on Patch
      */
     double computePrescribedCurvatureModelRHS(
         const shared_ptr<hier::Patch>& patch,
-        const int phi_id) const;
+        const int phi_id,
+        const int psi_id,
+        const int grad_psi_id,
+        const double target_curvature) const;
 
     /*!
      * Compute RHS of level set equation for "Slightly Compressible Model".
@@ -162,6 +172,10 @@ public:
      * grad_psi_id: PatchData ID for gradient of level set function that
      *     defines solid-pore interface
      *
+     * target_curvature: target curvature for fluid-fluid interface
+     *
+     * volume: current volume of non-wetting phase
+     *
      * Return value
      * ------------
      * maximum stable timestep on Patch
@@ -169,6 +183,9 @@ public:
     double computeSlightlyCompressibleModelRHS(
         const shared_ptr<hier::Patch>& patch,
         const int phi_id,
+        const int psi_id,
+        const int grad_psi_id,
+        const double target_curvature,
         const double volume) const;
 
     //! @}
@@ -211,16 +228,11 @@ protected:
 
     // Physical parameters
     double d_contact_angle;  // default: 0
+    double d_surface_tension;
 
     // Slightly Compressible Model
-    double d_scm_pressure;
     double d_scm_bulk_modulus;
     double d_scm_target_volume;
-    double d_scm_surface_tension;
-
-    // Prescribed Curvature Model
-    double d_pcm_pressure;
-    double d_pcm_surface_tension;
 
     // --- SAMRAI parameters
 
