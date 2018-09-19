@@ -83,11 +83,12 @@ c { begin subroutine
       @REAL@ zero_tol
       parameter (zero_tol=@ZERO_TOL@)
 
-c     Preparations
+c     --- Preparations
 
       max_stable_dt = 1.0d37
 
-c     loop over grid
+c     --- Compute RHS on patch
+
       do j=patch_box_lo(2), patch_box_hi(2)
         do i=patch_box_lo(1), patch_box_hi(1)
 
@@ -285,11 +286,12 @@ c { begin subroutine
       @REAL@ zero_tol
       parameter (zero_tol=@ZERO_TOL@)
 
-c     Preparations
+c     --- Preparations
 
       max_stable_dt = 1.0d37
 
-c     loop over grid
+c     --- Compute RHS on patch
+
       do j=patch_box_lo(2), patch_box_hi(2)
         do i=patch_box_lo(1), patch_box_hi(1)
 
@@ -474,11 +476,16 @@ c { begin subroutine
       @REAL@ zero_tol
       parameter (zero_tol=@ZERO_TOL@)
 
-c     Preparations
+c     --- Preparations
 
       max_stable_dt = 1.0d37
 
-c     loop over grid
+c     Compute pressure-driven component of normal velocity
+      V_n_pressure = pressure *
+     &    exp(bulk_modulus * (1 - volume/target_volume))
+
+c     --- Compute RHS on patch
+
       do j=patch_box_lo(2), patch_box_hi(2)
         do i=patch_box_lo(1), patch_box_hi(1)
 
@@ -487,10 +494,6 @@ c         --- Initialize rhs value
           rhs(i,j) = 0.0d0
 
 c         --- Compute hyperbolic part of RHS
-
-c         Compute pressure-driven component of normal velocity
-          V_n_pressure = pressure *
-     &        exp(bulk_modulus * (1 - volume/target_volume))
 
 c         Compute forward and backward approximations of grad(phi)
           idx(1) = i
@@ -693,11 +696,16 @@ c { begin subroutine
       @REAL@ zero_tol
       parameter (zero_tol=@ZERO_TOL@)
 
-c     Preparations
+c     --- Preparations
 
       max_stable_dt = 1.0d37
 
-c     loop over grid
+c     Compute pressure-driven component of normal velocity
+      V_n_pressure = pressure *
+     &    exp(bulk_modulus * (1 - volume/target_volume))
+
+c     --- Compute RHS on patch
+
       do j=patch_box_lo(2), patch_box_hi(2)
         do i=patch_box_lo(1), patch_box_hi(1)
 
@@ -706,10 +714,6 @@ c         --- Initialize rhs value
           rhs(i,j) = 0.0d0
 
 c         --- Compute hyperbolic part of RHS
-
-c         Compute pressure-driven component of normal velocity
-          V_n_pressure = pressure *
-     &        exp(bulk_modulus * (1 - volume/target_volume))
 
 c         Compute contact angle component of advective velocity
 c         TODO
