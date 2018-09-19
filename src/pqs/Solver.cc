@@ -101,14 +101,16 @@ Solver::Solver(
         createPatchHierarchy(config_db);
     }
 
-    d_curvature = 0;  // TODO fix to be correct when restarting simulation
-    d_step_count = 0;  // TODO fix to be correct when restarting simulation
-
     // Load configuration from config_db
     loadConfiguration(config_db);
 
     // Set up simulation variables
     setupSimulationVariables();
+
+    // Initialize simulation parameters
+    // TODO fix to be correct when restarting simulation
+    d_curvature = d_initial_curvature;
+    d_step_count = 0;
 
     // Construct pqs::Algorithms object
     shared_ptr<tbox::Database> pqs_config_db =
@@ -223,8 +225,9 @@ void Solver::equilibrateInterface(
     int step = 0;
     double previous_saturation = 0.0;
 
-    double delta_phi = d_lsm_min_delta_phi + 1;
-    double delta_saturation = d_lsm_min_delta_saturation + 1;
+    double delta_phi = d_lsm_phi_steady_state_condition + 1;
+    double dt = 1.0;
+    double delta_saturation = d_lsm_saturation_steady_state_condition + 1;
 
     // Allocate PatchData
     for (int level_num = 0;
@@ -244,12 +247,11 @@ void Solver::equilibrateInterface(
 
     while ( (step < d_lsm_max_iterations) &&
             (t < d_lsm_t_max) &&
-            (delta_phi > d_lsm_min_delta_phi) &&
-            (delta_saturation > d_lsm_min_delta_saturation) ) {
+            (delta_phi > d_lsm_phi_steady_state_condition * dt) &&
+            (delta_saturation >
+                    d_lsm_saturation_steady_state_condition * dt) ) {
 
         // --- Preparations
-
-        double dt;
 
         // Compute volume of non-wettting phase
         double non_wetting_phase_volume =
@@ -318,12 +320,13 @@ void Solver::equilibrateInterface(
                     if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computePrescribedCurvatureModelRHS(
-                                        patch, phi_id);
+                                        patch, phi_id, d_psi_id, d_grad_psi_id,
+                                        curvature);
                     } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computeSlightlyCompressibleModelRHS(
-                                        patch, phi_id,
-                                        non_wetting_phase_volume);
+                                        patch, phi_id, d_psi_id, d_grad_psi_id,
+                                        curvature, non_wetting_phase_volume);
                     }
 
                     // Update maximum stable time step
@@ -410,7 +413,7 @@ void Solver::equilibrateInterface(
                                              d_control_volume_id);
 
         // Compute change in saturation
-        if (d_lsm_min_delta_saturation) {
+        if (d_lsm_saturation_steady_state_condition > 0) {
             // Compute current saturation
             double saturation = non_wetting_phase_volume / pore_space_volume;
 
@@ -421,10 +424,16 @@ void Solver::equilibrateInterface(
             previous_saturation = saturation;
         }
 
-        cout << step << ":" << dt << ":" << delta_phi << ", "
-             << d_lsm_min_delta_phi << ", "
-             << non_wetting_phase_volume << ", "
-             << pore_space_volume << endl;
+        cout << step << ", " << d_lsm_max_iterations << endl;
+        cout << t << ", " << d_lsm_t_max << endl;
+        cout << t + dt << ", " << d_lsm_t_max << endl;
+        cout << delta_phi << ", " << d_lsm_phi_steady_state_condition * dt
+             << ", " << (delta_phi > d_lsm_phi_steady_state_condition * dt)
+             << endl;
+        cout << delta_saturation << ","
+             << d_lsm_saturation_steady_state_condition * dt << ", "
+             << (delta_saturation >
+                    d_lsm_saturation_steady_state_condition * dt) << endl;
 
         // --- Prepare for next iteration
 
@@ -606,13 +615,9 @@ void Solver::verifyConfigurationDatabase(
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'lsm_max_iterations' missing from 'PQS' database");
     }
-    if (!pqs_config_db->isDouble("lsm_min_delta_phi")) {
+    if (!pqs_config_db->isDouble("lsm_phi_steady_state_condition")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'lsm_min_delta_phi' missing from 'PQS' database");
-    }
-    if (!pqs_config_db->isDouble("lsm_min_delta_saturation")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'lsm_min_delta_saturation' missing from 'PQS' database");
+              "'lsm_phi_steady_state_condition' missing from 'PQS' database");
     }
 
     // Numerical method parameters
@@ -711,17 +716,19 @@ void Solver::loadConfiguration(
                   "'lsm_max_iterations' must be positive.");
     }
 
-    d_lsm_min_delta_phi = pqs_config_db->getDouble("lsm_min_delta_phi");
-    if (d_lsm_min_delta_phi < 0) {
+    d_lsm_phi_steady_state_condition =
+            pqs_config_db->getDouble("lsm_phi_steady_state_condition");
+    if (d_lsm_phi_steady_state_condition < 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_min_delta_phi' must be non-negative.");
+                  "'lsm_phi_steady_state_condition' must be non-negative.");
     }
 
-    d_lsm_min_delta_saturation =
-        pqs_config_db->getDouble("lsm_min_delta_saturation");
-    if (d_lsm_min_delta_saturation < 0) {
+    d_lsm_saturation_steady_state_condition =
+            pqs_config_db->getDoubleWithDefault(
+                    "lsm_saturation_steady_state_condition", 0.0);
+    if (d_lsm_saturation_steady_state_condition < 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_min_delta_saturation' must be non-negative.");
+              "'lsm_saturation_steady_state_condition' must be non-negative.");
     }
 
     // Numerical set method parameters

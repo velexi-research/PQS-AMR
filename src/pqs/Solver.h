@@ -516,8 +516,8 @@ protected:
     // Level set method parameters
     double d_lsm_t_max;
     int d_lsm_max_iterations;
-    double d_lsm_min_delta_phi;
-    double d_lsm_min_delta_saturation;
+    double d_lsm_phi_steady_state_condition;
+    double d_lsm_saturation_steady_state_condition;
 
     int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
 
