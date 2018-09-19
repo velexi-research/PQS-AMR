@@ -82,11 +82,6 @@ pqsTest::pqsTest() {
     pqs_config_db->putDouble("final_curvature", 1.0);
     pqs_config_db->putDouble("curvature_step", 0.1);
 
-    // Level set method parameters
-    pqs_config_db->putInteger("lsm_t_max", 1.0);
-    pqs_config_db->putInteger("lsm_max_iterations", 5);
-    pqs_config_db->putDouble("lsm_phi_steady_state_condition", 0.1);
-
     // Numerical method parameters
     pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
     pqs_config_db->putInteger("time_integration_order", 1);
