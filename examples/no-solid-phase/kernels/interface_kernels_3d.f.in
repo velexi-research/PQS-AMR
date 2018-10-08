@@ -21,9 +21,9 @@ c    (excluding ghost cells)
 c
 c dx: array containing grid spacing in each coordinate direction
 c
-c center: array containing coordinates of center of circle
+c center: array containing coordinates of center of sphere
 c
-c radius: radius of circle
+c radius: radius of sphere
 c
 c *_gb_lo: lower corner of index range for ghostbox
 c
