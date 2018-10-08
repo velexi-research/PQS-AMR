@@ -58,4 +58,5 @@ target_link_libraries(pqs-amr-2d-no-solid-phase
     ${MPI_LIBRARY})
 
 # Add files to copy directly to build directory
-configure_file(sample.conf sample.conf COPYONLY)
+configure_file(sample-2D.conf sample-2D.conf COPYONLY)
+#configure_file(sample-3D.conf sample-3D.conf COPYONLY)

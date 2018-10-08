@@ -13,4 +13,4 @@
 
 # Add individual examples
 add_subdirectory(no-solid-phase)
-add_subdirectory(circle-packing-periodic)
+add_subdirectory(periodic-packing)
