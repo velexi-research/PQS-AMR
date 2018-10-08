@@ -30,8 +30,8 @@ extern "C" {
  *      C/C++ code             Fortran code
  *      ----------             ------------
  */
-#define INIT_CIRCLE            initcircle_
-#define INIT_STARFISH          initstarfish_
+#define INIT_CIRCLE            init_circle_
+#define INIT_STARFISH          init_starfish_
 
 /*!
  * TODO

@@ -34,7 +34,7 @@ c
 c fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
-      subroutine initCircle(
+      subroutine init_circle(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  fb_lo, fb_hi,
@@ -104,7 +104,7 @@ c
 c fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
-      subroutine initStarfish(
+      subroutine init_starfish(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  fb_lo, fb_hi,
