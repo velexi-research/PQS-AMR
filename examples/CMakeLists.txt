@@ -12,4 +12,5 @@
 # --------------------------------------------------------------
 
 # Add individual examples
-add_subdirectory(2D)
+add_subdirectory(no-solid-phase)
+add_subdirectory(circle-packing-periodic)
