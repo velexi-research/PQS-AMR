@@ -200,6 +200,19 @@ public:
      ************************************************************************/
 
     /*!
+     * Get contact angle.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * contact angle value (from configuration database)
+     */
+    virtual double getContactAngle() const;
+
+    /*!
      * Print the values of the data members the object.
      *
      * Parameters

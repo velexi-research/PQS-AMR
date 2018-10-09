@@ -429,6 +429,11 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
 
 } // Algorithms::computeSlightlyCompressibleModelRHS()
 
+double Algorithms::getContactAngle() const
+{
+    return d_contact_angle;
+} // Algorithms::getContactAngle()
+
 void Algorithms::printClassData(ostream& os) const
 {
     os << endl;
@@ -499,14 +504,10 @@ void Algorithms::loadConfiguration(
     d_scm_bulk_modulus = scm_config_db->getDouble("bulk_modulus");
 
     // Contact angle parameters
-    if (!config_db->isDouble("contact_angle")) {
-        d_contact_angle = 0.0;
-    } else {
-        d_contact_angle = config_db->getDouble("contact_angle");
-        if (d_contact_angle < 0) {
-            PQS_ERROR(this, "loadConfiguration",
-                      "'contact_angle' must be non-negative.");
-        }
+    d_contact_angle = config_db->getDoubleWithDefault("contact_angle", 0.0);
+    if (d_contact_angle < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'contact_angle' must be non-negative.");
     }
 
 } // Algorithms::loadConfiguration()
