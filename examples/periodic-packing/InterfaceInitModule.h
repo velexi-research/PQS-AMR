@@ -20,7 +20,6 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
-#include <iosfwd>
 #include <memory>
 #include <vector>
 

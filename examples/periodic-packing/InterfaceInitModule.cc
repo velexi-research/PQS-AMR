@@ -21,7 +21,6 @@
 
 // Standard library
 #include <stddef.h>
-#include <string>
 
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
