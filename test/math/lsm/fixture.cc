@@ -83,6 +83,10 @@ lsmTest::lsmTest() {
     pqs_config_db->putDouble("final_curvature", 1.0);
     pqs_config_db->putDouble("curvature_step", 0.1);
 
+    pqs_config_db->putDouble("surface_tension", 0.1);
+    pqs_config_db->putDouble("bulk_modulus", 1.0);
+    pqs_config_db->putDouble("target_volume", 0.5);
+
     // Numerical method parameters
     pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
     pqs_config_db->putInteger("time_integration_order", 1);
@@ -90,14 +94,6 @@ lsmTest::lsmTest() {
     // Algorithms database
     shared_ptr<tbox::Database> algorithms_config_db =
         pqs_config_db->putDatabase("Algorithms");
-
-    algorithms_config_db->putDouble("surface_tension", 0.1);
-
-    // Slightly Compressible Model database
-    shared_ptr<tbox::Database> scm_config_db =
-        algorithms_config_db->putDatabase("SlightlyCompressibleModel");
-    scm_config_db->putDouble("bulk_modulus", 1.0);
-    scm_config_db->putDouble("target_volume", 0.5);
 
     // ------ SAMRAI configuration
 
