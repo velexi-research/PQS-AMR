@@ -440,9 +440,15 @@ void Solver::equilibrateInterface(
             }
         }
 
-        // --- Impose zero contact angle condition
+        // --- Impose zero contact angle boundary condition at
+        //     pore-solid interface
 
-        // TODO
+        if (d_contact_angle == 0.0) {
+            math::computeMin(d_patch_hierarchy,
+                             d_phi_lsm_next_id,
+                             d_phi_lsm_next_id,
+                             d_psi_id);
+        }
 
         // --- Update metrics used in stopping criteria
 
