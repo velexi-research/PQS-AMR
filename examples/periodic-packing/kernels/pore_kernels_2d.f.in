@@ -1,0 +1,87 @@
+c***********************************************************************
+c
+c pore_kernels_2d.f
+c
+c Subroutines to initialize pore-solid interface for example
+c application with pore space defined by a periodic packing of circles.
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c Initalize level set function, phi, for pore-solid interface to be
+c a periodic array of circles at corners of computational domain.
+c
+c Parameters
+c ----------
+c phi: [output] level set function that defines pore-solid interface
+c
+c x_lower: array containing coordinates of lower corner of grid
+c    (excluding ghost cells)
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c radius: radius of circles
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c fb_lo: lower corner of index range for fillbox
+c
+c fb_hi: upper corner of index range for fillbox
+c
+c***********************************************************************
+      subroutine init_circles_at_corners(
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  fb_lo, fb_hi,
+     &  x_lower,
+     &  dx,
+     &  radius,
+     &  center_1,
+     &  center_2,
+     &  center_3,
+     &  center_4)
+c***********************************************************************
+      implicit none
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2))
+
+      integer fb_lo(1:2), fb_hi(1:2)
+
+      real*8 dx(1:2)
+      real*8 x_lower(1:2)
+
+      real*8 radius
+      real*8 center_1(1:2)
+      real*8 center_2(1:2)
+      real*8 center_3(1:2)
+      real*8 center_4(1:2)
+
+      real*8 x, y
+      integer i, j
+
+c     loop over grid
+      do j=fb_lo(2), fb_hi(2)
+        do i=fb_lo(1), fb_hi(1)
+
+          x = x_lower(1) + dx(1)*(i-fb_lo(1)+0.5)
+          y = x_lower(2) + dx(2)*(j-fb_lo(2)+0.5)
+
+          phi(i,j) = min(
+     &        sqrt((x-center_1(1))**2 + (y-center_1(2))**2) - radius,
+     &        sqrt((x-center_2(1))**2 + (y-center_2(2))**2) - radius,
+     &        sqrt((x-center_3(1))**2 + (y-center_3(2))**2) - radius,
+     &        sqrt((x-center_4(1))**2 + (y-center_4(2))**2) - radius
+     &    )
+
+        enddo
+      enddo
+c     } end loop over grid
+
+      return
+      end
+c***********************************************************************
