@@ -72,6 +72,29 @@ PQS_REAL computeMaxNormDiff(
         const int v_id,
         const int control_volume_id = -1);
 
+/*!
+ * Compute grid function equal to min(u, v).
+ *
+ * Parameters
+ * ----------
+ * patch_hierarchy: PatchHierarchy to perform computation on
+ *
+ * min_uv_id: PatchData id for 'min(u, v)'
+ *
+ * u_id: PatchData id for 'u'
+ *
+ * v_id: PatchData id for 'v'
+ *
+ * Return value
+ * ------------
+ * None
+ */
+void computeMin(
+        const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+        const int min_uv_id,
+        const int u_id,
+        const int v_id);
+
 }  // PQS::math namespace
 }  // PQS namespace
 

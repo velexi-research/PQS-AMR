@@ -77,3 +77,72 @@ c     set result
       return
       end
 c } end function
+
+
+c***********************************************************************
+c
+c Compute min(u, v).
+c
+c Parameters
+c ----------
+c min_uv: min(u, v)
+c
+c u: first function in the expression min(u, v)
+c
+c v: second function in the expression min(u, v)
+c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c***********************************************************************
+      subroutine pqsMath3dMinUV(
+     &  min_uv,
+     &  min_uv_gb_lo, min_uv_gb_hi,
+     &  u,
+     &  u_gb_lo, u_gb_hi,
+     &  v,
+     &  v_gb_lo, v_gb_hi,
+     &  patch_box_lo, patch_box_hi)
+***********************************************************************
+c { begin function
+      implicit none
+
+      integer min_uv_gb_lo(1:3), min_uv_gb_hi(1:3)
+      @REAL@ min_uv(min_uv_gb_lo(1):min_uv_gb_hi(1),
+     &              min_uv_gb_lo(2):min_uv_gb_hi(2),
+     &              min_uv_gb_lo(3):min_uv_gb_hi(3))
+
+      integer u_gb_lo(1:3), u_gb_hi(1:3)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2),
+     &         u_gb_lo(3):u_gb_hi(3))
+
+      integer v_gb_lo(1:3), v_gb_hi(1:3)
+      @REAL@ v(v_gb_lo(1):v_gb_hi(1),
+     &         v_gb_lo(2):v_gb_hi(2),
+     &         v_gb_lo(3):v_gb_hi(3))
+
+      integer patch_box_lo(1:3), patch_box_hi(1:3)
+
+      integer i, j, k
+
+c     loop over patch box {
+      do k=patch_box_lo(3),patch_box_hi(3)
+        do j=patch_box_lo(2),patch_box_hi(2)
+          do i=patch_box_lo(1),patch_box_hi(1)
+
+            min_uv(i,j,k) = min(u(i,j,k), v(i,j,k))
+
+          enddo
+        enddo
+      enddo
+c     } end loop over patch box
+
+      return
+      end
+c } end function

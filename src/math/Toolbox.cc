@@ -61,7 +61,7 @@ PQS_REAL computeMaxNormDiff(
 
     const int dim = patch_hierarchy->getDim().getValue();
     if ((dim != 2) && (dim != 3)) {
-        PQS_ERROR_STATIC("math", "maxNormDiff",
+        PQS_ERROR_STATIC("math", "computeMaxNormDiff",
                          string("Invalid dimension (=") + to_string(dim) +
                          string("for patch_hierarchy. Valid dimensions: 2, 3"));
     }
@@ -84,7 +84,7 @@ PQS_REAL computeMaxNormDiff(
             // loop over patches
             shared_ptr<hier::Patch> patch = *pi;
             if (patch==NULL) {
-                PQS_ERROR_STATIC("math", "maxNormDiff",
+                PQS_ERROR_STATIC("math", "computeMaxNormDiff",
                                  "Null patch pointer");
             }
 
@@ -159,12 +159,111 @@ PQS_REAL computeMaxNormDiff(
                                                          MPI_MAX);
 
     if (status != 0) {
-        PQS_ERROR_STATIC("math", "maxNormDiff",
+        PQS_ERROR_STATIC("math", "computeMaxNormDiff",
                          string("AllReduce error code=") + to_string(status));
     }
 
     return max_norm_diff;
 }  // computeMaxNormDiff()
+
+void computeMin(
+        const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+        const int min_uv_id,
+        const int u_id,
+        const int v_id)
+{
+    // --- Check arguments
+
+    const int dim = patch_hierarchy->getDim().getValue();
+    if ((dim != 2) && (dim != 3)) {
+        PQS_ERROR_STATIC("math", "computeMin",
+                         string("Invalid dimension (=") + to_string(dim) +
+                         string("for patch_hierarchy. Valid dimensions: 2, 3"));
+    }
+
+    // --- Compute min(u, v)
+
+    // loop over PatchHierarchy and compute the integral on each Patch
+    // by calling Fortran subroutines
+    const int num_levels = patch_hierarchy->getNumberOfLevels();
+    for (int level_num = 0; level_num < num_levels; level_num++) {
+
+        shared_ptr<hier::PatchLevel> level =
+                patch_hierarchy->getPatchLevel(level_num);
+
+        for (hier::PatchLevel::Iterator pi(level->begin());
+                pi!=level->end(); pi++) {
+
+            // loop over patches
+            shared_ptr<hier::Patch> patch = *pi;
+            if (patch==NULL) {
+                PQS_ERROR_STATIC("math", "computeMin", "Null patch pointer");
+            }
+
+            // get pointers to data and index space ranges
+            shared_ptr< pdat::CellData<PQS_REAL> > u_data =
+                    SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                            patch->getPatchData( u_id ));
+            shared_ptr< pdat::CellData<PQS_REAL> > min_uv_data =
+                    SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData( min_uv_id ));
+
+            hier::Box min_uv_ghostbox = min_uv_data->getGhostBox();
+            const hier::IntVector min_uv_ghostbox_lower =
+                    min_uv_ghostbox.lower();
+            const hier::IntVector min_uv_ghostbox_upper =
+                    min_uv_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(min_uv_ghostbox_lo,
+                                      min_uv_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(min_uv_ghostbox_hi,
+                                      min_uv_ghostbox_upper);
+
+            hier::Box u_ghostbox = u_data->getGhostBox();
+            const hier::IntVector u_ghostbox_lower = u_ghostbox.lower();
+            const hier::IntVector u_ghostbox_upper = u_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(u_ghostbox_lo, u_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(u_ghostbox_hi, u_ghostbox_upper);
+
+            shared_ptr< pdat::CellData<PQS_REAL> > v_data =
+                    SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                            patch->getPatchData( v_id ));
+
+            hier::Box v_ghostbox = v_data->getGhostBox();
+            const hier::IntVector v_ghostbox_lower = v_ghostbox.lower();
+            const hier::IntVector v_ghostbox_upper = v_ghostbox.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(v_ghostbox_lo, v_ghostbox_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(v_ghostbox_hi, v_ghostbox_upper);
+
+            // interior box
+            hier::Box interior_box = patch->getBox();
+            const hier::IntVector interior_box_lower = interior_box.lower();
+            const hier::IntVector interior_box_upper = interior_box.upper();
+            PQS_INT_VECT_TO_INT_ARRAY(interior_box_lo, interior_box_lower);
+            PQS_INT_VECT_TO_INT_ARRAY(interior_box_hi, interior_box_upper);
+
+            PQS_REAL* u = u_data->getPointer();
+            PQS_REAL* v = v_data->getPointer();
+            PQS_REAL* min_uv = min_uv_data->getPointer();
+            PQS_REAL max_norm_diff_on_patch = 0.0;
+
+            if ( dim == 3 ) {
+                PQS_MATH_3D_MIN_UV(
+                        min_uv, min_uv_ghostbox_lo, min_uv_ghostbox_hi,
+                        u, u_ghostbox_lo, u_ghostbox_hi,
+                        v, v_ghostbox_lo, v_ghostbox_hi,
+                        interior_box_lo, interior_box_hi);
+            } else if ( dim == 2 ) {
+                PQS_MATH_2D_MIN_UV(
+                        min_uv, min_uv_ghostbox_lo, min_uv_ghostbox_hi,
+                        u, u_ghostbox_lo, u_ghostbox_hi,
+                        v, v_ghostbox_lo, v_ghostbox_hi,
+                        interior_box_lo, interior_box_hi);
+            }
+
+        } // end loop over patches in level
+    } // end loop over levels in hierarchy
+
+} // computeMin()
 
 } // PQS::math namespace
 } // PQS namespace

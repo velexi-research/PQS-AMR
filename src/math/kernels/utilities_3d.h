@@ -29,6 +29,7 @@ extern "C" {
  *      ----------                       ------------
  */
 #define PQS_MATH_3D_MAX_NORM_DIFF        pqsmath3dmaxnormdiff_
+#define PQS_MATH_3D_MIN_UV               pqsmath3dminuv_
 
 /*!
  *
@@ -53,6 +54,39 @@ extern "C" {
  * max norm of (u - v)
  */
 PQS_REAL PQS_MATH_3D_MAX_NORM_DIFF(
+    const PQS_REAL* u,
+    const int *u_gb_lo,
+    const int *u_gb_hi,
+    const PQS_REAL* v,
+    const int *v_gb_lo,
+    const int *v_gb_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi);
+
+/*!
+ *
+ * Compute min(u, v).
+ *
+ * Parameters
+ * ----------
+ * min_uv: min(u, v)
+ *
+ * u: first function in the expression min(u, v)
+ *
+ * v: second function in the expression min(u, v)
+ *
+ * patch_box_lo: lower corner of index range for patch box
+ *
+ * patch_box_hi: upper corner of index range for patch box
+ *
+ * *_gb_lo: lower corner of index range for ghost box
+ *
+ * *_gb_hi: upper corner of index range for ghost box
+ */
+void PQS_MATH_3D_MIN_UV(
+    const PQS_REAL* min,
+    const int *min_uv_gb_lo,
+    const int *min_uv_gb_hi,
     const PQS_REAL* u,
     const int *u_gb_lo,
     const int *u_gb_hi,
