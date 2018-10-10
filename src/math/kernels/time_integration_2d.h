@@ -52,28 +52,7 @@ extern "C" {
 
 
 /*!
- * Advance the solution 'u' through a single first-order Runge-Kutta
- * (i.e, forward Euler) step.
- *
- * Parameters
- * ----------
- * u_next: [output] u(t + dt)
- *
- * u_current: u(t)
- *
- * rhs: right-hand side of time evolution equation
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dt: step size
- *
- * *_gb: index range for ghost box
- *
- * Return value
- * ------------
- * None
+ * See documentation in time_integration_2d.f.in
  */
 void PQS_MATH_2D_RK1_STEP(
   PQS_REAL *u_next,
@@ -90,32 +69,7 @@ void PQS_MATH_2D_RK1_STEP(
   const double *dt);
 
 /*!
- * Advance the solution 'u' through the first stage of a second-order
- * TVD Runge-Kutta method step.
- *
- * Parameters
- * ----------
- * u_stage1: [output] u_approx(t + dt)
- *
- * u_current: u(t)
- *
- * rhs: right-hand side of time evolution equation
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dt: step size
- *
- * *_gb: index range for ghost box
- *
- * Return value
- * ------------
- * None
- *
- * Notes
- * -----
- * - the first stage of TVD RK2 is identical to a single RK1 step
+ * See documentation in time_integration_2d.f.in
  */
 void PQS_MATH_2D_TVD_RK2_STAGE1(
   PQS_REAL *u_stage1,
@@ -132,30 +86,7 @@ void PQS_MATH_2D_TVD_RK2_STAGE1(
   const double *dt);
 
 /*!
- * Advance the solution 'u' through the second stage of a second-order
- * TVD Runge-Kutta method step.
- *
- * Parameters
- * ----------
- * u_next: [output] u(t + dt)
- *
- * u_stage1: u_approx(t + dt)
- *
- * u_current: u(t)
- *
- * rhs: right-hand side of time evolution equation
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dt: step size
- *
- * *_gb: index range for ghost box
- *
- * Return value
- * ------------
- * None
+ * See documentation in time_integration_2d.f.in
  */
 void PQS_MATH_2D_TVD_RK2_STAGE2(
   PQS_REAL *u_next,
@@ -175,32 +106,7 @@ void PQS_MATH_2D_TVD_RK2_STAGE2(
   const double *dt);
 
 /*!
- * Advance the solution 'u' through the first stage of a third-order
- * TVD Runge-Kutta method step.
- *
- * Parameters
- * ----------
- * u_stage1: [output] u_approx(t + dt)
- *
- * u_current: u(t)
- *
- * rhs: right-hand side of time evolution equation
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dt: step size
- *
- * *_gb: index range for ghost box
- *
- * Return value
- * ------------
- * None
- *
- * Notes
- * -----
- * - the first stage of TVD RK3 is identical to a single RK1 step
+ * See documentation in time_integration_2d.f.in
  */
 void PQS_MATH_2D_TVD_RK3_STAGE1(
   PQS_REAL *u_stage1,
@@ -217,30 +123,7 @@ void PQS_MATH_2D_TVD_RK3_STAGE1(
   const double *dt);
 
 /*!
- * Advance the solution 'u' through the second stage of a third-order
- * TVD Runge-Kutta method step.
- *
- * Parameters
- * ----------
- * u_stage2: [output] u_approx(t + dt/2)
- *
- * u_stage1: u_approx(t + dt)
- *
- * u_current: u(t)
- *
- * rhs: right-hand side of time evolution equation
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dt: step size
- *
- * *_gb: index range for ghost box
- *
- * Return value
- * ------------
- * None
+ * See documentation in time_integration_2d.f.in
  */
 void PQS_MATH_2D_TVD_RK3_STAGE2(
   PQS_REAL *u_stage2,
@@ -260,30 +143,7 @@ void PQS_MATH_2D_TVD_RK3_STAGE2(
   const double *dt);
 
 /*!
- * Advance the solution 'u' through the third stage of a third-order
- * TVD Runge-Kutta method step.
- *
- * Parameters
- * ----------
- * u_next: [output] u(t + dt)
- *
- * u_stage2: u_approx(t + dt/2)
- *
- * u_current: u(t)
- *
- * rhs: right-hand side of time evolution equation
- *
- * patch_box_lo: lower corner of index range for patch box
- *
- * patch_box_hi: upper corner of index range for patch box
- *
- * dt: step size
- *
- * *_gb: index range for ghost box
- *
- * Return value
- * ------------
- * None
+ * See documentation in time_integration_2d.f.in
  */
 void PQS_MATH_2D_TVD_RK3_STAGE3(
   PQS_REAL *u_next,

@@ -39,7 +39,7 @@ extern "C" {
                                          lsm2dcomputereiniteqnsgnphirhs_
 
 /*!
- * See documentation in level_set_method_2d.h
+ * See documentation in level_set_method_2d.f.in
  */
 PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const PQS_REAL *phi,
@@ -51,7 +51,7 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
     const double *eps);
 
 /*!
- * See documentation in level_set_method_2d.h
+ * See documentation in level_set_method_2d.f.in
  */
 PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const PQS_REAL *phi,
@@ -63,7 +63,7 @@ PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const double *eps);
 
 /*!
- * See documentation in level_set_method_2d.h
+ * See documentation in level_set_method_2d.f.in
  */
 void LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
     const PQS_REAL *rhs,
@@ -80,7 +80,7 @@ void LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
     const double *dx);
 
 /*!
- * See documentation in level_set_method_2d.h
+ * See documentation in level_set_method_2d.f.in
  */
 void LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI_RHS(
     const PQS_REAL *rhs,

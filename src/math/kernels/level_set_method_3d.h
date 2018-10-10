@@ -39,7 +39,7 @@ extern "C" {
                                          lsm3dcomputereiniteqnsgnphirhs_
 
 /*!
- * See documentation in level_set_method_3d.h
+ * See documentation in level_set_method_3d.f.in
  */
 PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
     const PQS_REAL* phi,
@@ -51,7 +51,7 @@ PQS_REAL LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
     const double *eps);
 
 /*!
- * See documentation in level_set_method_3d.h
+ * See documentation in level_set_method_3d.f.in
  */
 PQS_REAL LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
     const PQS_REAL* phi,
@@ -63,7 +63,7 @@ PQS_REAL LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
     const double *eps);
 
 /*!
- * See documentation in level_set_method_3d.h
+ * See documentation in level_set_method_3d.f.in
  */
 void LSM_3D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
     const PQS_REAL *rhs,
@@ -80,7 +80,7 @@ void LSM_3D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS(
     const double *dx);
 
 /*!
- * See documentation in level_set_method_3d.h
+ * See documentation in level_set_method_3d.f.in
  */
 void LSM_3D_COMPUTE_REINIT_EQN_SGN_PHI_RHS(
     const PQS_REAL *rhs,
