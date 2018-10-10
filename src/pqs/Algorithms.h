@@ -30,20 +30,6 @@
  *  - TODO
  *
  * <h3> USAGE </h3>
- *
- * Configuration Parameters
- * ------------------------
- *
- * ### Prescribed Curvature Model
- * ------------------------------
- * surface_tension: surface tension of fluid-fluid interface
- *
- * ### Slightly Compressible Model
- * -------------------------------
- * bulk_modulus: dimensionless bulk modulus
- * target_volume: target volume of non-wetting phase (phi < 0)
- * surface_tension: surface tension of fluid-fluid interface
- *
  */
 
 // --- Headers, namespaces, and type declarations
@@ -54,7 +40,6 @@
 // SAMRAI
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
 #include "SAMRAI/hier/Patch.h"
-#include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 
 // PQS
@@ -95,8 +80,6 @@ public:
      *
      * Parameters
      * ----------
-     * config_db: database containing configuration parameters
-     *
      * lse_rhs_id: PatchData ID for the right-hand side of level set evolution
      *     equation
      *
@@ -106,8 +89,7 @@ public:
      * grad_psi_id: PatchData ID for the gradient of the level set
      *     function for the solid-pore interface
      */
-    Algorithms(const shared_ptr<tbox::Database>& config_db,
-               const int lse_rhs_id,
+    Algorithms(const int lse_rhs_id,
                const int psi_id,
                const int grad_psi_id = -1);
 
@@ -145,6 +127,10 @@ public:
      *
      * target_curvature: target curvature for fluid-fluid interface
      *
+     * surface_tension: surface tension of fluid-fluid interface
+     *
+     * contact_angle: contact angle of wetting phase with solid phase
+     *
      * Return value
      * ------------
      * maximum stable timestep on Patch
@@ -154,7 +140,9 @@ public:
         const int phi_id,
         const int psi_id,
         const int grad_psi_id,
-        const double target_curvature) const;
+        const double target_curvature,
+        const double surface_tension,
+        const double contact_angle) const;
 
     /*!
      * Compute RHS of level set equation for "Slightly Compressible Model".
@@ -174,7 +162,15 @@ public:
      *
      * target_curvature: target curvature for fluid-fluid interface
      *
+     * surface_tension: surface tension of fluid-fluid interface
+     *
+     * bulk_modulus: bulk modulus of non-wetting phase
+     *
      * volume: current volume of non-wetting phase
+     *
+     * target_volume: target volume of non-wetting phase
+     *
+     * contact_angle: contact angle of wetting phase with solid phase
      *
      * Return value
      * ------------
@@ -186,7 +182,11 @@ public:
         const int psi_id,
         const int grad_psi_id,
         const double target_curvature,
-        const double volume) const;
+        const double surface_tension,
+        const double bulk_modulus,
+        const double volume,
+        const double target_volume,
+        const double contact_angle) const;
 
     //! @}
 
@@ -198,19 +198,6 @@ public:
      * @name Accessor methods for object parameters and state
      *
      ************************************************************************/
-
-    /*!
-     * Get contact angle.
-     *
-     * Parameters
-     * ----------
-     * None
-     *
-     * Return value
-     * ------------
-     * contact angle value (from configuration database)
-     */
-    virtual double getContactAngle() const;
 
     /*!
      * Print the values of the data members the object.
@@ -235,18 +222,6 @@ protected:
      *
      ****************************************************************/
 
-    // --- Parameters
-
-    // ------ PQS
-
-    // Physical parameters
-    double d_contact_angle;  // default: 0
-    double d_surface_tension;
-
-    // Slightly Compressible Model
-    double d_scm_bulk_modulus;
-    double d_scm_target_volume;
-
     // --- SAMRAI parameters
 
     // ------ PatchData IDs
@@ -261,43 +236,6 @@ protected:
     int d_grad_psi_id;  // depth = number of spatial dimensions
 
 private:
-
-    /*
-     * Verify that configuration database from specified database.
-     *
-     * Parameters
-     * ----------
-     * config_db: database containing configuration parameters
-     *
-     * Return value
-     * ------------
-     * true
-     *
-     * Notes
-     * -----
-     * - If 'config_db' is not valid, this method throws an exception
-     *   containing error information.
-     */
-    void verifyConfigurationDatabase(
-            const shared_ptr<tbox::Database>& config_db) const;
-
-    /*
-     * Load configuration parameters from specified database.
-     *
-     * Parameters
-     * ----------
-     * config_db: database containing configuration parameters
-     */
-    void loadConfiguration(const shared_ptr<tbox::Database>& config_db);
-
-    /*
-     * Private copy constructor to prevent use.
-     *
-     * Parameters
-     * ----------
-     * rhs: object to copy
-     */
-    Algorithms(const Algorithms& rhs);
 
     /*
      * Private assignment operator to prevent use.

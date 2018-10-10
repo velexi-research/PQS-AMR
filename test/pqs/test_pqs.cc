@@ -72,14 +72,9 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(pqs_config_db->isDouble("final_curvature"));
     EXPECT_TRUE(pqs_config_db->isDouble("curvature_step"));
 
-    // ------ Algorithms database
-
-    EXPECT_TRUE(pqs_config_db->isDatabase("Algorithms"));
-    shared_ptr<tbox::Database> algorithms_config_db =
-        pqs_config_db->getDatabase("Algorithms");
-
-    // SlightlyCompressibleModel database
-    EXPECT_TRUE(algorithms_config_db->isDatabase("SlightlyCompressibleModel"));
+    EXPECT_TRUE(pqs_config_db->isDouble("surface_tension"));
+    EXPECT_TRUE(pqs_config_db->isDouble("bulk_modulus"));
+    EXPECT_TRUE(pqs_config_db->isDouble("target_volume"));
 
     // --- SAMRAI database
 
@@ -134,15 +129,28 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
     EXPECT_NE(solver, nullptr);
 
     // Solver parameters
-    EXPECT_EQ(solver->getInitialCurvature(),
+    EXPECT_EQ(solver->getCurvature(),
               pqs_config_db->getDouble("initial_curvature"));
     EXPECT_EQ(solver->getFinalCurvature(),
               pqs_config_db->getDouble("final_curvature"));
-    EXPECT_EQ(solver->getStepCount(), 0);
+    EXPECT_EQ(solver->getCurvatureIncrement(),
+              pqs_config_db->getDouble("curvature_step"));
+
+    // Physical parameters
+    EXPECT_EQ(solver->getContactAngle(),
+              pqs_config_db->getDoubleWithDefault("contact_angle", 0.0));
+    EXPECT_EQ(solver->getSurfaceTension(),
+              pqs_config_db->getDouble("surface_tension"));
+    EXPECT_EQ(solver->getBulkModulus(),
+              pqs_config_db->getDouble("bulk_modulus"));
+    EXPECT_EQ(solver->getTargetVolume(),
+              pqs_config_db->getDouble("target_volume"));
 
     // Solver state
+    EXPECT_EQ(solver->getCurvature(),
+              pqs_config_db->getDouble("initial_curvature"));
+    EXPECT_EQ(solver->getStepCount(), 0);
     EXPECT_GE(solver->getPoreSpacePatchDataId(), 0);
-    EXPECT_GE(solver->getInterfacePatchDataId(), 0);
 
     // PatchHierarchy configuration
     shared_ptr<hier::PatchHierarchy> patch_hierarchy =

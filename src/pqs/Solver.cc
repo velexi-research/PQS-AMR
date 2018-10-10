@@ -19,6 +19,7 @@
 
 // Standard library
 #include <cstddef>
+#include <iostream>
 #include <limits>
 #include <math.h>
 #include <memory>
@@ -72,6 +73,14 @@ namespace PQS { namespace pqs { class PoreInitStrategy; } }
 namespace PQS {
 namespace pqs {
 
+// --- Constants
+//
+// Note: definition of constexpr variables required for C++11
+
+constexpr double Solver::DEFAULT_LSM_STEADY_STATE_CONDITION;
+constexpr double Solver::DEFAULT_LSM_STOP_TIME;
+constexpr double Solver::DEFAULT_LSM_SATURATION_STEADY_STATE_CONDITION;
+
 // --- Public methods
 
 Solver::Solver(
@@ -116,8 +125,7 @@ Solver::Solver(
     shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
     d_pqs_algorithms = shared_ptr<pqs::Algorithms>(
-            new pqs::Algorithms(pqs_config_db->getDatabase("Algorithms"),
-                                d_lse_rhs_id, d_psi_id, d_grad_psi_id));
+            new pqs::Algorithms(d_lse_rhs_id, d_psi_id, d_grad_psi_id));
 
     // Construct math::LSM::Algorithms object
     d_lsm_algorithms = shared_ptr<PQS::math::LSM::Algorithms>(
@@ -184,7 +192,10 @@ void Solver::resetHierarchyConfiguration(
 
 void Solver::equilibrateInterface(
         const double curvature,
-        const PQS_ALGORITHM_TYPE algorithm_type)
+        const PQS_ALGORITHM_TYPE algorithm_type,
+        double steady_state_condition,
+        double stop_time,
+        int max_num_iterations)
 {
     // --- Check arguments
 
@@ -220,14 +231,29 @@ void Solver::equilibrateInterface(
                     -1, // compute volume for psi < 0
                     d_control_volume_id);
 
+    // Set stopping criteria
+    if (steady_state_condition < 0) {
+        steady_state_condition = d_lsm_steady_state_condition;
+    }
+    cout << "steady-state condition: " << steady_state_condition << endl;
+    cout << "d_steady-state condition: " << d_lsm_steady_state_condition << endl;
+    if (stop_time < 0) {
+        stop_time = d_lsm_stop_time;
+    }
+    if (max_num_iterations < 0) {
+        max_num_iterations = d_lsm_max_num_iterations;
+    }
+    double saturation_steady_state_condition =
+            d_lsm_saturation_steady_state_condition;
+
     // Initialize loop variables
     double t = 0.0;
     int step = 0;
     double previous_saturation = 0.0;
 
-    double delta_phi = d_lsm_phi_steady_state_condition + 1;
+    double delta_phi = steady_state_condition + 1;
     double dt = 1.0;
-    double delta_saturation = d_lsm_saturation_steady_state_condition + 1;
+    double delta_saturation = saturation_steady_state_condition + 1;
 
     // Allocate PatchData
     for (int level_num = 0;
@@ -245,20 +271,25 @@ void Solver::equilibrateInterface(
 
     // --- Perform level set method computation
 
-    while ( (step < d_lsm_max_iterations) &&
-            (t < d_lsm_t_max) &&
-            (delta_phi > d_lsm_phi_steady_state_condition * dt) &&
-            (delta_saturation >
-                    d_lsm_saturation_steady_state_condition * dt) ) {
+    while ( (delta_phi > steady_state_condition * dt) &&
+            (!stop_time || (t < stop_time)) &&
+            (!max_num_iterations || (step < max_num_iterations)) &&
+            (!saturation_steady_state_condition ||
+              (delta_saturation > saturation_steady_state_condition * dt)) ) {
 
         // --- Preparations
 
         // Compute volume of non-wettting phase
-        double non_wetting_phase_volume =
+        double non_wetting_phase_volume = -1;
+        if ( (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) ||
+                (d_lsm_saturation_steady_state_condition > 0) ) {
+
+            non_wetting_phase_volume =
                 math::LSM::computeVolume(
                         d_patch_hierarchy, d_phi_lsm_current_id,
                         -1, // compute volume for phi < 0
                         d_control_volume_id);
+        }
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
         for (int rk_stage = 1; rk_stage <= d_time_integration_order; rk_stage++)
@@ -321,12 +352,17 @@ void Solver::equilibrateInterface(
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computePrescribedCurvatureModelRHS(
                                         patch, phi_id, d_psi_id, d_grad_psi_id,
-                                        curvature);
+                                        curvature, d_surface_tension,
+                                        d_contact_angle);
                     } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
                         stable_dt_on_patch = d_pqs_algorithms->
                                 computeSlightlyCompressibleModelRHS(
                                         patch, phi_id, d_psi_id, d_grad_psi_id,
-                                        curvature, non_wetting_phase_volume);
+                                        curvature, d_surface_tension,
+                                        d_bulk_modulus,
+                                        non_wetting_phase_volume,
+                                        d_target_volume,
+                                        d_contact_angle);
                     }
 
                     // Update maximum stable time step
@@ -404,6 +440,10 @@ void Solver::equilibrateInterface(
             }
         }
 
+        // --- Impose zero contact angle condition
+
+        // TODO
+
         // --- Update metrics used in stopping criteria
 
         // Compute max norm of change in phi
@@ -423,17 +463,19 @@ void Solver::equilibrateInterface(
             // Save previous saturation
             previous_saturation = saturation;
         }
-
-        cout << step << ", " << d_lsm_max_iterations << endl;
-        cout << t << ", " << d_lsm_t_max << endl;
-        cout << t + dt << ", " << d_lsm_t_max << endl;
-        cout << delta_phi << ", " << d_lsm_phi_steady_state_condition * dt
-             << ", " << (delta_phi > d_lsm_phi_steady_state_condition * dt)
+        cout << "dt: " << dt << endl;
+        cout << delta_phi << ", " << steady_state_condition * dt
+             << ", " << (delta_phi > steady_state_condition * dt)
              << endl;
+        cout << step << ", " << max_num_iterations << endl;
+        cout << t << ", " << stop_time << endl;
+        cout << t + dt << ", " << stop_time << endl;
         cout << delta_saturation << ","
-             << d_lsm_saturation_steady_state_condition * dt << ", "
+             << saturation_steady_state_condition * dt << ", "
              << (delta_saturation >
-                    d_lsm_saturation_steady_state_condition * dt) << endl;
+                    saturation_steady_state_condition * dt) << endl;
+        cout << "volume: " << non_wetting_phase_volume << endl;
+        cout << "radius: " << sqrt(non_wetting_phase_volume/M_PI) << endl;
 
         // --- Prepare for next iteration
 
@@ -464,9 +506,9 @@ void Solver::equilibrateInterface(
 
 void Solver::reinitializeInterface(
         const math::LSM::REINIT_ALGORITHM_TYPE algorithm_type,
-        const int max_time_steps,
-        const double steady_state_condition,
-        const double stop_distance)
+        double steady_state_condition,
+        double stop_distance,
+        int max_num_iterations)
 {
     // --- Check arguments
 
@@ -485,16 +527,11 @@ void Solver::reinitializeInterface(
             d_control_volume_id,
             d_time_integration_order,
             algorithm_type,
-            max_time_steps,
+            max_num_iterations,
             steady_state_condition,
             stop_distance);
 
 } // Solver::reinitializeInterface()
-
-double Solver::getCurvature() const
-{
-    return d_curvature;
-} // Solver::getCurvature()
 
 double Solver::getInitialCurvature() const
 {
@@ -506,10 +543,35 @@ double Solver::getFinalCurvature() const
     return d_final_curvature;
 } // Solver::getFinalCCurvature()
 
-double Solver::getCurvatureStep() const
+double Solver::getCurvatureIncrement() const
 {
     return d_curvature_step;
-} // Solver::getCurvatureStep()
+} // Solver::getCurvatureIncrement()
+
+double Solver::getContactAngle() const
+{
+    return d_contact_angle;
+} // Solver::getContactAngle()
+
+double Solver::getSurfaceTension() const
+{
+    return d_surface_tension;
+} // Solver::getSurfaceTension()
+
+double Solver::getBulkModulus() const
+{
+    return d_bulk_modulus;
+} // Solver::getBulkModulus()
+
+double Solver::getTargetVolume() const
+{
+    return d_target_volume;
+} // Solver::getTargetVolume()
+
+double Solver::getCurvature() const
+{
+    return d_curvature;
+} // Solver::getCurvature()
 
 int Solver::getStepCount() const
 {
@@ -586,12 +648,6 @@ void Solver::verifyConfigurationDatabase(
     shared_ptr<tbox::Database> pqs_config_db =
         config_db->getDatabase("PQS");
 
-    // Algorithms database
-    if (!pqs_config_db->isDatabase("Algorithms")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'Algorithms' database missing from 'config_db'");
-    }
-
     // Physical parameters
     if (!pqs_config_db->isDouble("initial_curvature")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -606,18 +662,17 @@ void Solver::verifyConfigurationDatabase(
                   "'curvature_step' missing from 'PQS' database");
     }
 
-    // Level set method parameters
-    if (!pqs_config_db->isDouble("lsm_t_max")) {
+    if (!pqs_config_db->isDouble("surface_tension")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'lsm_t_max' missing from 'PQS' database");
+                  "'surface_tension' missing from 'PQS' database");
     }
-    if (!pqs_config_db->isInteger("lsm_max_iterations")) {
+    if (!pqs_config_db->isDouble("bulk_modulus")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'lsm_max_iterations' missing from 'PQS' database");
+                  "'bulk_modulus' missing from 'PQS' database");
     }
-    if (!pqs_config_db->isDouble("lsm_phi_steady_state_condition")) {
+    if (!pqs_config_db->isDouble("target_volume")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
-              "'lsm_phi_steady_state_condition' missing from 'PQS' database");
+                  "'target_volume' missing from 'PQS' database");
     }
 
     // Numerical method parameters
@@ -695,40 +750,79 @@ void Solver::loadConfiguration(
 
     // --- Load configuration parameters
 
-    shared_ptr<tbox::Database> pqs_config_db =
-        config_db->getDatabase("PQS");
+    shared_ptr<tbox::Database> pqs_config_db = config_db->getDatabase("PQS");
 
     // Physical parameters
     d_initial_curvature = pqs_config_db->getDouble("initial_curvature");
     d_final_curvature = pqs_config_db->getDouble("final_curvature");
     d_curvature_step = pqs_config_db->getDouble("curvature_step");
 
+    d_contact_angle = pqs_config_db->getDoubleWithDefault("contact_angle", 0.0);
+    if (d_contact_angle < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'contact_angle' must be non-negative.");
+    }
+    d_surface_tension = pqs_config_db->getDouble("surface_tension");
+    d_bulk_modulus = pqs_config_db->getDouble("bulk_modulus");
+    d_target_volume = pqs_config_db->getDouble("target_volume");
+
     // Level set method parameters
-    d_lsm_t_max = pqs_config_db->getDouble("lsm_t_max");
-    if (d_lsm_t_max <= 0) {
+    d_lsm_steady_state_condition = pqs_config_db->getDoubleWithDefault(
+            "lsm_steady_state_condition",
+            Solver::DEFAULT_LSM_STEADY_STATE_CONDITION);
+    if (d_lsm_steady_state_condition <= 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_t_max' must be positive.");
+                  "'lsm_steady_state_condition' must be positive.");
     }
 
-    d_lsm_max_iterations = pqs_config_db->getInteger("lsm_max_iterations");
-    if (d_lsm_max_iterations <= 0) {
+    d_lsm_stop_time = pqs_config_db->getDoubleWithDefault(
+            "lsm_stop_time", Solver::DEFAULT_LSM_STOP_TIME);
+    if (d_lsm_stop_time < 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_max_iterations' must be positive.");
+                  "'lsm_stop_time' must be non-negative.");
     }
 
-    d_lsm_phi_steady_state_condition =
-            pqs_config_db->getDouble("lsm_phi_steady_state_condition");
-    if (d_lsm_phi_steady_state_condition < 0) {
+    d_lsm_max_num_iterations = pqs_config_db->getDoubleWithDefault(
+            "lsm_max_num_iterations", Solver::DEFAULT_LSM_MAX_ITERATIONS);
+    if (d_lsm_max_num_iterations < 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_phi_steady_state_condition' must be non-negative.");
+                  "'lsm_max_num_iterations' must be non-negative.");
     }
 
     d_lsm_saturation_steady_state_condition =
             pqs_config_db->getDoubleWithDefault(
-                    "lsm_saturation_steady_state_condition", 0.0);
+                    "lsm_saturation_steady_state_condition",
+                    Solver::DEFAULT_LSM_SATURATION_STEADY_STATE_CONDITION);
     if (d_lsm_saturation_steady_state_condition < 0) {
         PQS_ERROR(this, "loadConfiguration",
               "'lsm_saturation_steady_state_condition' must be non-negative.");
+    }
+
+    // Reinitialization parameters
+    d_reinitialization_steady_state_condition =
+            pqs_config_db->getDoubleWithDefault(
+                    "reinitialization_steady_state_condition",
+                    Solver::DEFAULT_LSM_STEADY_STATE_CONDITION);
+    if (d_reinitialization_steady_state_condition <= 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  string("'reinitialization_steady_state_condition' must ") +
+                  string("be non-negative."));
+    }
+
+    d_reinitialization_stop_time = pqs_config_db->getDoubleWithDefault(
+            "reinitialization_stop_time", Solver::DEFAULT_LSM_STOP_TIME);
+    if (d_reinitialization_stop_time < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'reinitialization_stop_time' must be positive.");
+    }
+
+    d_reinitialization_max_num_iterations =
+            pqs_config_db->getDoubleWithDefault(
+                    "reinitialization_max_num_iterations",
+                    Solver::DEFAULT_LSM_MAX_ITERATIONS);
+    if (d_reinitialization_max_num_iterations < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'reinitialization_max_num_iterations' must be positive.");
     }
 
     // Numerical set method parameters

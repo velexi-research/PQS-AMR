@@ -53,9 +53,6 @@
  *      reinitialization_interval = 0
  *      reinitialization_max_iters = 20
  *      reinitialization_stop_dist = 0.2
- *      orthogonalization_interval = 0
- *      orthogonalization_max_iters = 20
- *      orthogonalization_stop_dist = 0.2
  *
  *      lower_bc_phi_0 = 1, 1, 1
  *      upper_bc_phi_0 = 1, 1, 1
@@ -181,6 +178,22 @@ public:
     /*!
      ************************************************************************
      *
+     * Constants
+     *
+     ************************************************************************/
+
+    static constexpr double DEFAULT_LSM_STEADY_STATE_CONDITION = 1.e-3;
+    static constexpr double DEFAULT_LSM_STOP_TIME = 0.0;
+    static const int DEFAULT_LSM_MAX_ITERATIONS = 0;
+    static constexpr double DEFAULT_LSM_SATURATION_STEADY_STATE_CONDITION = 0.0;
+
+    //! @}
+
+    //! @{
+
+    /*!
+     ************************************************************************
+     *
      * @name Constructor and destructor
      *
      ************************************************************************/
@@ -273,6 +286,29 @@ public:
      *      interface. Valid values: PRESCRIBED_CURVATURE_MODEL,
      *      SLIGHTLY_COMPRESSIBLE_MODEL.
      *
+     * steady_state_condition: phi is considered to have reached steady-state
+     *      when
+     *
+     *          max | (phi(t+dt) - phi(t)) / dt | < steady_state_condition.
+     *
+     *      When 'steady_state_condition' is set to a non-positive number,
+     *      the 'lsm_steady_state_condition' value from the configuration
+     *      database is used.
+     *
+     * stop_time: time at which evolution of the level set function is
+     *      stopped (even if the fluid-fluid interface has not yet reached
+     *      steady-state). When 'stop_time' is set to zero, the time is not
+     *      used as a stopping criteria.  When 'stop_time' is set to a
+     *      negative number, the 'lsm_stop_time' value from the configuration
+     *      database is used.
+     *
+     * max_num_iterations: maximum number of time steps to evolve level set
+     *      function. When 'max_num_iterations' is set zero, the number of
+     *      steps is not used as a stopping criteria.  When
+     *      'max_num_iterations' is set to a negative number, the
+     *      'lsm_max_num_iterations' value from the configuration database is
+     *      used.
+     *
      * Return value
      * ------------
      * None
@@ -282,12 +318,17 @@ public:
      * - When 'algorithm_type' is set to PRESCRIBED_CURVATURE_MODEL, the
      *   steady-state fluid-fluid interface is computed using the Prescribed
      *   Curvature Model (Prodanovic and Bryant, 2006).
+     *
      * - When 'algorithm_type' is set to SLIGHTLY_COMPRESSIBLE_MODEL, the
      *   steady-state fluid-fluid interface is computed using the Slightly
      *   Compressible Model (Prodanovic and Bryant, 2006).
      */
-    virtual void equilibrateInterface(const double curvature,
-                                      const PQS_ALGORITHM_TYPE algorithm_type);
+    virtual void equilibrateInterface(
+            const double curvature,
+            const PQS_ALGORITHM_TYPE algorithm_type,
+            double steady_state_condition = -1,
+            double stop_time = -1,
+            int max_num_iterations = -1);
 
     /*!
      * Reinitialize fluid-fluid interface to be a signed distance function.
@@ -298,13 +339,26 @@ public:
      *      Valid values: math::LSM::REINIT_EQN_SGN_PHI0,
      *      math::LSM::REINIT_EQN_SGN_PHI.
      *
-     * max_time_steps: maximum number of time steps to take
+     * steady_state_condition: phi is considered to have reached steady-state
+     *      when
      *
-     * steady_state_threshold: phi is considered to have reached steady-state
-     *      when max | (phi(t+dt) - phi(t)) / dt | < steady_state_threshold
+     *          max | (phi(t+dt) - phi(t)) / dt | < steady_state_condition
+     *
+     *      When 'steady_state_condition' is set to a non-positive number,
+     *      the 'reinitialization_steady_state_condition' value from the
+     *      configuration database is used.
      *
      * stop_distance: approximate distance out from interface that signed
-     *      distance is computed. When stop_distance <= 0, it is ignored.
+     *      distance is computed. When 'stop_distance' is set to zero, the
+     *      time is not used as a stopping criteria.  When 'stop_distance'
+     *      is set to a negative number, the 'reinitialization_stop_distance'
+     *      value from the configuration database is used.
+     *
+     * max_num_iterations: maximum number of reinitialization steps to take.
+     *      When 'max_num_iterations' is set zero, the number of steps is not
+     *      used as a stopping criteria.  When 'max_num_iterations' is set to
+     *      a negative number, the 'reinitialization_max_num_iterations' value
+     *      from the configuration database is used.
      *
      * Return value
      * ------------
@@ -317,9 +371,9 @@ public:
     virtual void reinitializeInterface(
             const math::LSM::REINIT_ALGORITHM_TYPE algorithm_type =
                     math::LSM::REINIT_EQN_SGN_PHI0,
-            const int max_time_steps = 20,
-            const double steady_state_condition = 1e-4,
-            const double stop_distance = -1);
+            double steady_state_condition = -1,
+            double stop_distance = -1,
+            int max_num_iterations = -1);
 
     //! @}
 
@@ -335,29 +389,7 @@ public:
      *
      ************************************************************************/
 
-    /*!
-     * Get current mean curvature of fluid-fluid interface.
-     *
-     * Parameters
-     * ----------
-     * None
-     *
-     * Return value
-     * ------------
-     * current value of mean curvature
-     *
-     * Notes
-     * -----
-     * - After either equilibrateInterface() or advanceInterface() has been
-     *   called, the returned mean curvature value is equal to the value of
-     *   the fluid-fluid interface.
-     *
-     * - At the beginning of the simulation (i.e., before either
-     *   equilibrateInterface() or advanceInterface() has been called), the
-     *   returned mean curvature value is equal to the desired value for the
-     *   initial curvature of the fluid-fluid interface.
-     */
-    virtual double getCurvature() const;
+    // --- Solver Parameters
 
     /*!
      * Get initial mean curvature of fluid-fluid interface.
@@ -396,7 +428,85 @@ public:
      * ------------
      * mean curvature increment
      */
-    virtual double getCurvatureStep() const;
+    virtual double getCurvatureIncrement() const;
+
+    /*!
+     * Get contact angle of wetting phase with solid phase.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * contact angle (in degrees)
+     */
+    virtual double getContactAngle() const;
+
+    /*!
+     * Get surface tension of fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * surface tension
+     */
+    virtual double getSurfaceTension() const;
+
+    /*!
+     * Get bulk modulus of the non-wetting phase.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * bulk modulus of non-wetting phase in Slightly Compressible Model
+     */
+    virtual double getBulkModulus() const;
+
+    /*!
+     * Get target volume for the non-wetting phase.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * target volue of non-wetting phase in Slightly Compressible Model
+     */
+    virtual double getTargetVolume() const;
+
+    // --- Solver State
+
+    /*!
+     * Get current mean curvature of fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * current value of mean curvature
+     *
+     * Notes
+     * -----
+     * - After either equilibrateInterface() or advanceInterface() has been
+     *   called, the returned mean curvature value is equal to the value of
+     *   the fluid-fluid interface.
+     *
+     * - At the beginning of the simulation (i.e., before either
+     *   equilibrateInterface() or advanceInterface() has been called), the
+     *   returned mean curvature value is equal to the desired value for the
+     *   initial curvature of the fluid-fluid interface.
+     */
+    virtual double getCurvature() const;
 
     /*!
      * Get number of curvature steps taken since the beginning of the
@@ -513,15 +623,25 @@ protected:
     double d_final_curvature;
     double d_curvature_step;
 
+    // Physical parameters
+    double d_contact_angle;  // units: degrees. default: 0
+    double d_surface_tension;
+    double d_bulk_modulus;  // only used for Slightly Compressible Model
+    double d_target_volume;  // only used for Slightly Compressible Model
+
     // Level set method parameters
-    double d_lsm_t_max;
-    int d_lsm_max_iterations;
-    double d_lsm_phi_steady_state_condition;
+    double d_lsm_steady_state_condition;
+    double d_lsm_stop_time;
+    int d_lsm_max_num_iterations;
     double d_lsm_saturation_steady_state_condition;
 
-    int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
+    // Reinitialization parameters
+    double d_reinitialization_steady_state_condition;
+    double d_reinitialization_stop_time;
+    int d_reinitialization_max_num_iterations;
 
     // Numerical method parameters
+    int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
     int d_time_integration_order;  // for TVD Runge-Kutta time integration
 
     // --- State

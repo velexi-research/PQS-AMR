@@ -20,8 +20,6 @@
 // Standard library
 #include <memory>
 #include <ostream>
-#include <stddef.h>
-#include <string>
 
 // SAMRAI
 #include "SAMRAI/geom/CartesianPatchGeometry.h"
@@ -29,7 +27,6 @@
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/pdat/CellData.h"
-#include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/Utilities.h"
 
@@ -53,17 +50,11 @@ namespace pqs {
 // --- Public methods
 
 Algorithms::Algorithms(
-        const shared_ptr<tbox::Database>& config_db,
         const int lse_rhs_id,
         const int psi_id,
         const int grad_psi_id)
 {
     // Check arguments
-    if (config_db == NULL) {
-        PQS_ERROR(this, "Algorithms", "'config_db' must not be NULL");
-    }
-    verifyConfigurationDatabase(config_db);
-
     if (lse_rhs_id < 0) {
         PQS_ERROR(this, "Algorithms", "'lse_rhs_id' must be non-negative");
     }
@@ -77,9 +68,6 @@ Algorithms::Algorithms(
     d_psi_id = psi_id;
     d_grad_psi_id = grad_psi_id;
 
-    // Load configuration from config_db
-    loadConfiguration(config_db);
-
 } // Algorithms::Algorithms()
 
 double Algorithms::computePrescribedCurvatureModelRHS(
@@ -87,7 +75,9 @@ double Algorithms::computePrescribedCurvatureModelRHS(
         const int phi_id,
         const int psi_id,
         const int grad_psi_id,
-        const double target_curvature) const
+        const double target_curvature,
+        const double surface_tension,
+        const double contact_angle) const
 {
     // --- Preparations
 
@@ -96,7 +86,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 
     // Compute pressure required to interface to have target curvature at
     // steady-state
-    const double pressure = d_surface_tension * target_curvature;
+    const double pressure = surface_tension * target_curvature;
 
     // Maximum stable time step
     double max_stable_dt;
@@ -144,7 +134,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
 
     // --- Compute RHS and maximum stable time step
 
-    if (d_contact_angle == 0.0) {
+    if (contact_angle == 0.0) {
         if (dim == 2) {
             PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -155,7 +145,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 patch_box_lo, patch_box_hi,
                 dx,
                 &pressure,
-                &d_surface_tension);
+                &surface_tension);
         } else if (dim == 3) {
             PQS_3D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -166,7 +156,7 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 patch_box_lo, patch_box_hi,
                 dx,
                 &pressure,
-                &d_surface_tension);
+                &surface_tension);
         }
     } else {
         // --- Get pointers to data and index space ranges for
@@ -218,8 +208,8 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 patch_box_lo, patch_box_hi,
                 dx,
                 &pressure,
-                &d_surface_tension,
-                &d_contact_angle);
+                &surface_tension,
+                &contact_angle);
 
         } else if (dim == 3) {
             // Get pointers to data arrays for grad(phi)
@@ -240,8 +230,8 @@ double Algorithms::computePrescribedCurvatureModelRHS(
                 patch_box_lo, patch_box_hi,
                 dx,
                 &pressure,
-                &d_surface_tension,
-                &d_contact_angle);
+                &surface_tension,
+                &contact_angle);
         }
     }
 
@@ -255,7 +245,11 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
         const int psi_id,
         const int grad_psi_id,
         const double target_curvature,
-        const double volume) const
+        const double surface_tension,
+        const double bulk_modulus,
+        const double volume,
+        const double target_volume,
+        const double contact_angle) const
 {
     // --- Preparations
 
@@ -264,7 +258,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
 
     // Compute pressure required to interface to have target curvature at
     // steady-state
-    const double pressure = d_surface_tension * target_curvature;
+    const double pressure = surface_tension * target_curvature;
 
     // Maximum stable time step
     double max_stable_dt;
@@ -312,7 +306,7 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
 
     // --- Compute RHS and maximum stable time step
 
-    if (d_contact_angle == 0.0) {
+    if (contact_angle == 0.0) {
         if (dim == 2) {
             PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -324,9 +318,9 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 dx,
                 &pressure,
                 &volume,
-                &d_scm_target_volume,
-                &d_scm_bulk_modulus,
-                &d_surface_tension);
+                &target_volume,
+                &bulk_modulus,
+                &surface_tension);
         } else if (dim == 3) {
             PQS_3D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
                 &max_stable_dt,
@@ -338,9 +332,9 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 dx,
                 &pressure,
                 &volume,
-                &d_scm_target_volume,
-                &d_scm_bulk_modulus,
-                &d_surface_tension);
+                &target_volume,
+                &bulk_modulus,
+                &surface_tension);
         }
     } else {
         // --- Get pointers to data and index space ranges for
@@ -393,10 +387,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 dx,
                 &pressure,
                 &volume,
-                &d_scm_target_volume,
-                &d_scm_bulk_modulus,
-                &d_surface_tension,
-                &d_contact_angle);
+                &target_volume,
+                &bulk_modulus,
+                &surface_tension,
+                &contact_angle);
 
         } else if (dim == 3) {
             // Get pointers to data arrays for grad(phi)
@@ -418,10 +412,10 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
                 dx,
                 &pressure,
                 &volume,
-                &d_scm_target_volume,
-                &d_scm_bulk_modulus,
-                &d_surface_tension,
-                &d_contact_angle);
+                &target_volume,
+                &bulk_modulus,
+                &surface_tension,
+                &contact_angle);
         }
     }
 
@@ -429,88 +423,12 @@ double Algorithms::computeSlightlyCompressibleModelRHS(
 
 } // Algorithms::computeSlightlyCompressibleModelRHS()
 
-double Algorithms::getContactAngle() const
-{
-    return d_contact_angle;
-} // Algorithms::getContactAngle()
-
 void Algorithms::printClassData(ostream& os) const
 {
     os << endl;
     os << "PQS::pqs::Algorithms::printClassData..." << endl;
     os << "(Algorithms*) this = " << (Algorithms*) this << endl;
 } // Algorithms::printClassData()
-
-
-// --- Private methods
-
-void Algorithms::verifyConfigurationDatabase(
-    const shared_ptr<tbox::Database>& config_db) const
-{
-    // --- Check arguments
-
-    if (config_db == NULL) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'config_db' must not be NULL");
-    }
-
-    if (!config_db->isDouble("surface_tension")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'surface_tension' missing from ") +
-                  string("'Algorithms' database"));
-    }
-
-    // --- Verify "SlightlyCompressibleModel" database
-
-    if (!config_db->isDatabase("SlightlyCompressibleModel")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'SlightlyCompressibleModel' database ") +
-                  string("missing from 'config_db'"));
-    }
-    shared_ptr<tbox::Database> scm_config_db =
-            config_db->getDatabase("SlightlyCompressibleModel");
-
-    if (!scm_config_db->isDouble("target_volume")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'target_volume' missing from ") +
-                  string("'SlightlyCompressibleModel' database"));
-    }
-    if (!scm_config_db->isDouble("bulk_modulus")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  string("'bulk_modulus' missing from ") +
-                  string("'SlightlyCompressibleModel' database"));
-    }
-} // Algorithms::verifyConfigurationDatabase()
-
-void Algorithms::loadConfiguration(
-        const shared_ptr<tbox::Database>& config_db)
-{
-    // --- Check arguments
-
-    if (config_db == NULL) {
-        PQS_ERROR(this, "loadConfiguration",
-                  "'config_db' must not be NULL");
-    }
-
-    // --- Load configuration parameters
-
-    d_surface_tension = config_db->getDouble("surface_tension");
-
-    // Slightly Compressible Model parameters
-    shared_ptr<tbox::Database> scm_config_db =
-            config_db->getDatabase("SlightlyCompressibleModel");
-
-    d_scm_target_volume = scm_config_db->getDouble("target_volume");
-    d_scm_bulk_modulus = scm_config_db->getDouble("bulk_modulus");
-
-    // Contact angle parameters
-    d_contact_angle = config_db->getDoubleWithDefault("contact_angle", 0.0);
-    if (d_contact_angle < 0) {
-        PQS_ERROR(this, "loadConfiguration",
-                  "'contact_angle' must be non-negative.");
-    }
-
-} // Algorithms::loadConfiguration()
 
 } // PQS::pqs namespace
 } // PQS namespace
