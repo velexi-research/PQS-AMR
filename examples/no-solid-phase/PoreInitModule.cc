@@ -50,5 +50,5 @@ void PoreInitModule::initializePoreSpace(
             SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch.getPatchData(psi_id));
 
-    psi_data->fill(-1.0);
+    psi_data->fill(1.0);
 }

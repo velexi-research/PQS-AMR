@@ -40,7 +40,7 @@ class PoreInitModule: public pqs::PoreInitStrategy
 {
 public:
     /*
-     * Set value of psi to -1.0 at all grid points (i.e., entire
+     * Set value of psi to 1.0 at all grid points (i.e., entire
      * region is pore space).
      */
     virtual void initializePoreSpace(hier::Patch& patch, int psi_id);
