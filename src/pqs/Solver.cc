@@ -88,7 +88,8 @@ Solver::Solver(
         const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
         const shared_ptr<pqs::InterfaceInitStrategy>&
             interface_init_strategy,
-        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy)
+        const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
+        const bool enable_debug)
 {
     // Check arguments
     if (config_db == NULL) {
@@ -109,6 +110,8 @@ Solver::Solver(
     } else {
         createPatchHierarchy(config_db);
     }
+
+    d_enable_debug = enable_debug;
 
     // Load configuration from config_db
     loadConfiguration(config_db);
@@ -225,18 +228,21 @@ void Solver::equilibrateInterface(
                              d_patch_hierarchy));
 
     // Compute volume of pore space
-    const double pore_space_volume =
-            math::LSM::computeVolume(
-                    d_patch_hierarchy, d_psi_id,
-                    -1, // compute volume for psi < 0
-                    d_control_volume_id);
+    const double pore_space_volume = math::LSM::computeVolume(
+            d_patch_hierarchy, d_psi_id,
+            1, // compute volume for psi > 0
+            d_control_volume_id);
+
+    const double solid_phase_volume = math::LSM::computeVolume(
+            d_patch_hierarchy, d_psi_id,
+            -1, // compute volume for psi < 0
+            d_control_volume_id);
 
     // Set stopping criteria
     if (steady_state_condition < 0) {
         steady_state_condition = d_lsm_steady_state_condition;
     }
-    cout << "steady-state condition: " << steady_state_condition << endl;
-    cout << "d_steady-state condition: " << d_lsm_steady_state_condition << endl;
+
     if (stop_time < 0) {
         stop_time = d_lsm_stop_time;
     }
@@ -284,11 +290,11 @@ void Solver::equilibrateInterface(
         if ( (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) ||
                 (d_lsm_saturation_steady_state_condition > 0) ) {
 
-            non_wetting_phase_volume =
-                math::LSM::computeVolume(
-                        d_patch_hierarchy, d_phi_lsm_current_id,
-                        -1, // compute volume for phi < 0
-                        d_control_volume_id);
+            non_wetting_phase_volume = math::LSM::computeVolume(
+                    d_patch_hierarchy, d_phi_lsm_current_id,
+                    -1, // compute volume for phi < 0
+                    d_control_volume_id) - solid_phase_volume;
+
         }
 
         // Use TVD Runge-Kutta integration in time to compute phi(t+dt)
@@ -440,9 +446,7 @@ void Solver::equilibrateInterface(
             }
         }
 
-        // --- Impose zero contact angle boundary condition at
-        //     pore-solid interface
-
+        // Impose zero contact angle boundary condition at pore-solid interface
         if (d_contact_angle == 0.0) {
             math::computeMin(d_patch_hierarchy,
                              d_phi_lsm_next_id,
@@ -469,19 +473,31 @@ void Solver::equilibrateInterface(
             // Save previous saturation
             previous_saturation = saturation;
         }
-        cout << "dt: " << dt << endl;
-        cout << delta_phi << ", " << steady_state_condition * dt
-             << ", " << (delta_phi > steady_state_condition * dt)
-             << endl;
-        cout << step << ", " << max_num_iterations << endl;
-        cout << t << ", " << stop_time << endl;
-        cout << t + dt << ", " << stop_time << endl;
-        cout << delta_saturation << ","
-             << saturation_steady_state_condition * dt << ", "
-             << (delta_saturation >
-                    saturation_steady_state_condition * dt) << endl;
-        cout << "volume: " << non_wetting_phase_volume << endl;
-        cout << "radius: " << sqrt(non_wetting_phase_volume/M_PI) << endl;
+
+        if (d_enable_debug) {
+            tbox::pout << "steady-state condition: " << steady_state_condition
+                       << endl;
+            tbox::pout << "d_steady-state condition: "
+                       << d_lsm_steady_state_condition << endl;
+            tbox::pout << "dt: " << dt << endl;
+            tbox::pout << delta_phi << ", " << steady_state_condition * dt
+                       << ", " << (delta_phi > steady_state_condition * dt)
+                       << endl;
+            tbox::pout << step << ", " << max_num_iterations << endl;
+            tbox::pout << t << ", " << stop_time << endl;
+            tbox::pout << t + dt << ", " << stop_time << endl;
+            tbox::pout << delta_saturation << ","
+                       << saturation_steady_state_condition * dt << ", "
+                       << (delta_saturation >
+                                saturation_steady_state_condition * dt)
+                       << endl;
+            tbox::pout << "volume: " << non_wetting_phase_volume << endl;
+            tbox::pout << "target_volume: " << d_target_volume << endl;
+            tbox::pout << "pore volume: " << pore_space_volume << endl;
+            tbox::pout << "solid phase volume: " << solid_phase_volume << endl;
+            tbox::pout << "radius: " << sqrt(non_wetting_phase_volume/M_PI)
+                       << endl;
+        }
 
         // --- Prepare for next iteration
 
@@ -553,6 +569,11 @@ double Solver::getCurvatureIncrement() const
 {
     return d_curvature_step;
 } // Solver::getCurvatureIncrement()
+
+bool Solver::useSlightlyCompressibleModel() const
+{
+    return d_use_slightly_compressible_model;
+} // Solver::useSlightlyCompressibleModel()
 
 double Solver::getContactAngle() const
 {
@@ -672,13 +693,17 @@ void Solver::verifyConfigurationDatabase(
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'surface_tension' missing from 'PQS' database");
     }
-    if (!pqs_config_db->isDouble("bulk_modulus")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'bulk_modulus' missing from 'PQS' database");
-    }
-    if (!pqs_config_db->isDouble("target_volume")) {
-        PQS_ERROR(this, "verifyConfigurationDatabase",
-                  "'target_volume' missing from 'PQS' database");
+    if (pqs_config_db->isBool("use_slightly_compressible_model") &&
+        pqs_config_db->getBool("use_slightly_compressible_model"))
+    {
+        if (!pqs_config_db->isDouble("bulk_modulus")) {
+            PQS_ERROR(this, "verifyConfigurationDatabase",
+                      "'bulk_modulus' missing from 'PQS' database");
+        }
+        if (!pqs_config_db->isDouble("target_volume")) {
+            PQS_ERROR(this, "verifyConfigurationDatabase",
+                      "'target_volume' missing from 'PQS' database");
+        }
     }
 
     // Numerical method parameters
@@ -769,8 +794,17 @@ void Solver::loadConfiguration(
                   "'contact_angle' must be non-negative.");
     }
     d_surface_tension = pqs_config_db->getDouble("surface_tension");
-    d_bulk_modulus = pqs_config_db->getDouble("bulk_modulus");
-    d_target_volume = pqs_config_db->getDouble("target_volume");
+
+    d_use_slightly_compressible_model =
+            pqs_config_db->getBoolWithDefault(
+                    "use_slightly_compressible_model", false);
+    if (d_use_slightly_compressible_model) {
+        d_bulk_modulus = pqs_config_db->getDouble("bulk_modulus");
+        d_target_volume = pqs_config_db->getDouble("target_volume");
+    } else {
+        d_bulk_modulus = -1;
+        d_target_volume = -1;
+    }
 
     // Level set method parameters
     d_lsm_steady_state_condition = pqs_config_db->getDoubleWithDefault(
@@ -1164,6 +1198,12 @@ void Solver::initializeSimulation()
 
         // TODO: synchronize coarser levels with finer levels that didn't
         // exist when the finer coarser level data was initialized.
+
+        // Impose zero contact angle boundary condition at pore-solid interface
+        math::computeMin(d_patch_hierarchy,
+                         d_phi_pqs_id,
+                         d_phi_pqs_id,
+                         d_psi_id);
     }
 } // Solver::initializeSimulation()
 

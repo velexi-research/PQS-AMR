@@ -216,12 +216,15 @@ public:
      *      InterfaceInitStrategy strategy interface
      *
      * patch_hierarchy: PatchHierarchy to use for simulation
+     *
+     * enable_debug: flag indicating whether debug mode should be enabled
      */
     Solver(const shared_ptr<tbox::Database>& config_db,
            const shared_ptr<pqs::PoreInitStrategy>& pore_init_strategy,
            const shared_ptr<pqs::InterfaceInitStrategy>&
                    interface_init_strategy,
-           const shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL);
+           const shared_ptr<hier::PatchHierarchy>& patch_hierarchy=NULL,
+           const bool enable_debug=false);
 
     /*!
      * Default destructor frees memory allocated for simulation.
@@ -390,6 +393,21 @@ public:
      ************************************************************************/
 
     // --- Solver Parameters
+
+    /*!
+     * Return whether or not to use Slightly Compressible Model to
+     * equilibrate initial fluid-fluid interface.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * true if initial fluid-fluid interface should be equilibrated using
+     * Slightly Compressible Model; false otherwise.
+     */
+    virtual bool useSlightlyCompressibleModel() const;
 
     /*!
      * Get initial mean curvature of fluid-fluid interface.
@@ -624,8 +642,11 @@ protected:
     double d_curvature_step;
 
     // Physical parameters
+    bool d_use_slightly_compressible_model;
+
     double d_contact_angle;  // units: degrees. default: 0
     double d_surface_tension;
+
     double d_bulk_modulus;  // only used for Slightly Compressible Model
     double d_target_volume;  // only used for Slightly Compressible Model
 
@@ -643,6 +664,9 @@ protected:
     // Numerical method parameters
     int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
     int d_time_integration_order;  // for TVD Runge-Kutta time integration
+
+    // Numerical method parameters
+    bool d_enable_debug;
 
     // --- State
 
