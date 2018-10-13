@@ -76,6 +76,10 @@ int main(int argc, char *argv[])
     // Get the base name for all name strings in application
     const string base_name = config_db->getString("base_name");
 
+    // Get debug mode
+    const bool enable_debug =
+            config_db->getBoolWithDefault("enable_debug", false);
+
     // --- Construct fluid-fluid interface and pore interface
     //     initialization modules
 
@@ -112,7 +116,9 @@ int main(int argc, char *argv[])
     try {
         pqs_solver = shared_ptr<pqs::Solver>(
                 new pqs::Solver(config_db, pore_init_strategy,
-                                interface_init_strategy));
+                                interface_init_strategy,
+                                NULL,  // null PatchHierarchy
+                                enable_debug));
     } catch (const PQS::exception& e) {
         PQS_ABORT(e.what());
     }

@@ -127,32 +127,44 @@ void InterfaceInitModule::initializeInterface(
     // --- Initialize phi
 
     if (d_dim == 2) {
-        const double center[2] = {
+        const double center_1[2] = {
             0.5 * (d_X_lower[0] + d_X_upper[0]),
             d_X_lower[1]
         };
+        const double center_2[2] = {
+            0.5 * (d_X_lower[0] + d_X_upper[0]),
+            d_X_upper[1]
+        };
 
-        INIT_CIRCLE(phi,
-                    phi_ghostbox_lo, phi_ghostbox_hi,
-                    fillbox_lo, fillbox_hi,
-                    x_lower,
-                    dx,
-                    center,
-                    &d_radius);
+        INIT_CIRCLES(phi,
+                     phi_ghostbox_lo, phi_ghostbox_hi,
+                     fillbox_lo, fillbox_hi,
+                     x_lower,
+                     dx,
+                     &d_radius,
+                     center_1,
+                     center_2);
+
     } else if (d_dim == 3) {
-        const double center[3] = {
+        const double center_1[3] = {
             0.5 * (d_X_lower[0] + d_X_upper[0]),
             0.5 * (d_X_lower[1] + d_X_upper[1]),
             d_X_lower[2]
         };
+        const double center_2[3] = {
+            0.5 * (d_X_lower[0] + d_X_upper[0]),
+            0.5 * (d_X_lower[1] + d_X_upper[1]),
+            d_X_upper[2]
+        };
 
-        INIT_SPHERE(phi,
-                    phi_ghostbox_lo, phi_ghostbox_hi,
-                    fillbox_lo, fillbox_hi,
-                    x_lower,
-                    dx,
-                    center,
-                    &d_radius);
+        INIT_SPHERES(phi,
+                     phi_ghostbox_lo, phi_ghostbox_hi,
+                     fillbox_lo, fillbox_hi,
+                     x_lower,
+                     dx,
+                     &d_radius,
+                     center_1,
+                     center_2);
     }
 } // InterfaceInitModule::initializeInterface()
 

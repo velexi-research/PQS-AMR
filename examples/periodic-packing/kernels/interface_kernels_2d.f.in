@@ -24,6 +24,8 @@ c dx: array containing grid spacing in each coordinate direction
 c
 c radius: radius of circles
 c
+c center_*: centers of circles
+c
 c *_gb_lo: lower corner of index range for ghostbox
 c
 c *_gb_hi: upper corner of index range for ghostbox
@@ -33,14 +35,15 @@ c
 c fb_hi: upper corner of index range for fillbox
 c
 c***********************************************************************
-      subroutine init_circle(
+      subroutine init_circles(
      &  phi,
      &  phi_gb_lo, phi_gb_hi,
      &  fb_lo, fb_hi,
      &  x_lower,
      &  dx,
-     &  center,
-     &  radius);
+     &  radius,
+     &  center_1,
+     &  center_2)
 c***********************************************************************
       implicit none
 
@@ -53,8 +56,9 @@ c***********************************************************************
       real*8 dx(1:2)
       real*8 x_lower(1:2)
 
-      real*8 center(1:2)
       real*8 radius
+      real*8 center_1(1:2)
+      real*8 center_2(1:2)
 
       real*8 x, y
       integer i, j
@@ -66,7 +70,10 @@ c     loop over grid
           x = x_lower(1) + dx(1)*(i-fb_lo(1)+0.5)
           y = x_lower(2) + dx(2)*(j-fb_lo(2)+0.5)
 
-          phi(i,j) = sqrt((x-center(1))**2 + (y-center(2))**2) - radius
+          phi(i,j) = min(
+     &      sqrt((x-center_1(1))**2 + (y-center_1(2))**2) - radius,
+     &      sqrt((x-center_2(1))**2 + (y-center_2(2))**2) - radius
+     &    )
 
         enddo
       enddo

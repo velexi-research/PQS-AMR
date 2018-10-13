@@ -30,12 +30,12 @@ extern "C" {
  *      C/C++ code                 Fortran code
  *      ----------                 ------------
  */
-#define INIT_SPHERE                init_sphere_
+#define INIT_SPHERES               init_spheres_
 
 /*!
  * See documentation in interface_kernels_3d.f.in
  */
-void INIT_SPHERE(
+void INIT_SPHERES(
     const PQS_REAL *phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
@@ -43,8 +43,9 @@ void INIT_SPHERE(
     const int *fb_hi,
     const double *x_lower,
     const double *dx,
-    const double *center,
-    const double *radius);
+    const double *radius,
+    const double *center_1,
+    const double *center_2);
 
 #ifdef __cplusplus
 }
