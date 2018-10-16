@@ -657,8 +657,9 @@ protected:
     double d_lsm_saturation_steady_state_condition;
 
     // Reinitialization parameters
+    math::LSM::REINIT_ALGORITHM_TYPE d_reinitialization_algorithm_type;
     double d_reinitialization_steady_state_condition;
-    double d_reinitialization_stop_time;
+    double d_reinitialization_stop_distance;
     int d_reinitialization_max_num_iterations;
 
     // Numerical method parameters

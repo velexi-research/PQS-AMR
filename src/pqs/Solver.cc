@@ -706,6 +706,22 @@ void Solver::verifyConfigurationDatabase(
         }
     }
 
+    // Reinitialization parameters
+    if (pqs_config_db->keyExists("reinitialization_algorithm_type")) {
+        if (!pqs_config_db->isString("reinitialization_algorithm_type")) {
+            PQS_ERROR(this, "verifyConfigurationDatabase",
+                      "'reinitialization_algorithm_type' must be a string");
+        } else {
+            string reinitialization_algorithm_type =
+                    pqs_config_db->getString("reinitialization_algorithm_type");
+            if ((reinitialization_algorithm_type != "REINIT_EQN_SGN_PHI0") &&
+                (reinitialization_algorithm_type != "REINIT_EQN_SGN_PHI")) {
+                PQS_ERROR(this, "verifyConfigurationDatabase",
+                          "Invalid 'reinitialization_algorithm_type' value");
+            }
+        }
+    }
+
     // Numerical method parameters
     if (!pqs_config_db->isString("lsm_spatial_derivative_type")) {
         PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -839,6 +855,18 @@ void Solver::loadConfiguration(
     }
 
     // Reinitialization parameters
+    if (pqs_config_db->keyExists("reinitialization_algorithm_type")) {
+        string reinitialization_algorithm_type =
+                    pqs_config_db->getString("reinitialization_algorithm_type");
+        if (reinitialization_algorithm_type == "REINIT_EQN_SGN_PHI0") {
+            d_reinitialization_algorithm_type = math::LSM::REINIT_EQN_SGN_PHI0;
+        } else if (reinitialization_algorithm_type == "REINIT_EQN_SGN_PHI") {
+            d_reinitialization_algorithm_type = math::LSM::REINIT_EQN_SGN_PHI;
+        }
+    } else {
+        d_reinitialization_algorithm_type = math::LSM::REINIT_EQN_SGN_PHI0;
+    }
+
     d_reinitialization_steady_state_condition =
             pqs_config_db->getDoubleWithDefault(
                     "reinitialization_steady_state_condition",
@@ -849,11 +877,11 @@ void Solver::loadConfiguration(
                   string("be non-negative."));
     }
 
-    d_reinitialization_stop_time = pqs_config_db->getDoubleWithDefault(
-            "reinitialization_stop_time", Solver::DEFAULT_LSM_STOP_TIME);
-    if (d_reinitialization_stop_time < 0) {
+    d_reinitialization_stop_distance = pqs_config_db->getDoubleWithDefault(
+            "reinitialization_stop_distance", Solver::DEFAULT_LSM_STOP_TIME);
+    if (d_reinitialization_stop_distance < 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'reinitialization_stop_time' must be positive.");
+                  "'reinitialization_stop_distance' must be positive.");
     }
 
     d_reinitialization_max_num_iterations =
@@ -1199,11 +1227,25 @@ void Solver::initializeSimulation()
         // TODO: synchronize coarser levels with finer levels that didn't
         // exist when the finer coarser level data was initialized.
 
+        // Reinitialize pore-solid interface to be a signed distance function
+        d_lsm_algorithms->reinitializeLevelSetFunction(
+                d_psi_id,
+                d_control_volume_id,
+                d_time_integration_order,
+                d_reinitialization_algorithm_type,
+                d_reinitialization_max_num_iterations,
+                d_reinitialization_steady_state_condition,
+                d_reinitialization_stop_distance);
+
         // Impose zero contact angle boundary condition at pore-solid interface
         math::computeMin(d_patch_hierarchy,
                          d_phi_pqs_id,
                          d_phi_pqs_id,
                          d_psi_id);
+
+        // Reinitialize fluid-fluid interface to be a signed distance function
+        reinitializeInterface(d_reinitialization_algorithm_type);
+
     }
 } // Solver::initializeSimulation()
 
