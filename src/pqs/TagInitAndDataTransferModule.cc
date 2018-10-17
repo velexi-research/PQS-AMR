@@ -82,7 +82,7 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
         const int phi_lsm_next_id,
         const int psi_id,
         const int control_volume_id,
-        const hier::IntVector& max_stencil_width):
+        const int max_stencil_width):
     mesh::TagAndInitializeStrategy(s_object_name)
 {
     // Check arguments
@@ -465,14 +465,15 @@ void TagInitAndDataTransferModule::loadConfiguration(
 
 void TagInitAndDataTransferModule::setupDataTransferObjects(
         const shared_ptr<hier::BaseGridGeometry>& grid_geometry,
-        const hier::IntVector& max_stencil_width)
+        const int max_stencil_width)
 {
     // --- Preparations
 
     // Get pointer to VariableDatabase
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
-    hier::IntVector scratch_ghost_cell_width(max_stencil_width);
+    hier::IntVector scratch_ghost_cell_width(
+            d_patch_hierarchy->getDim(), max_stencil_width);
 
     // Initialize PatchData component selectors
     d_scratch_variables.clrAllFlags();

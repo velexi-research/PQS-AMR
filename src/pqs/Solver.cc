@@ -131,9 +131,15 @@ Solver::Solver(
             new pqs::Algorithms(d_lse_rhs_id, d_psi_id, d_grad_psi_id));
 
     // Construct math::LSM::Algorithms object
+
+    shared_ptr<hier::IntVector> max_stencil_width =
+            shared_ptr<hier::IntVector>(
+                    new hier::IntVector(d_patch_hierarchy->getDim(),
+                                        d_max_stencil_width));
+
     d_lsm_algorithms = shared_ptr<PQS::math::LSM::Algorithms>(
-            new PQS::math::LSM::Algorithms(d_patch_hierarchy,
-                                           d_max_stencil_width));
+            new PQS::math::LSM::Algorithms(
+                    d_patch_hierarchy, max_stencil_width));
 
     // Set up grid management objects
     setupGridManagement(config_db, pore_init_strategy, interface_init_strategy);
@@ -595,6 +601,11 @@ double Solver::getTargetVolume() const
     return d_target_volume;
 } // Solver::getTargetVolume()
 
+int Solver::getMaxStencilWidth() const
+{
+    return d_max_stencil_width;
+} // Solver::getMaxStencilWidth()
+
 double Solver::getCurvature() const
 {
     return d_curvature;
@@ -909,37 +920,50 @@ void Solver::loadConfiguration(
     d_time_integration_order =
         pqs_config_db->getInteger("time_integration_order");
 
+    // AMR parameters
+    d_refinement_cutoff =
+            pqs_config_db->getIntegerWithDefault("refinement_cutoff", -1);
+
     // --- Set simulation parameters computed from configuration parameters
 
     // Set maximum stencil width
-    int stencil_width;
     switch (d_lsm_spatial_derivative_type) {
         case ENO1: {
-            stencil_width = 1;
+            d_max_stencil_width = 1;
             break;
         }
         case ENO2: {
-            stencil_width = 2;
+            d_max_stencil_width = 2;
             break;
         }
         case ENO3: {
-            stencil_width = 3;
+            d_max_stencil_width = 3;
             break;
         }
         case WENO5: {
-            stencil_width = 3;
+            d_max_stencil_width = 3;
             break;
         }
         default: {
-            PQS_ERROR(this, "setupGridManagement",
+            PQS_ERROR(this, "loadConfiguration",
                       string("Invalid 'd_lsm_spatial_derivative_type' ") +
                       string("value: ") +
                       to_string(d_lsm_spatial_derivative_type));
         }
     }
 
-    d_max_stencil_width = shared_ptr<hier::IntVector>(
-        new hier::IntVector(d_patch_hierarchy->getDim(), stencil_width));
+    // If 'd_refinement_cutoff' is not set in the configuration database,
+    // set it based on the maximum stencil width
+    if (d_refinement_cutoff < 0) {
+        d_refinement_cutoff = 2 * d_max_stencil_width;
+    } else if (d_refinement_cutoff < d_max_stencil_width) {
+        PQS_ERROR(this, "loadConfiguration",
+                  string("'d_refinement_cutoff' (=") +
+                  to_string(d_refinement_cutoff) +
+                  string(") less than 'max_stencil_width' (=") +
+                  to_string(d_max_stencil_width) +
+                  string(")"));
+    }
 
 } // Solver::loadConfiguration()
 
@@ -974,8 +998,9 @@ void Solver::setupSimulationVariables()
     // Get dimensionality of problem
     tbox::Dimension dim = d_patch_hierarchy->getDim();
 
-    // Create IntVector for zero ghost cell widths
+    // Create IntVector for setting ghost cell widths
     hier::IntVector zero_ghost_cell_width(dim, 0);
+    hier::IntVector max_stencil_width(dim, d_max_stencil_width);
 
     // Initialize PatchData component selectors
     d_permanent_variables.clrAllFlags();
@@ -1019,11 +1044,11 @@ void Solver::setupSimulationVariables()
     d_phi_lsm_current_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_current_context,
-                                           *d_max_stencil_width);
+                                           max_stencil_width);
     d_phi_lsm_next_id =
         var_db->registerVariableAndContext(phi_variable,
                                            lsm_next_context,
-                                           *d_max_stencil_width);
+                                           max_stencil_width);
     d_intermediate_variables.setFlag(d_phi_lsm_current_id);
     d_intermediate_variables.setFlag(d_phi_lsm_next_id);
 
@@ -1041,7 +1066,7 @@ void Solver::setupSimulationVariables()
     d_psi_id =
         var_db->registerVariableAndContext(psi_variable,
                                            pqs_context,
-                                           *d_max_stencil_width);
+                                           max_stencil_width);
     d_permanent_variables.setFlag(d_psi_id);
 
     // grad psi (solid-pore interface)
@@ -1191,7 +1216,7 @@ void Solver::setupGridManagement(
                 d_phi_lsm_next_id,
                 d_psi_id,
                 d_control_volume_id,
-                *d_max_stencil_width));
+                d_max_stencil_width));
 
     // Construct SAMRAI::mesh::GriddingAlgorithm object
     d_gridding_algorithm = shared_ptr<mesh::GriddingAlgorithm> (

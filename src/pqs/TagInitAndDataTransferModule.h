@@ -128,7 +128,7 @@ public:
         const int phi_lsm_next_id,
         const int psi_id,
         const int control_volume_id,
-        const hier::IntVector& max_stencil_width);
+        const int max_stencil_width);
 
     /*!
      * Default destructor frees memory allocated for data transfer scratch
@@ -597,7 +597,7 @@ private:
      */
     void setupDataTransferObjects(
         const shared_ptr<hier::BaseGridGeometry>& grid_geometry,
-        const hier::IntVector& max_stencil_width);
+        const int max_stencil_width);
 
     /*
      * Compute control volumes for grid cells.
