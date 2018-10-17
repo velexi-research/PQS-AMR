@@ -202,7 +202,6 @@ c           --- Update maximum stable dt
           enddo
         enddo
       enddo
-c     } end loop over grid
 
       return
       end
@@ -434,7 +433,6 @@ c           --- Update maximum stable dt
           enddo
         enddo
       enddo
-c     } end loop over grid
 
       return
       end
@@ -654,7 +652,6 @@ c           --- Update maximum stable dt
           enddo
         enddo
       enddo
-c     } end loop over grid
 
       return
       end
@@ -903,7 +900,78 @@ c           --- Update maximum stable dt
           enddo
         enddo
       enddo
-c     } end loop over grid
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Tag cells for refinement.
+c
+c Parameters
+c ----------
+c tag: [output] grid function indicating whether or not cell should
+c     be refined
+c
+c phi: level set function that defines fluid-fluid interface
+c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
+c refinement_cutoff: cutoff value to use to determine whether or
+c      not to tag cells for refinement
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c***********************************************************************
+      subroutine pqs3dTagCellsForRefinement(
+     &  tag,
+     &  tag_gb_lo, tag_gb_hi,
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  patch_box_lo, patch_box_hi,
+     &  refinement_cutoff)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer tag_gb_lo(1:3), tag_gb_hi(1:3)
+      integer tag(tag_gb_lo(1):tag_gb_hi(1),
+     &            tag_gb_lo(2):tag_gb_hi(2),
+     &            tag_gb_lo(3):tag_gb_hi(3))
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@  phi(phi_gb_lo(1):phi_gb_hi(1),
+     &            phi_gb_lo(2):phi_gb_hi(2),
+     &            phi_gb_lo(3):phi_gb_hi(3))
+
+      integer patch_box_lo(1:3), patch_box_hi(1:3)
+
+      real*8 refinement_cutoff
+
+      integer i, j, k
+      integer idx(1:3)
+
+c     --- Tag cells for refinement
+
+      do k=patch_box_lo(3), patch_box_hi(3)
+        do j=patch_box_lo(2), patch_box_hi(2)
+          do i=patch_box_lo(1), patch_box_hi(1)
+
+            if (abs(phi(i,j,k)) .lt. refinement_cutoff) then
+              tag(i,j,k) = 1
+            else
+              tag(i,j,k) = 0
+            endif
+
+          enddo
+        enddo
+      enddo
 
       return
       end

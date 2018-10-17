@@ -37,8 +37,11 @@ extern "C" {
 #define PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS \
                                pqs2dcurvaturemodelnonzerocontactanglerhs_
 
+#define PQS_2D_TAG_CELLS_FOR_REFINEMENT \
+                               pqs2dtagcellsforrefinement_
+
 /*!
- * TODO
+ * See documentation in kernels_2d.f.in
  */
 void PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
@@ -55,7 +58,7 @@ void PQS_2D_CURVATURE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const double *surface_tension);
 
 /*!
- * TODO
+ * See documentation in kernels_2d.f.in
  */
 void PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
@@ -80,7 +83,7 @@ void PQS_2D_CURVATURE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const double *contact_angle);
 
 /*!
- * TODO
+ * See documentation in kernels_2d.f.in
  */
 void PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
@@ -100,7 +103,7 @@ void PQS_2D_COMPRESSIBLE_MODEL_ZERO_CONTACT_ANGLE_RHS(
     const double *surface_tension);
 
 /*!
- * TODO
+ * See documentation in kernels_2d.f.in
  */
 void PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const double *max_stable_dt,
@@ -126,6 +129,20 @@ void PQS_2D_COMPRESSIBLE_MODEL_NONZERO_CONTACT_ANGLE_RHS(
     const double *bulk_modulus,
     const double *surface_tension,
     const double *contact_angle);
+
+/*!
+ * See documentation in kernels_2d.f.in
+ */
+void PQS_2D_TAG_CELLS_FOR_REFINEMENT(
+     const int *tag,
+     const int *tag_gb_lo,
+     const int *tag_gb_hi,
+     const PQS_REAL *phi,
+     const int *phi_gb_lo,
+     const int *phi_gb_hi,
+     const int *patch_box_lo,
+     const int *patch_box_hi,
+     const double *refinement_cutoff);
 
 #ifdef __cplusplus
 }
