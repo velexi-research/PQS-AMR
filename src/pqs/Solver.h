@@ -679,14 +679,6 @@ protected:
     int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
     int d_time_integration_order;  // for TVD Runge-Kutta time integration
 
-    // AMR parameters
-    int d_refinement_cutoff;  // cutoff value (in units of the local grid
-                              // spacing) to use when tagging grid cells
-                              // around the zero level set of phi to refine.
-                              // NOTE: 'd_refinement_cutoff' should be set
-                              // to be larger that the maximum stencil width
-                              // required for the computation
-
     // Debugging parameters
     bool d_enable_debug;
 

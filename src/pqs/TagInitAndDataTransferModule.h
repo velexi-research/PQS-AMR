@@ -524,6 +524,15 @@ protected:
 
     // --- Parameters
 
+    // AMR parameters
+    int d_refinement_cutoff_multiplier;  // cutoff value (in units of the
+                                         // local grid spacing) to use when
+                                         // tagging grid cells around the zero
+                                         // level set of phi to refine.
+                                         // NOTE: should be set to be larger
+                                         // that the maximum stencil width
+                                         // required for the computation
+
     // --- PatchData IDs
 
     // PatchData component selectors to organize variables by

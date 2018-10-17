@@ -920,10 +920,6 @@ void Solver::loadConfiguration(
     d_time_integration_order =
         pqs_config_db->getInteger("time_integration_order");
 
-    // AMR parameters
-    d_refinement_cutoff =
-            pqs_config_db->getIntegerWithDefault("refinement_cutoff", -1);
-
     // --- Set simulation parameters computed from configuration parameters
 
     // Set maximum stencil width
@@ -951,20 +947,6 @@ void Solver::loadConfiguration(
                       to_string(d_lsm_spatial_derivative_type));
         }
     }
-
-    // If 'd_refinement_cutoff' is not set in the configuration database,
-    // set it based on the maximum stencil width
-    if (d_refinement_cutoff < 0) {
-        d_refinement_cutoff = 2 * d_max_stencil_width;
-    } else if (d_refinement_cutoff < d_max_stencil_width) {
-        PQS_ERROR(this, "loadConfiguration",
-                  string("'d_refinement_cutoff' (=") +
-                  to_string(d_refinement_cutoff) +
-                  string(") less than 'max_stencil_width' (=") +
-                  to_string(d_max_stencil_width) +
-                  string(")"));
-    }
-
 } // Solver::loadConfiguration()
 
 void Solver::createPatchHierarchy(

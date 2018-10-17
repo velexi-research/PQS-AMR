@@ -45,10 +45,13 @@
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
 #include "PQS/utilities/error.h"
+#include "PQS/utilities/macros.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/Solver.h"
 #include "PQS/pqs/TagInitAndDataTransferModule.h"
+#include "PQS/pqs/kernels/kernels_2d.h"
+#include "PQS/pqs/kernels/kernels_3d.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class RefineOperator; } }
@@ -393,11 +396,17 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
                   "PatchLevel at 'level_num' must not be NULL");
     }
 
+    // --- Preparations
+
+    // Get problem dimension
+    const int dim = d_patch_hierarchy->getDim().getValue();
+
     // Get PatchLevel
-    shared_ptr<hier::PatchLevel> patch_level =
+    const shared_ptr<hier::PatchLevel> patch_level =
         patch_hierarchy->getPatchLevel(level_num);
 
-    // Initialize data on Patches on the PatchLevel.
+    // --- Set tag on Patches on the PatchLevel
+
     for (hier::PatchLevel::Iterator pi(patch_level->begin());
             pi!=patch_level->end(); pi++) {
 
@@ -408,12 +417,80 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
                   "PatchLevel.");
         }
 
-        // TODO: implement actual cell tagging algorithm
+        // --- Compute refinement cutoff
+
+        // Get geometry parameters
+        shared_ptr<geom::CartesianPatchGeometry> patch_geom =
+                SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
+                        patch->getPatchGeometry());
+        const double* dx = patch_geom->getDx();
+
+        // Compute maximum grid spacing
+        double max_dx = dx[0];
+        if (max_dx < dx[1]) {
+            max_dx = dx[1];
+        }
+        if (dim == 3) {
+            if (max_dx < dx[2]) {
+                max_dx = dx[2];
+            }
+        }
+
+        // Compute refinement_threshold
+        const double refinement_cutoff =
+                d_refinement_cutoff_multiplier * max_dx;
+
+        // --- Get pointers to data and index space ranges
+
+        // phi
+        shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(d_phi_pqs_id));
+
+        hier::Box phi_ghostbox = phi_data->getGhostBox();
+        const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
+        const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
+
+        PQS_REAL* phi = phi_data->getPointer();
+
+        // refinement tags
         shared_ptr< pdat::CellData<int> > tag_data =
             SAMRAI_SHARED_PTR_CAST< pdat::CellData<int> >(
                 patch->getPatchData(tag_id));
 
-        tag_data->fill(1);
+        hier::Box tag_ghostbox = tag_data->getGhostBox();
+        const hier::IntVector tag_ghostbox_lower = tag_ghostbox.lower();
+        const hier::IntVector tag_ghostbox_upper = tag_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(tag_ghostbox_lo, tag_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(tag_ghostbox_hi, tag_ghostbox_upper);
+
+        int* tag = tag_data->getPointer();
+
+        // patch box
+        hier::Box patch_box = patch->getBox();
+        const hier::IntVector patch_box_lower = patch_box.lower();
+        const hier::IntVector patch_box_upper = patch_box.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(patch_box_lo, patch_box_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(patch_box_hi, patch_box_upper);
+
+        // --- Tag cells for refinement
+
+        if (dim == 2) {
+            PQS_2D_TAG_CELLS_FOR_REFINEMENT(
+                tag, tag_ghostbox_lo, tag_ghostbox_hi,
+                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                patch_box_lo, patch_box_hi,
+                &refinement_cutoff);
+
+        } else if (dim == 3) {
+            PQS_3D_TAG_CELLS_FOR_REFINEMENT(
+                tag, tag_ghostbox_lo, tag_ghostbox_hi,
+                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                patch_box_lo, patch_box_hi,
+                &refinement_cutoff);
+        }
     }
 } // TagInitAndDataTransferModule::tagCellsForRefinement()
 
@@ -461,6 +538,28 @@ void TagInitAndDataTransferModule::printClassData(ostream& os) const
 void TagInitAndDataTransferModule::loadConfiguration(
         const shared_ptr<tbox::Database>& config_db)
 {
+    // --- Preparations
+
+    const int max_stencil_width = d_pqs_solver->getMaxStencilWidth();
+
+    // --- Load parameters
+
+    // AMR parameters
+    if (config_db->keyExists("refinement_cutoff_multiplier")) {
+        d_refinement_cutoff_multiplier =
+                config_db->getInteger("refinement_cutoff_multiplier");
+    } else {
+        d_refinement_cutoff_multiplier = 2 * max_stencil_width;
+    }
+
+    if (d_refinement_cutoff_multiplier < max_stencil_width) {
+        PQS_ERROR(this, "loadConfiguration",
+                  string("'d_refinement_cutoff_multiplier' (=") +
+                  to_string(d_refinement_cutoff_multiplier) +
+                  string(") less than 'max_stencil_width' (=") +
+                  to_string(max_stencil_width) +
+                  string(")"));
+    }
 } // TagInitAndDataTransferModule::loadConfiguration()
 
 void TagInitAndDataTransferModule::setupDataTransferObjects(
