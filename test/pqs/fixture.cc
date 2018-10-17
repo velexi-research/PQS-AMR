@@ -84,6 +84,7 @@ pqsTest::pqsTest() {
 
     pqs_config_db->putDouble("contact_angle", 30);
     pqs_config_db->putDouble("surface_tension", 0.1);
+    pqs_config_db->putBool("use_slightly_compressible_model", true);
     pqs_config_db->putDouble("bulk_modulus", 1.0);
     pqs_config_db->putDouble("target_volume", 0.5);
 

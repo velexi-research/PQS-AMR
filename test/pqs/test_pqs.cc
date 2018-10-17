@@ -72,7 +72,10 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(pqs_config_db->isDouble("final_curvature"));
     EXPECT_TRUE(pqs_config_db->isDouble("curvature_step"));
 
+    EXPECT_TRUE(pqs_config_db->isDouble("contact_angle"));
     EXPECT_TRUE(pqs_config_db->isDouble("surface_tension"));
+
+    EXPECT_TRUE(pqs_config_db->isBool("use_slightly_compressible_model"));
     EXPECT_TRUE(pqs_config_db->isDouble("bulk_modulus"));
     EXPECT_TRUE(pqs_config_db->isDouble("target_volume"));
 
@@ -141,6 +144,8 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
               pqs_config_db->getDoubleWithDefault("contact_angle", 0.0));
     EXPECT_EQ(solver->getSurfaceTension(),
               pqs_config_db->getDouble("surface_tension"));
+
+    EXPECT_TRUE(solver->useSlightlyCompressibleModel());
     EXPECT_EQ(solver->getBulkModulus(),
               pqs_config_db->getDouble("bulk_modulus"));
     EXPECT_EQ(solver->getTargetVolume(),
