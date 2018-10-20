@@ -141,6 +141,9 @@ TagInitAndDataTransferModule::TagInitAndDataTransferModule(
     d_pore_init_strategy = pore_init_strategy;
     d_interface_init_strategy = interface_init_strategy;
 
+    // Load configuration parameters
+    loadConfiguration(config_db);
+
     // Set up data transfer objects
     setupDataTransferObjects(patch_hierarchy->getGridGeometry(),
                              max_stencil_width);
@@ -442,19 +445,6 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
 
         // --- Get pointers to data and index space ranges
 
-        // phi
-        shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
-                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
-                        patch->getPatchData(d_phi_pqs_id));
-
-        hier::Box phi_ghostbox = phi_data->getGhostBox();
-        const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
-        const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
-        PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
-        PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
-
-        PQS_REAL* phi = phi_data->getPointer();
-
         // refinement tags
         shared_ptr< pdat::CellData<int> > tag_data =
             SAMRAI_SHARED_PTR_CAST< pdat::CellData<int> >(
@@ -467,6 +457,19 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
         PQS_INT_VECT_TO_INT_ARRAY(tag_ghostbox_hi, tag_ghostbox_upper);
 
         int* tag = tag_data->getPointer();
+
+        // phi
+        shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(d_phi_pqs_id));
+
+        hier::Box phi_ghostbox = phi_data->getGhostBox();
+        const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
+        const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
+
+        PQS_REAL* phi = phi_data->getPointer();
 
         // patch box
         hier::Box patch_box = patch->getBox();
