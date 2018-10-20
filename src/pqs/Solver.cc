@@ -1220,15 +1220,18 @@ void Solver::initializeSimulation()
 
         d_gridding_algorithm->makeCoarsestLevel(time);
 
-        for (int level_num = 0;
-                d_patch_hierarchy->levelCanBeRefined(level_num);
-                level_num++) {
+        int level_num = 0;
+        while (d_patch_hierarchy->levelCanBeRefined(level_num)) {
 
+            // Make finer level
             d_gridding_algorithm->makeFinerLevel(
                     0, // TODO: do we need tag buffer?
                     true, // initial_cycle=true
                     d_step_count,
                     time);
+
+            // Increment level number
+            level_num++;
         }
 
         // TODO: synchronize coarser levels with finer levels that didn't
