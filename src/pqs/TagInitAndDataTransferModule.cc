@@ -366,8 +366,7 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
         patch_hierarchy->getNumberOfLevels());
 
     for (int level_num = coarsest_level_num;
-            level_num <= finest_level_num;
-            level_num++) {
+            level_num <= finest_level_num; level_num++) {
 
         shared_ptr<hier::PatchLevel> patch_level =
             patch_hierarchy->getPatchLevel(level_num);
@@ -406,8 +405,7 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
         patch_hierarchy->getNumberOfLevels());
 
     for (int level_num = coarsest_level_num;
-            level_num <= finest_level_num;
-            level_num++) {
+            level_num <= finest_level_num; level_num++) {
 
         // No consistency to enforce for coarsest level in PatchHierarchy
         if (level_num == 0) {
@@ -697,6 +695,9 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
 
     // --- Get coarsening operators for enforcing consistency across
     //     PatchLevels
+    //
+    //     TODO: replace with custom coarsening operator based on
+    //           interpolation
 
     shared_ptr<hier::CoarsenOperator> coarsen_op =
         grid_geometry->lookupCoarsenOperator(phi_variable,

@@ -607,7 +607,7 @@ protected:
     // Data transfer: fill new level
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
 
-    // Data transfer: fill boundary for phi when solving level set
+    // Data transfer: fill boundary data for phi when solving level set
     // evolution equation
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
     vector< shared_ptr<xfer::RefineSchedule> >
@@ -620,14 +620,15 @@ protected:
     // Data transfer: enforce consistency of phi when solving level set
     // evolution equation
     shared_ptr<xfer::CoarsenAlgorithm>
-            d_xfer_enforce_phi_consistency_pqs;
-    vector< shared_ptr<xfer::CoarsenSchedule> >
-            d_xfer_enforce_phi_consistency_schedules_pqs;
-
-    shared_ptr<xfer::CoarsenAlgorithm>
             d_xfer_enforce_phi_consistency_lsm_next;
     vector< shared_ptr<xfer::CoarsenSchedule> >
             d_xfer_enforce_phi_consistency_schedules_lsm_next;
+
+    // Data transfer: enforce consistency of phi when initializing simulation
+    shared_ptr<xfer::CoarsenAlgorithm>
+            d_xfer_enforce_phi_consistency_pqs;
+    vector< shared_ptr<xfer::CoarsenSchedule> >
+            d_xfer_enforce_phi_consistency_schedules_pqs;
 
     // Data transfer: enforce consistency of psi
     shared_ptr<xfer::CoarsenAlgorithm> d_xfer_enforce_psi_consistency;
