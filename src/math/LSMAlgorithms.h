@@ -39,7 +39,10 @@
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
 #include "SAMRAI/tbox/Database.h"
+#include "SAMRAI/xfer/CoarsenAlgorithm.h"
+#include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
+#include "SAMRAI/xfer/RefineSchedule.h"
 
 // PQS
 #include "PQS/PQS_config.h"
@@ -312,7 +315,8 @@ protected:
     // SAMRAI components
     shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
 
-    // Data transfer
+    // Data transfer: fill boundary data of level set function when solving
+    // level set evolution equation
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_current;
     vector< shared_ptr<xfer::RefineSchedule> >
             d_xfer_fill_bdry_schedule_current;
@@ -320,6 +324,12 @@ protected:
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_next;
     vector< shared_ptr<xfer::RefineSchedule> >
             d_xfer_fill_bdry_schedule_next;
+
+    // Data transfer: enforce consistency of level set function when solving
+    // level set evolution equation
+    shared_ptr<xfer::CoarsenAlgorithm> d_xfer_enforce_consistency;
+    vector< shared_ptr<xfer::CoarsenSchedule> >
+        d_xfer_enforce_consistency_schedules;
 
 private:
 
@@ -359,6 +369,19 @@ private:
      * None
      */
     void fillGhostCells(const int context) const;
+
+    /*!
+     * Enforce consistency of level set function across PatchLevels.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void enforceLevelSetFunctionConsistency() const;
 
     /*!
      ************************************************************************

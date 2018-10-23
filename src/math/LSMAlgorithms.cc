@@ -44,6 +44,8 @@
 #include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/PIO.h"
 #include "SAMRAI/tbox/Utilities.h"
+#include "SAMRAI/xfer/CoarsenAlgorithm.h"
+#include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 #include "SAMRAI/xfer/RefineSchedule.h"
 
@@ -58,6 +60,7 @@
 #include "PQS/utilities/macros.h"
 
 // Class/type declarations
+namespace SAMRAI { namespace hier { class CoarsenOperator; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
@@ -136,15 +139,14 @@ void Algorithms::resetHierarchyConfiguration(
 
     // --- Reset data transfer schedules
 
-    // data transfer schedules for filling ghost cells data
+    // Data transfer schedules for filling ghost cells data
     d_xfer_fill_bdry_schedule_current.resize(
         d_patch_hierarchy->getNumberOfLevels());
     d_xfer_fill_bdry_schedule_next.resize(
         d_patch_hierarchy->getNumberOfLevels());
 
     for (int level_num = coarsest_level_num;
-            level_num <= finest_level_num;
-            level_num++) {
+            level_num <= finest_level_num; level_num++) {
 
         shared_ptr<hier::PatchLevel> patch_level =
             d_patch_hierarchy->getPatchLevel(level_num);
@@ -173,6 +175,30 @@ void Algorithms::resetHierarchyConfiguration(
                                                // condition module
         }
     }
+
+    // Data transfer schedules for enforcing level set function consistency
+    d_xfer_enforce_consistency_schedules.resize(
+        d_patch_hierarchy->getNumberOfLevels());
+
+    for (int level_num = coarsest_level_num;
+            level_num <= finest_level_num; level_num++) {
+
+        // No consistency to enforce for coarsest level in PatchHierarchy
+        if (level_num == 0) {
+            continue;
+        }
+
+        shared_ptr<hier::PatchLevel> patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num);
+
+        shared_ptr<hier::PatchLevel> next_coarser_patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num-1);
+
+        d_xfer_enforce_consistency_schedules[level_num] =
+            d_xfer_enforce_consistency->createSchedule(
+                next_coarser_patch_level, patch_level);
+    }
+
 } // Algorithms::resetHierarchyConfiguration()
 
 void Algorithms::reinitializeLevelSetFunction(
@@ -407,6 +433,10 @@ void Algorithms::reinitializeLevelSetFunction(
         math_ops->swapData(d_lsm_algs_next_id, d_lsm_algs_current_id);
     }
 
+    // --- Enforce consistency of level set function across PatchLevels
+
+    enforceLevelSetFunctionConsistency();
+
     // --- Clean up
 
     // Copy phi data from lsm_algs PatchData to phi_id PatchData
@@ -552,6 +582,15 @@ void Algorithms::setupDataTransferObjects(
     shared_ptr<hier::RefineOperator> linear_refine_op =
         grid_geometry->lookupRefineOperator(lsm_algs_variable, "LINEAR_REFINE");
 
+    // --- Get coarsening operators for enforcing consistency across
+    //     PatchLevels
+    //
+    //     TODO: replace with custom coarsening operator based on
+    //           interpolation
+    shared_ptr<hier::CoarsenOperator> coarsen_op =
+        grid_geometry->lookupCoarsenOperator(lsm_algs_variable,
+                                             "CONSERVATIVE_COARSEN");
+
     // --- Set up data transfer objects
 
     // Filling a ghost cells during time integration of level set functions
@@ -566,6 +605,13 @@ void Algorithms::setupDataTransferObjects(
     d_xfer_fill_bdry_next->registerRefine(
         d_lsm_algs_next_id, d_lsm_algs_next_id, d_lsm_algs_scratch_id,
         linear_refine_op);
+
+    // Enforcing consistency of phi across PatchLevels
+    d_xfer_enforce_consistency =
+        shared_ptr<xfer::CoarsenAlgorithm>(
+            new xfer::CoarsenAlgorithm(d_patch_hierarchy->getDim()));
+    d_xfer_enforce_consistency->registerCoarsen(
+        d_lsm_algs_next_id, d_lsm_algs_next_id, coarsen_op);
 
 } // Algorithms::setupDataTransferObjects()
 
@@ -595,6 +641,16 @@ void Algorithms::fillGhostCells(const int context) const
         }
     }
 } // Algorithms::fillGhostCells()
+
+void Algorithms::enforceLevelSetFunctionConsistency() const
+{
+    // Enforce consistency of level set function across PatchLevels
+    for (int level_num = d_patch_hierarchy->getNumberOfLevels()-1;
+            level_num > 0; level_num--) {
+
+        d_xfer_enforce_consistency_schedules[level_num]->coarsenData();
+    }
+} // Algorithms::enforceLevelSetFunctionConsistency()
 
 void Algorithms::computeReinitEqnRHSOnPatch(
         const shared_ptr<hier::Patch>& patch,
