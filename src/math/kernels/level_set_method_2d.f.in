@@ -108,6 +108,122 @@ c***********************************************************************
 
 c***********************************************************************
 c
+c Compute area of region where level set function is less than 0 where
+c control volume is non-zero.
+c
+c Parameters
+c ----------
+c phi: level set function
+c
+c control_volume: control volume
+c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c eps: numerical width Heaviside function (as a function of phi)
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Return value
+c ------------
+c area of region where phi < 0 where control volume is non-zero
+c
+c Notes
+c -----
+c - When phi is a signed distance function, the numerical width of the
+c   Heaviside function as a function of spatial position is approximately
+c   equal to (2 * eps).
+c
+c - Control volume is considered non-zero when it is greater than
+c   zero_tol.
+c
+c***********************************************************************
+      @REAL@ function lsm2dAreaPhiLessThanZeroWithControlVolume(
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  control_volume, control_volume_gb_lo, control_volume_gb_hi,
+     &  patch_box_lo, patch_box_hi,
+     &  dx,
+     &  eps)
+***********************************************************************
+c { begin function
+      implicit none
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2))
+
+      integer control_volume_gb_lo(1:2), control_volume_gb_hi(1:2)
+      @REAL@ control_volume(
+     &      control_volume_gb_lo(1):control_volume_gb_hi(1),
+     &      control_volume_gb_lo(2):control_volume_gb_hi(2))
+
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
+      real*8 dx(1:2)
+      real*8 eps
+
+      integer i, j
+      real*8 phi_cur
+      real*8 phi_cur_over_eps
+      real*8 one_minus_H
+      real*8 dA
+      real*8 pi
+      parameter (pi=3.14159265358979323846d0)
+      real*8 one_over_pi
+      parameter (one_over_pi=0.31830988618379d0)
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+
+      real*8 area
+
+c     compute dA
+      dA = dx(1) * dx(2)
+
+c     initialize area to zero
+      area = 0.0d0
+
+c     loop over patch box {
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
+          if (control_volume(i,j) .gt. zero_tol) then
+
+            phi_cur = phi(i,j)
+
+            if (phi_cur .lt. -eps) then
+
+              area = area + dA
+
+            elseif (phi_cur .lt.  eps) then
+
+              phi_cur_over_eps = phi_cur/eps
+
+              one_minus_H = 0.5d0*( 1 - phi_cur_over_eps
+     &                                - one_over_pi
+     &                                 *sin(pi*phi_cur_over_eps))
+
+              area = area + one_minus_H*dA
+
+            endif
+
+          endif
+        enddo
+      enddo
+c     } end loop over patch box
+
+c     set result
+      lsm2dAreaPhiLessThanZeroWithControlVolume = area
+
+      return
+      end
+c } end function
+c***********************************************************************
+
+c***********************************************************************
+c
 c Compute area of region where level set function is greater
 c than 0.
 c
@@ -200,6 +316,121 @@ c     } end loop over patch box
 
 c     set result
       lsm2dAreaPhiGreaterThanZero = area
+
+      return
+      end
+c } end function
+c***********************************************************************
+
+c***********************************************************************
+c
+c Compute area of region where level set function is greater
+c than 0 where c control volume is non-zero.
+c
+c Parameters
+c ----------
+c phi: level set function
+c
+c control_volume: control volume
+c
+c patch_box_lo: lower corner of index range for patch box
+c
+c patch_box_hi: upper corner of index range for patch box
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c eps: numerical width Heaviside function (as a function of phi)
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Return value
+c ------------
+c area of region where phi > 0 where control volume is non-zero
+c
+c Notes
+c -----
+c - When phi is a signed distance function, the numerical width of the
+c   Heaviside function as a function of spatial position is approximately
+c   equal to (2 * eps).
+c
+c - Control volume is considered non-zero when it is greater than
+c   zero_tol.
+c
+c***********************************************************************
+      @REAL@ function lsm2dAreaPhiGreaterThanZeroWithControlVolume(
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  control_volume, control_volume_gb_lo, control_volume_gb_hi,
+     &  patch_box_lo, patch_box_hi,
+     &  dx,
+     &  eps)
+***********************************************************************
+c { begin function
+      implicit none
+
+      integer phi_gb_lo(1:2), phi_gb_hi(1:2)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2))
+
+      integer control_volume_gb_lo(1:2), control_volume_gb_hi(1:2)
+      @REAL@ control_volume(
+     &      control_volume_gb_lo(1):control_volume_gb_hi(1),
+     &      control_volume_gb_lo(2):control_volume_gb_hi(2))
+
+      integer patch_box_lo(1:2), patch_box_hi(1:2)
+      real*8 dx(1:2)
+      real*8 eps
+
+      integer i, j
+      real*8 phi_cur
+      real*8 phi_cur_over_eps
+      real*8 H
+      real*8 dA
+      real*8 pi
+      parameter (pi=3.14159265358979323846d0)
+      real*8 one_over_pi
+      parameter (one_over_pi=0.31830988618379d0)
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
+
+      real*8 area
+
+c     compute dA
+      dA = dx(1) * dx(2)
+
+c     initialize area to zero
+      area = 0.0d0
+
+c     loop over patch box {
+      do j=patch_box_lo(2),patch_box_hi(2)
+        do i=patch_box_lo(1),patch_box_hi(1)
+          if (control_volume(i,j) .gt. zero_tol) then
+
+            phi_cur = phi(i,j)
+
+            if (phi_cur .gt. eps) then
+
+              area = area + dA
+
+            elseif (phi_cur .gt.  -eps) then
+
+              phi_cur_over_eps = phi_cur/eps
+
+              H = 0.5d0*( 1 + phi_cur_over_eps
+     &                      + one_over_pi*sin(pi*phi_cur_over_eps))
+
+              area = area + H*dA
+
+            endif
+
+          endif
+        enddo
+      enddo
+c     } end loop over patch box
+
+c     set result
+      lsm2dAreaPhiGreaterThanZeroWithControlVolume = area
 
       return
       end

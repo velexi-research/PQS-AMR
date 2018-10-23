@@ -31,8 +31,12 @@ extern "C" {
  */
 #define LSM_2D_AREA_PHI_LESS_THAN_ZERO \
                                          lsm2dareaphilessthanzero_
+#define LSM_2D_AREA_PHI_LESS_THAN_ZERO_WITH_CONTROL_VOLUME \
+                                         lsm2dareaphilessthanzerowithcontrolvolume_
 #define LSM_2D_AREA_PHI_GREATER_THAN_ZERO \
                                          lsm2dareaphigreaterthanzero_
+#define LSM_2D_AREA_PHI_GREATER_THAN_ZERO_WITH_CONTROL_VOLUME \
+                                         lsm2dareaphigreaterthanzerowithcontrolvolume_
 #define LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI0_RHS \
                                          lsm2dcomputereiniteqnsgnphi0rhs_
 #define LSM_2D_COMPUTE_REINIT_EQN_SGN_PHI_RHS \
@@ -53,10 +57,40 @@ PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO(
 /*!
  * See documentation in level_set_method_2d.f.in
  */
+PQS_REAL LSM_2D_AREA_PHI_LESS_THAN_ZERO_WITH_CONTROL_VOLUME(
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const PQS_REAL *control_volume,
+    const int *control_volume_gb_lo,
+    const int *control_volume_gb_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi,
+    const double *dx,
+    const double *eps);
+
+/*!
+ * See documentation in level_set_method_2d.f.in
+ */
 PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
     const PQS_REAL *phi,
     const int *phi_gb_lo,
     const int *phi_gb_hi,
+    const int *patch_box_lo,
+    const int *patch_box_hi,
+    const double *dx,
+    const double *eps);
+
+/*!
+ * See documentation in level_set_method_2d.f.in
+ */
+PQS_REAL LSM_2D_AREA_PHI_GREATER_THAN_ZERO_WITH_CONTROL_VOLUME(
+    const PQS_REAL *phi,
+    const int *phi_gb_lo,
+    const int *phi_gb_hi,
+    const PQS_REAL *control_volume,
+    const int *control_volume_gb_lo,
+    const int *control_volume_gb_hi,
     const int *patch_box_lo,
     const int *patch_box_hi,
     const double *dx,

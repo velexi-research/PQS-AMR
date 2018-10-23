@@ -107,26 +107,12 @@ PQS_REAL computeVolume(
             shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
                     SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                             patch->getPatchData( phi_id ));
-            shared_ptr< pdat::CellData<PQS_REAL> > control_volume_data =
-                    SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
-                        patch->getPatchData( control_volume_id ));
 
             hier::Box phi_ghostbox = phi_data->getGhostBox();
             const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
             const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
             PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
             PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
-
-            hier::Box control_volume_ghostbox =
-                    control_volume_data->getGhostBox();
-            const hier::IntVector control_volume_ghostbox_lower =
-                    control_volume_ghostbox.lower();
-            const hier::IntVector control_volume_ghostbox_upper =
-                    control_volume_ghostbox.upper();
-            PQS_INT_VECT_TO_INT_ARRAY(control_volume_ghostbox_lo,
-                                      control_volume_ghostbox_lower);
-            PQS_INT_VECT_TO_INT_ARRAY(control_volume_ghostbox_hi,
-                                      control_volume_ghostbox_upper);
 
             // interior box
             hier::Box interior_box = patch->getBox();
@@ -136,37 +122,103 @@ PQS_REAL computeVolume(
             PQS_INT_VECT_TO_INT_ARRAY(interior_box_hi, interior_box_upper);
 
             PQS_REAL* phi = phi_data->getPointer();
-            PQS_REAL* control_volume = control_volume_data->getPointer();
             PQS_REAL volume_on_patch = 0.0;
             int control_volume_sgn = 1;
 
-            if ( dim == 3 ) {
-                if (region_indicator > 0) {
-                    // integrate over region {x | phi(x) > 0}
-                    volume_on_patch = LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
-                            phi, phi_ghostbox_lo, phi_ghostbox_hi,
-                            interior_box_lo, interior_box_hi,
-                            dx, &epsilon);
-                } else {
-                    // integrate over region {x | phi(x) < 0}
-                    volume_on_patch = LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
-                            phi, phi_ghostbox_lo, phi_ghostbox_hi,
-                            interior_box_lo, interior_box_hi,
-                            dx, &epsilon);
+            if (control_volume_id < 0) {
+                if ( dim == 3 ) {
+                    if (region_indicator > 0) {
+                        // integrate over region {x | phi(x) > 0}
+                        volume_on_patch = LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    } else {
+                        // integrate over region {x | phi(x) < 0}
+                        volume_on_patch = LSM_3D_VOLUME_PHI_LESS_THAN_ZERO(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    }
+                } else if ( dim == 2 ) {
+                    if (region_indicator > 0) {
+                        // integrate over region {x | phi(x) > 0}
+                        volume_on_patch = LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    } else {
+                        // integrate over region {x | phi(x) < 0}
+                        volume_on_patch = LSM_2D_AREA_PHI_LESS_THAN_ZERO(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    }
                 }
-            } else if ( dim == 2 ) {
-                if (region_indicator > 0) {
-                    // integrate over region {x | phi(x) > 0}
-                    volume_on_patch = LSM_2D_AREA_PHI_GREATER_THAN_ZERO(
-                            phi, phi_ghostbox_lo, phi_ghostbox_hi,
-                            interior_box_lo, interior_box_hi,
-                            dx, &epsilon);
-                } else {
-                    // integrate over region {x | phi(x) < 0}
-                    volume_on_patch = LSM_2D_AREA_PHI_LESS_THAN_ZERO(
-                            phi, phi_ghostbox_lo, phi_ghostbox_hi,
-                            interior_box_lo, interior_box_hi,
-                            dx, &epsilon);
+            } else {  // control_volume_id >=0
+
+                // get pointers to data and index space range for control volume
+
+                shared_ptr< pdat::CellData<PQS_REAL> > control_volume_data =
+                        SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                                patch->getPatchData( control_volume_id ));
+                PQS_REAL* control_volume = control_volume_data->getPointer();
+
+                hier::Box control_volume_ghostbox =
+                        control_volume_data->getGhostBox();
+                const hier::IntVector control_volume_ghostbox_lower =
+                        control_volume_ghostbox.lower();
+                const hier::IntVector control_volume_ghostbox_upper =
+                        control_volume_ghostbox.upper();
+                PQS_INT_VECT_TO_INT_ARRAY(control_volume_ghostbox_lo,
+                                          control_volume_ghostbox_lower);
+                PQS_INT_VECT_TO_INT_ARRAY(control_volume_ghostbox_hi,
+                                          control_volume_ghostbox_upper);
+
+                if ( dim == 3 ) {
+                    if (region_indicator > 0) {
+                        // integrate over region {x | phi(x) > 0}
+                        volume_on_patch =
+                            LSM_3D_VOLUME_PHI_GREATER_THAN_ZERO_WITH_CONTROL_VOLUME(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                control_volume,
+                                control_volume_ghostbox_lo,
+                                control_volume_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    } else {
+                        // integrate over region {x | phi(x) < 0}
+                        volume_on_patch =
+                            LSM_3D_VOLUME_PHI_LESS_THAN_ZERO_WITH_CONTROL_VOLUME(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                control_volume,
+                                control_volume_ghostbox_lo,
+                                control_volume_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    }
+                } else if ( dim == 2 ) {
+                    if (region_indicator > 0) {
+                        // integrate over region {x | phi(x) > 0}
+                        volume_on_patch =
+                            LSM_2D_AREA_PHI_GREATER_THAN_ZERO_WITH_CONTROL_VOLUME(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                control_volume,
+                                control_volume_ghostbox_lo,
+                                control_volume_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    } else {
+                        // integrate over region {x | phi(x) < 0}
+                        volume_on_patch =
+                            LSM_2D_AREA_PHI_LESS_THAN_ZERO_WITH_CONTROL_VOLUME(
+                                phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                                control_volume,
+                                control_volume_ghostbox_lo,
+                                control_volume_ghostbox_hi,
+                                interior_box_lo, interior_box_hi,
+                                dx, &epsilon);
+                    }
                 }
             }
 
