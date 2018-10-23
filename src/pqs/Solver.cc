@@ -19,12 +19,12 @@
 
 // Standard library
 #include <cstddef>
-#include <iostream>
 #include <limits>
 #include <math.h>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 // MPI
 #include "mpi.h"
@@ -267,7 +267,7 @@ void Solver::equilibrateInterface(
     double dt = 1.0;
     double delta_saturation = saturation_steady_state_condition + 1;
 
-    // Allocate PatchData
+    // Allocate temporary PatchData
     for (int level_num = 0;
             level_num < d_patch_hierarchy->getNumberOfLevels();
             level_num++) {
@@ -331,17 +331,28 @@ void Solver::equilibrateInterface(
                 }
             }
 
-            int ghost_cell_fill_context;
+            int fill_ghost_cell_context;
             if (rk_stage == 1) {
-                ghost_cell_fill_context = LSM_CURRENT;
+                fill_ghost_cell_context = LSM_CURRENT;
             } else {
-                ghost_cell_fill_context = LSM_NEXT;
+                fill_ghost_cell_context = LSM_NEXT;
             }
 
-            // --- Fill ghost cells
+            // --- Impose boundary conditions
 
+            // Impose zero contact angle boundary condition at pore-solid
+            // interface
+            // TODO: check correct phi_id used
+            if (d_contact_angle == 0.0) {
+                math::computeMin(d_patch_hierarchy,
+                                 phi_id,
+                                 phi_id,
+                                 d_psi_id);
+            }
+
+            // Fill ghost cells
             d_tag_init_and_data_xfer_module->fillGhostCells(
-                    ghost_cell_fill_context);
+                    fill_ghost_cell_context);
 
             // --- Compute RHS of level set evolution equation
 
@@ -450,14 +461,10 @@ void Solver::equilibrateInterface(
                             dt);
                 }
             }
-        }
 
-        // Impose zero contact angle boundary condition at pore-solid interface
-        if (d_contact_angle == 0.0) {
-            math::computeMin(d_patch_hierarchy,
-                             d_phi_lsm_next_id,
-                             d_phi_lsm_next_id,
-                             d_psi_id);
+            // --- Enforce consistency of phi across PatchLevels
+
+            d_tag_init_and_data_xfer_module->enforcePhiConsistency(LSM_NEXT);
         }
 
         // --- Update metrics used in stopping criteria
@@ -515,12 +522,16 @@ void Solver::equilibrateInterface(
         math_ops->swapData(d_phi_lsm_next_id, d_phi_lsm_current_id);
     }
 
-    // --- Clean up
+    // --- Update phi and curvature
 
     // Copy phi data from LSM to PQS context
     math_ops->copyData(d_phi_pqs_id, d_phi_lsm_current_id);
 
-    // Deallocate PatchData
+    // Update d_curvature
+    d_curvature = curvature;
+
+    // --- Deallocate temporary PatchData
+
     for (int level_num = 0;
             level_num < d_patch_hierarchy->getNumberOfLevels();
             level_num++) {
@@ -530,6 +541,15 @@ void Solver::equilibrateInterface(
 
         patch_level->deallocatePatchData(d_intermediate_variables);
     }
+
+    // --- Regrid hierarchy
+
+    std::vector<int> tag_buffer = {2};
+    d_gridding_algorithm->regridAllFinerLevels(
+        0, // regrid all levels
+        tag_buffer,
+        d_step_count, d_curvature);
+
 } // Solver::equilibrateInterface()
 
 void Solver::reinitializeInterface(
@@ -1216,26 +1236,34 @@ void Solver::initializeSimulation()
     if (tbox::RestartManager::getManager()->isFromRestart()) {
         // TODO
     } else {
-        double time = 0.0;  // 0.0 is an arbitrary simulation time
+        const int tag_buffer = 2;  // two cells of buffer ensures that the
+                                   // finer grid on the next level extends
+                                   // beyond the tagged cell by at least the
+                                   // maximum stencil width (at the finer
+                                   // grid resolution)
 
-        d_gridding_algorithm->makeCoarsestLevel(time);
+        d_gridding_algorithm->makeCoarsestLevel(d_initial_curvature);
 
         int level_num = 0;
         while (d_patch_hierarchy->levelCanBeRefined(level_num)) {
 
             // Make finer level
             d_gridding_algorithm->makeFinerLevel(
-                    0, // TODO: do we need tag buffer?
+                    tag_buffer,
                     true, // initial_cycle=true
                     d_step_count,
-                    time);
+                    d_initial_curvature);
 
             // Increment level number
             level_num++;
         }
 
-        // TODO: synchronize coarser levels with finer levels that didn't
-        // exist when the finer coarser level data was initialized.
+        // --- Enforce consistency of phi and psi across PatchLevels
+
+        d_tag_init_and_data_xfer_module->enforcePhiConsistency(PQS);
+        d_tag_init_and_data_xfer_module->enforcePsiConsistency();
+
+        // --- Enforce that phi and psi are signed distance functions
 
         // Reinitialize pore-solid interface to be a signed distance function
         d_lsm_algorithms->reinitializeLevelSetFunction(
@@ -1256,6 +1284,15 @@ void Solver::initializeSimulation()
         // Reinitialize fluid-fluid interface to be a signed distance function
         reinitializeInterface(d_reinitialization_algorithm_type);
 
+        // --- Regrid hierarchy
+
+        std::vector<int> tag_buffer_vector;
+        tag_buffer_vector.push_back(tag_buffer);
+        d_gridding_algorithm->regridAllFinerLevels(
+            0, // regrid all levels
+            tag_buffer_vector,
+            d_step_count,
+            d_initial_curvature);
     }
 } // Solver::initializeSimulation()
 
