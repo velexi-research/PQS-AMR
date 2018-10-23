@@ -22,6 +22,7 @@
 #include <iosfwd>
 #include <memory>
 #include <string>
+#include <stddef.h>
 #include <vector>
 
 // SAMRAI
