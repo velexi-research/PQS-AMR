@@ -43,7 +43,10 @@
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 #include "SAMRAI/tbox/Database.h"
+#include "SAMRAI/xfer/CoarsenAlgorithm.h"
+#include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
+#include "SAMRAI/xfer/RefineSchedule.h"
 
 // PQS
 #include "PQS/PQS_config.h"
@@ -159,6 +162,32 @@ public:
      * None
      */
     virtual void fillGhostCells(const int context) const;
+
+    /*!
+     * Enforce consistency of phi across PatchLevels.
+     *
+     * Parameters
+     * ----------
+     * context: variable context that data should be made consistent for
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void enforcePhiConsistency(const int context) const;
+
+    /*!
+     * Enforce consistency of psi across PatchLevels.
+     *
+     * Parameters
+     * ----------
+     * None
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void enforcePsiConsistency() const;
 
     //! @}
 
@@ -529,9 +558,12 @@ protected:
                                          // local grid spacing) to use when
                                          // tagging grid cells around the zero
                                          // level set of phi to refine.
-                                         // NOTE: should be set to be larger
+                                         //
+                                         // Note: should be set to be larger
                                          // that the maximum stencil width
                                          // required for the computation
+                                         //
+                                         // Default: 5 * maximum stencil width
 
     // --- PatchData IDs
 
@@ -572,16 +604,35 @@ protected:
     // Interface initialization
     shared_ptr<pqs::InterfaceInitStrategy> d_interface_init_strategy;
 
-    // Data transfer
+    // Data transfer: fill new level
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
 
+    // Data transfer: fill boundary for phi when solving level set
+    // evolution equation
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
     vector< shared_ptr<xfer::RefineSchedule> >
-            d_xfer_fill_bdry_schedule_lsm_current;
+            d_xfer_fill_bdry_schedules_lsm_current;
 
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
     vector< shared_ptr<xfer::RefineSchedule> >
-            d_xfer_fill_bdry_schedule_lsm_next;
+            d_xfer_fill_bdry_schedules_lsm_next;
+
+    // Data transfer: enforce consistency of phi when solving level set
+    // evolution equation
+    shared_ptr<xfer::CoarsenAlgorithm>
+            d_xfer_enforce_phi_consistency_pqs;
+    vector< shared_ptr<xfer::CoarsenSchedule> >
+            d_xfer_enforce_phi_consistency_schedules_pqs;
+
+    shared_ptr<xfer::CoarsenAlgorithm>
+            d_xfer_enforce_phi_consistency_lsm_next;
+    vector< shared_ptr<xfer::CoarsenSchedule> >
+            d_xfer_enforce_phi_consistency_schedules_lsm_next;
+
+    // Data transfer: enforce consistency of psi
+    shared_ptr<xfer::CoarsenAlgorithm> d_xfer_enforce_psi_consistency;
+    vector< shared_ptr<xfer::CoarsenSchedule> >
+            d_xfer_enforce_psi_consistency_schedules;
 
     // --- Object name
     //

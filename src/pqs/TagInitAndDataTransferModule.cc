@@ -37,8 +37,11 @@
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/mesh/TagAndInitializeStrategy.h"
 #include "SAMRAI/pdat/CellData.h"
+#include "SAMRAI/tbox/Database.h"
 #include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/Utilities.h"
+#include "SAMRAI/xfer/CoarsenAlgorithm.h"
+#include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 #include "SAMRAI/xfer/RefineSchedule.h"
 
@@ -54,10 +57,10 @@
 #include "PQS/pqs/kernels/kernels_3d.h"
 
 // Class/type declarations
+namespace SAMRAI { namespace hier { class CoarsenOperator; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
-namespace SAMRAI { namespace tbox { class Database; } }
 
 
 // --- Class implementation
@@ -178,20 +181,55 @@ void TagInitAndDataTransferModule::fillGhostCells(
 
     // Fill ghost cells
     for (int level_num = 0;
-            level_num < d_patch_hierarchy->getNumberOfLevels();
-            level_num++) {
+            level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
 
         if (context == LSM_CURRENT) {
-            d_xfer_fill_bdry_schedule_lsm_current[level_num]->fillData(
+            d_xfer_fill_bdry_schedules_lsm_current[level_num]->fillData(
                     0.0,    // not used
                     true);  // apply physical boundary conditions
         } else if (context == LSM_NEXT) {
-            d_xfer_fill_bdry_schedule_lsm_next[level_num]->fillData(
+            d_xfer_fill_bdry_schedules_lsm_next[level_num]->fillData(
                     0.0,    // not used
                     true);  // apply physical boundary conditions
         }
     }
 } // TagInitAndDataTransferModule::fillGhostCells()
+
+void TagInitAndDataTransferModule::enforcePhiConsistency(
+        const int context) const
+{
+    // Check arguments
+    if ( (context != PQS) && (context != LSM_NEXT) ) {
+        PQS_ERROR(this, "enforcePhiConsistency",
+                  string("Invalid 'context': ") +
+                  to_string(context) +
+                  string(". Valid values: PQS (=0), ") +
+                  string("LSM_NEXT (=2)"));
+    }
+
+    // Enforce consistency of phi across PatchLevels
+    for (int level_num = d_patch_hierarchy->getNumberOfLevels()-1;
+            level_num > 0; level_num--) {
+
+        if (context == PQS) {
+            d_xfer_enforce_phi_consistency_schedules_pqs[level_num]->
+                coarsenData();
+        } else if (context == LSM_NEXT) {
+            d_xfer_enforce_phi_consistency_schedules_lsm_next[level_num]->
+                coarsenData();
+        }
+    }
+} // TagInitAndDataTransferModule::enforcePhiConsistency()
+
+void TagInitAndDataTransferModule::enforcePsiConsistency() const
+{
+    // Enforce consistency of phi across PatchLevels
+    for (int level_num = d_patch_hierarchy->getNumberOfLevels()-1;
+            level_num > 0; level_num--) {
+
+        d_xfer_enforce_psi_consistency_schedules[level_num]->coarsenData();
+    }
+} // TagInitAndDataTransferModule::enforcePsiConsistency()
 
 void TagInitAndDataTransferModule::initializeLevelData(
         const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
@@ -236,11 +274,12 @@ void TagInitAndDataTransferModule::initializeLevelData(
         patch_level->allocatePatchData(d_phi_pqs_id);
         patch_level->allocatePatchData(d_psi_id);
         patch_level->allocatePatchData(d_control_volume_id);
-    } else {
-        patch_level->setTime(init_data_time, d_phi_pqs_id);
-        patch_level->setTime(init_data_time, d_psi_id);
-        patch_level->setTime(init_data_time, d_control_volume_id);
     }
+
+    // Set time for PatchData
+    patch_level->setTime(init_data_time, d_phi_pqs_id);
+    patch_level->setTime(init_data_time, d_psi_id);
+    patch_level->setTime(init_data_time, d_control_volume_id);
 
     if (initial_time) {
         // Initialize data on Patches on the PatchLevel.
@@ -320,10 +359,10 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
 
     // --- Reset data transfer schedules
 
-    // data transfer schedules for filling ghost cells data
-    d_xfer_fill_bdry_schedule_lsm_current.resize(
+    // Data transfer schedules for filling ghost cells data
+    d_xfer_fill_bdry_schedules_lsm_current.resize(
         patch_hierarchy->getNumberOfLevels());
-    d_xfer_fill_bdry_schedule_lsm_next.resize(
+    d_xfer_fill_bdry_schedules_lsm_next.resize(
         patch_hierarchy->getNumberOfLevels());
 
     for (int level_num = coarsest_level_num;
@@ -334,28 +373,64 @@ void TagInitAndDataTransferModule::resetHierarchyConfiguration(
             patch_hierarchy->getPatchLevel(level_num);
 
         if (level_num == 0) {
-            d_xfer_fill_bdry_schedule_lsm_current[level_num] =
+            d_xfer_fill_bdry_schedules_lsm_current[level_num] =
                 d_xfer_fill_bdry_lsm_current->createSchedule(
                     patch_level, NULL);  // TODO: change NULL to boundary
                                          // condition module
 
-            d_xfer_fill_bdry_schedule_lsm_next[level_num] =
+            d_xfer_fill_bdry_schedules_lsm_next[level_num] =
                 d_xfer_fill_bdry_lsm_next->createSchedule(
                     patch_level, NULL);  // TODO: change NULL to boundary
                                          // condition module
         } else {
-            d_xfer_fill_bdry_schedule_lsm_current[level_num] =
+            d_xfer_fill_bdry_schedules_lsm_current[level_num] =
                 d_xfer_fill_bdry_lsm_current->createSchedule(
                     patch_level, level_num-1,
                     patch_hierarchy, NULL);  // TODO: change NULL to boundary
                                              // condition module
 
-            d_xfer_fill_bdry_schedule_lsm_next[level_num] =
+            d_xfer_fill_bdry_schedules_lsm_next[level_num] =
                 d_xfer_fill_bdry_lsm_next->createSchedule(
                     patch_level, level_num-1,
                     patch_hierarchy, NULL);  // TODO: change NULL to boundary
                                              // condition module
         }
+    }
+
+    // Data transfer schedules for enforcing phi and psi consistency
+    d_xfer_enforce_phi_consistency_schedules_pqs.resize(
+        patch_hierarchy->getNumberOfLevels());
+    d_xfer_enforce_phi_consistency_schedules_lsm_next.resize(
+        patch_hierarchy->getNumberOfLevels());
+    d_xfer_enforce_psi_consistency_schedules.resize(
+        patch_hierarchy->getNumberOfLevels());
+
+    for (int level_num = coarsest_level_num;
+            level_num <= finest_level_num;
+            level_num++) {
+
+        // No consistency to enforce for coarsest level in PatchHierarchy
+        if (level_num == 0) {
+            continue;
+        }
+
+        shared_ptr<hier::PatchLevel> patch_level =
+            patch_hierarchy->getPatchLevel(level_num);
+
+        shared_ptr<hier::PatchLevel> next_coarser_patch_level =
+            patch_hierarchy->getPatchLevel(level_num-1);
+
+        d_xfer_enforce_phi_consistency_schedules_pqs[level_num] =
+            d_xfer_enforce_phi_consistency_pqs->createSchedule(
+                next_coarser_patch_level, patch_level);
+
+        d_xfer_enforce_phi_consistency_schedules_lsm_next[level_num] =
+            d_xfer_enforce_phi_consistency_lsm_next->createSchedule(
+                next_coarser_patch_level, patch_level);
+
+        d_xfer_enforce_psi_consistency_schedules[level_num] =
+            d_xfer_enforce_psi_consistency->createSchedule(
+                next_coarser_patch_level, patch_level);
     }
 
     // --- Recompute simulation parameters
@@ -552,7 +627,7 @@ void TagInitAndDataTransferModule::loadConfiguration(
         d_refinement_cutoff_multiplier =
                 config_db->getInteger("refinement_cutoff_multiplier");
     } else {
-        d_refinement_cutoff_multiplier = 2 * max_stencil_width;
+        d_refinement_cutoff_multiplier = 5 * max_stencil_width;
     }
 
     if (d_refinement_cutoff_multiplier < max_stencil_width) {
@@ -571,11 +646,13 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
 {
     // --- Preparations
 
+    // Get dimensionality of PatchHierarchy
+    tbox::Dimension dim = d_patch_hierarchy->getDim();
+
     // Get pointer to VariableDatabase
     hier::VariableDatabase *var_db = hier::VariableDatabase::getDatabase();
 
-    hier::IntVector scratch_ghost_cell_width(
-            d_patch_hierarchy->getDim(), max_stencil_width);
+    hier::IntVector scratch_ghost_cell_width(dim, max_stencil_width);
 
     // Initialize PatchData component selectors
     d_scratch_variables.clrAllFlags();
@@ -618,6 +695,13 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
     shared_ptr<hier::RefineOperator> psi_linear_refine_op =
         grid_geometry->lookupRefineOperator(psi_variable, "LINEAR_REFINE");
 
+    // --- Get coarsening operators for enforcing consistency across
+    //     PatchLevels
+
+    shared_ptr<hier::CoarsenOperator> coarsen_op =
+        grid_geometry->lookupCoarsenOperator(phi_variable,
+                                             "CONSERVATIVE_COARSEN");
+
     // --- Set up data transfer objects
 
     // Filling a new level (used during initialization of a PatchLevel)
@@ -641,6 +725,23 @@ void TagInitAndDataTransferModule::setupDataTransferObjects(
     d_xfer_fill_bdry_lsm_next->registerRefine(
         d_phi_lsm_next_id, d_phi_lsm_next_id, d_phi_scratch_id,
         phi_linear_refine_op);
+
+    // Enforcing consistency of phi across PatchLevels
+    d_xfer_enforce_phi_consistency_pqs =
+        shared_ptr<xfer::CoarsenAlgorithm>(new xfer::CoarsenAlgorithm(dim));
+    d_xfer_enforce_phi_consistency_pqs->registerCoarsen(
+        d_phi_pqs_id, d_phi_pqs_id, coarsen_op);
+
+    d_xfer_enforce_phi_consistency_lsm_next =
+        shared_ptr<xfer::CoarsenAlgorithm>(new xfer::CoarsenAlgorithm(dim));
+    d_xfer_enforce_phi_consistency_lsm_next->registerCoarsen(
+        d_phi_lsm_next_id, d_phi_lsm_next_id, coarsen_op);
+
+    // Enforcing consistency of psi across PatchLevels
+    d_xfer_enforce_psi_consistency =
+        shared_ptr<xfer::CoarsenAlgorithm>(new xfer::CoarsenAlgorithm(dim));
+    d_xfer_enforce_psi_consistency->registerCoarsen(
+        d_psi_id, d_psi_id, coarsen_op);
 
 } // TagInitAndDataTransferModule::setupDataTransferObjects()
 
