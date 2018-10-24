@@ -37,7 +37,6 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/math/LSMAlgorithms.h"
 #include "PQS/math/LSMToolbox.h"
 #include "PQS/pqs/Solver.h"
 #include "PQS/utilities/error.h"
