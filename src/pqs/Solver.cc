@@ -75,11 +75,17 @@ namespace pqs {
 
 // --- Constants
 //
-// Note: definition of constexpr variables required for C++11
+// Note: definition of static const and constexpr variables required for C++11
 
 constexpr double Solver::DEFAULT_LSM_STEADY_STATE_CONDITION;
 constexpr double Solver::DEFAULT_LSM_STOP_TIME;
+const int Solver::DEFAULT_LSM_MAX_ITERATIONS;
 constexpr double Solver::DEFAULT_LSM_SATURATION_STEADY_STATE_CONDITION;
+
+const int Solver::DEFAULT_REINITIALIZATION_INTERVAL;
+const int Solver::DEFAULT_TAG_BUFFER;
+const int Solver::DEFAULT_REGRID_INTERVAL;
+
 
 // --- Public methods
 
@@ -342,7 +348,6 @@ void Solver::equilibrateInterface(
 
             // Impose zero contact angle boundary condition at pore-solid
             // interface
-            // TODO: check correct phi_id used
             if (d_contact_angle == 0.0) {
                 math::computeMin(d_patch_hierarchy,
                                  phi_id,
@@ -536,6 +541,17 @@ void Solver::equilibrateInterface(
             d_patch_hierarchy->getPatchLevel(level_num);
 
         patch_level->deallocatePatchData(d_intermediate_variables);
+    }
+
+    // --- Reinitialize phi
+
+    if (d_step_count % d_reinitialization_interval == 0) {
+
+        // Emit status message
+        tbox::pout << "  Reinitializing phi ... " << endl;
+
+        // Reinitialize fluid-fluid interface to be a signed distance function
+        reinitializeInterface(d_reinitialization_algorithm_type);
     }
 
     // --- Regrid hierarchy
@@ -880,7 +896,7 @@ void Solver::loadConfiguration(
                   "'lsm_stop_time' must be non-negative.");
     }
 
-    d_lsm_max_num_iterations = pqs_config_db->getDoubleWithDefault(
+    d_lsm_max_num_iterations = pqs_config_db->getIntegerWithDefault(
             "lsm_max_num_iterations", Solver::DEFAULT_LSM_MAX_ITERATIONS);
     if (d_lsm_max_num_iterations < 0) {
         PQS_ERROR(this, "loadConfiguration",
@@ -897,6 +913,15 @@ void Solver::loadConfiguration(
     }
 
     // Reinitialization parameters
+    d_reinitialization_interval =
+            pqs_config_db->getIntegerWithDefault(
+                    "reinitialization_interval",
+                    Solver::DEFAULT_REINITIALIZATION_INTERVAL);
+    if (d_reinitialization_interval < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'reinitialization_interval' must be positive.");
+    }
+
     if (pqs_config_db->keyExists("reinitialization_algorithm_type")) {
         string reinitialization_algorithm_type =
                     pqs_config_db->getString("reinitialization_algorithm_type");
@@ -927,7 +952,7 @@ void Solver::loadConfiguration(
     }
 
     d_reinitialization_max_num_iterations =
-            pqs_config_db->getDoubleWithDefault(
+            pqs_config_db->getIntegerWithDefault(
                     "reinitialization_max_num_iterations",
                     Solver::DEFAULT_LSM_MAX_ITERATIONS);
     if (d_reinitialization_max_num_iterations < 0) {
@@ -952,14 +977,25 @@ void Solver::loadConfiguration(
         pqs_config_db->getInteger("time_integration_order");
 
     // AMR parameters
-    d_tag_buffer = pqs_config_db->getIntegerWithDefault("tag_buffer", 2);
+    d_tag_buffer =
+            pqs_config_db->getIntegerWithDefault("tag_buffer",
+                                                 Solver::DEFAULT_TAG_BUFFER);
         // default tag buffer of two cells of buffer ensures that the
         // finer grid on the next level extends beyond the tagged cell
         // by at least the maximum stencil width (at the finer grid
         // resolution)
+    if (d_tag_buffer < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'tag_buffer' must be positive.");
+    }
 
     d_regrid_interval =
-            pqs_config_db->getIntegerWithDefault("regrid_interval", 5);
+        pqs_config_db->getIntegerWithDefault("regrid_interval",
+                                             Solver::DEFAULT_REGRID_INTERVAL);
+    if (d_regrid_interval < 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'regrid_interval' must be positive.");
+    }
 
     // --- Set simulation parameters computed from configuration parameters
 

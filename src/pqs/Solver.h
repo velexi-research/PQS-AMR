@@ -187,6 +187,10 @@ public:
     static const int DEFAULT_LSM_MAX_ITERATIONS = 0;
     static constexpr double DEFAULT_LSM_SATURATION_STEADY_STATE_CONDITION = 0.0;
 
+    static const int DEFAULT_REINITIALIZATION_INTERVAL = 5;
+    static const int DEFAULT_TAG_BUFFER = 2;
+    static const int DEFAULT_REGRID_INTERVAL = 5;
+
     //! @}
 
     //! @{
@@ -670,6 +674,7 @@ protected:
     double d_lsm_saturation_steady_state_condition;
 
     // Reinitialization parameters
+    int d_reinitialization_interval;
     math::LSM::REINIT_ALGORITHM_TYPE d_reinitialization_algorithm_type;
     double d_reinitialization_steady_state_condition;
     double d_reinitialization_stop_distance;
