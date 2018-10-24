@@ -562,7 +562,11 @@ void Solver::equilibrateInterface(
         tbox::pout << "  Regridding mesh ... " << endl;
 
         std::vector<int> tag_buffer_vector;
-        tag_buffer_vector.push_back(d_tag_buffer);
+        for (int level_num = 0;
+                level_num < d_patch_hierarchy->getNumberOfLevels();
+                level_num++ ) {
+            tag_buffer_vector.push_back(d_tag_buffer);
+        }
         d_gridding_algorithm->regridAllFinerLevels(
             0, // regrid all levels
             tag_buffer_vector,
@@ -1338,7 +1342,11 @@ void Solver::initializeSimulation()
         // --- Regrid hierarchy
 
         std::vector<int> tag_buffer_vector;
-        tag_buffer_vector.push_back(d_tag_buffer);
+        for (int level_num = 0;
+                level_num < d_patch_hierarchy->getNumberOfLevels();
+                level_num++ ) {
+            tag_buffer_vector.push_back(d_tag_buffer);
+        }
         d_gridding_algorithm->regridAllFinerLevels(
             0, // regrid all levels
             tag_buffer_vector,
