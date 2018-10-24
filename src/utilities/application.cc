@@ -18,7 +18,6 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard
-#include <iosfwd>
 #include <iostream>
 #include <memory>
 #include <stdlib.h>
@@ -38,8 +37,10 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities/error.h"
+#include "PQS/math/LSMAlgorithms.h"
+#include "PQS/math/LSMToolbox.h"
 #include "PQS/pqs/Solver.h"
+#include "PQS/utilities/error.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class PatchHierarchy; } }
@@ -183,25 +184,39 @@ void run_pqs(
     tbox::plog << "Configuration database..." << endl;
     config_db->printClassData(tbox::plog);
 
+    // Set loop constants
+    const shared_ptr<hier::PatchHierarchy> patch_hierarchy =
+        pqs_solver->getPatchHierarchy();
+    const double initial_curvature = pqs_solver->getInitialCurvature();
+    const double final_curvature = pqs_solver->getFinalCurvature();
+    const double curvature_increment = pqs_solver->getCurvatureIncrement();
+
     // Set up loop variables
     double curvature = pqs_solver->getCurvature();
-    int step_count = pqs_solver->getStepCount();
-
-    // Set loop constants
-    shared_ptr<hier::PatchHierarchy> patch_hierarchy =
-        pqs_solver->getPatchHierarchy();
-    double final_curvature = pqs_solver->getFinalCurvature();
-    double curvature_step = pqs_solver->getCurvatureStep();
+    const int step_count = pqs_solver->getStepCount();
 
     // Initialize calculation
     if (!is_from_restart) {
-        // Emit status message
-        tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-        tbox::pout << "  Initial curvature: " << curvature << endl;
-        tbox::pout << "  Step count: " << step_count << endl;
+        if (pqs_solver->useSlightlyCompressibleModel()) {
+            // Emit status message
+            tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+            tbox::pout << "  Equilibrating initial interface using " << endl;
+            tbox::pout << "  Slightly Compressible Model ... " << endl;
+            tbox::pout << endl;
+            tbox::pout << "  Approximate curvature: " << curvature << endl;
 
-        pqs_solver->equilibrateInterface(curvature,
-                                         pqs::SLIGHTLY_COMPRESSIBLE_MODEL);
+            pqs_solver->equilibrateInterface(
+                    curvature, pqs::SLIGHTLY_COMPRESSIBLE_MODEL,
+                    -1,  // use steady_state_condition from configuration file
+                    0,  // do not use stop_time as a stopping criterion
+                    0); // do not use max_iterations as a stopping criterion
+        } else {
+            // Emit status message
+            tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+            tbox::pout << "  Skipping equilibration of initial " << endl;
+            tbox::pout << "  interface using Slightly Compressible " << endl;
+            tbox::pout << "  Model ... " << endl;
+        }
     } else {
         // Simulation variables loaded from restart files, so fluid-fluid
         // interface already equilibrated. No additional equilibration
@@ -229,20 +244,14 @@ void run_pqs(
 
     // --- Main curvature-stepping loop
 
-    while (curvature < final_curvature) {
-
-        // Compute next curvature target
-        curvature += curvature_step;
-        if (final_curvature < curvature) {
-            curvature = final_curvature;
-        }
-
-        // Update step count
-        step_count++;
+    while (curvature <= final_curvature) {
+        const int step_count = pqs_solver->getStepCount();
 
         // Emit status message
         tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-        if (curvature == final_curvature) {
+        if (curvature == initial_curvature) {
+            tbox::pout << "  Initial curvature: " << curvature << endl;
+        } else if (curvature == final_curvature) {
             tbox::pout << "  Final curvature: " << curvature << endl;
         } else {
             tbox::pout << "  Current curvature: " << curvature << endl;
@@ -267,6 +276,34 @@ void run_pqs(
                 viz_data_writer->writePlotData(patch_hierarchy, step_count,
                                                curvature);
             }
+        }
+
+        // Emit debugging data
+        if (enable_debug) {
+            double solid_phase_volume = math::LSM::computeVolume(
+                    pqs_solver->getPatchHierarchy(),
+                    pqs_solver->getPoreSpacePatchDataId(),
+                    -1, // compute volume for psi < 0
+                    pqs_solver->getControlVolumePatchDataId());
+            double non_wetting_phase_volume = math::LSM::computeVolume(
+                    pqs_solver->getPatchHierarchy(),
+                    pqs_solver->getInterfacePatchDataId(),
+                    -1, // compute volume for phi < 0
+                    pqs_solver->getControlVolumePatchDataId())
+                - solid_phase_volume;
+            cout << "Volume of non-wetting phase: "
+                 << non_wetting_phase_volume << endl;
+        }
+
+        // Exit loop if we have reached the final curvature value
+        if (curvature == final_curvature) {
+           break;
+        }
+
+        // Compute next curvature target
+        curvature += curvature_increment;
+        if (final_curvature < curvature) {
+            curvature = final_curvature;
         }
     }
 
