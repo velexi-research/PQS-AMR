@@ -140,6 +140,9 @@ void PQS_2D_TAG_CELLS_FOR_REFINEMENT(
      const PQS_REAL *phi,
      const int *phi_gb_lo,
      const int *phi_gb_hi,
+     const PQS_REAL *psi,
+     const int *psi_gb_lo,
+     const int *psi_gb_hi,
      const int *patch_box_lo,
      const int *patch_box_hi,
      const double *refinement_cutoff);

@@ -292,6 +292,14 @@ public:
     /*!
      * Tag cells that should be refined on the specified PatchLevel.
      *
+     * For the PQS algorithm, we tag cells where the level set function
+     * for either the fluid-fluid or pore-solid interface are below a
+     *
+     *     max{dx} * refinement_cutoff_multiplier
+     *
+     * where refinement_cutoff_multiplier can be specified as a configuration
+     * parameter.
+     *
      * Parameters
      * ----------
      * patch_hierarchy: PatchHierarchy for AMR computation

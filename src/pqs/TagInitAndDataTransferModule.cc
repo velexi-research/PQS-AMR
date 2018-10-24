@@ -544,6 +544,19 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
 
         PQS_REAL* phi = phi_data->getPointer();
 
+        // psi
+        shared_ptr< pdat::CellData<PQS_REAL> > psi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(d_psi_id));
+
+        hier::Box psi_ghostbox = psi_data->getGhostBox();
+        const hier::IntVector psi_ghostbox_lower = psi_ghostbox.lower();
+        const hier::IntVector psi_ghostbox_upper = psi_ghostbox.upper();
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_lo, psi_ghostbox_lower);
+        PQS_INT_VECT_TO_INT_ARRAY(psi_ghostbox_hi, psi_ghostbox_upper);
+
+        PQS_REAL* psi = psi_data->getPointer();
+
         // patch box
         hier::Box patch_box = patch->getBox();
         const hier::IntVector patch_box_lower = patch_box.lower();
@@ -557,6 +570,7 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
             PQS_2D_TAG_CELLS_FOR_REFINEMENT(
                 tag, tag_ghostbox_lo, tag_ghostbox_hi,
                 phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                psi, psi_ghostbox_lo, psi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 &refinement_cutoff);
 
@@ -564,6 +578,7 @@ void TagInitAndDataTransferModule::tagCellsForRefinement(
             PQS_3D_TAG_CELLS_FOR_REFINEMENT(
                 tag, tag_ghostbox_lo, tag_ghostbox_hi,
                 phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                psi, psi_ghostbox_lo, psi_ghostbox_hi,
                 patch_box_lo, patch_box_hi,
                 &refinement_cutoff);
         }

@@ -807,6 +807,8 @@ c     be refined
 c
 c phi: level set function that defines fluid-fluid interface
 c
+c psi: level set function that defines pore-solid interface
+c
 c patch_box_lo: lower corner of index range for patch box
 c
 c patch_box_hi: upper corner of index range for patch box
@@ -822,8 +824,8 @@ c***********************************************************************
       subroutine pqs2dTagCellsForRefinement(
      &  tag,
      &  tag_gb_lo, tag_gb_hi,
-     &  phi,
-     &  phi_gb_lo, phi_gb_hi,
+     &  phi, phi_gb_lo, phi_gb_hi,
+     &  psi, psi_gb_lo, psi_gb_hi,
      &  patch_box_lo, patch_box_hi,
      &  refinement_cutoff)
 c***********************************************************************
@@ -838,6 +840,10 @@ c { begin subroutine
       @REAL@  phi(phi_gb_lo(1):phi_gb_hi(1),
      &            phi_gb_lo(2):phi_gb_hi(2))
 
+      integer psi_gb_lo(1:2), psi_gb_hi(1:2)
+      @REAL@  psi(psi_gb_lo(1):psi_gb_hi(1),
+     &            psi_gb_lo(2):psi_gb_hi(2))
+
       integer patch_box_lo(1:2), patch_box_hi(1:2)
 
       real*8 refinement_cutoff
@@ -851,6 +857,8 @@ c     --- Tag cells for refinement
         do i=patch_box_lo(1), patch_box_hi(1)
 
           if (abs(phi(i,j)) .lt. refinement_cutoff) then
+            tag(i,j) = 1
+          else if (abs(psi(i,j)) .lt. refinement_cutoff) then
             tag(i,j) = 1
           else
             tag(i,j) = 0
