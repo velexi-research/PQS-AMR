@@ -679,6 +679,12 @@ protected:
     int d_lsm_spatial_derivative_type;  // ENO1, ENO2, ENO3, or WENO5
     int d_time_integration_order;  // for TVD Runge-Kutta time integration
 
+    // AMR parameters
+    int d_tag_buffer;  // number of cells to buffer tagged cells with
+                       // during regridding operations
+    int d_regrid_interval;  // number of equilibration steps to take
+                            // between regridding operations
+
     // Debugging parameters
     bool d_enable_debug;
 
@@ -687,9 +693,6 @@ protected:
     // PQS
     double d_curvature;  // current value of prescribed mean curvature
     int d_step_count;  // number of prescribed curvature steps taken
-
-    // AMR
-    int d_regrid_count;
 
     // --- SAMRAI parameters
 

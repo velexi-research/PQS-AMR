@@ -522,13 +522,9 @@ void Solver::equilibrateInterface(
         math_ops->swapData(d_phi_lsm_next_id, d_phi_lsm_current_id);
     }
 
-    // --- Update phi and curvature
+    // --- Copy phi data from LSM to PQS context
 
-    // Copy phi data from LSM to PQS context
     math_ops->copyData(d_phi_pqs_id, d_phi_lsm_current_id);
-
-    // Update d_curvature
-    d_curvature = curvature;
 
     // --- Deallocate temporary PatchData
 
@@ -544,11 +540,26 @@ void Solver::equilibrateInterface(
 
     // --- Regrid hierarchy
 
-    std::vector<int> tag_buffer = {2};
-    d_gridding_algorithm->regridAllFinerLevels(
-        0, // regrid all levels
-        tag_buffer,
-        d_step_count, d_curvature);
+    if (d_step_count % d_regrid_interval == 0) {
+
+        // Emit status message
+        tbox::pout << "  Regridding mesh ... " << endl;
+
+        std::vector<int> tag_buffer_vector;
+        tag_buffer_vector.push_back(d_tag_buffer);
+        d_gridding_algorithm->regridAllFinerLevels(
+            0, // regrid all levels
+            tag_buffer_vector,
+            d_step_count, d_curvature);
+    }
+
+    // --- Update curvature and step count
+
+    // Update d_curvature
+    d_curvature = curvature;
+
+    // Update d_step_count
+    d_step_count++;
 
 } // Solver::equilibrateInterface()
 
@@ -940,6 +951,16 @@ void Solver::loadConfiguration(
     d_time_integration_order =
         pqs_config_db->getInteger("time_integration_order");
 
+    // AMR parameters
+    d_tag_buffer = pqs_config_db->getIntegerWithDefault("tag_buffer", 2);
+        // default tag buffer of two cells of buffer ensures that the
+        // finer grid on the next level extends beyond the tagged cell
+        // by at least the maximum stencil width (at the finer grid
+        // resolution)
+
+    d_regrid_interval =
+            pqs_config_db->getIntegerWithDefault("regrid_interval", 5);
+
     // --- Set simulation parameters computed from configuration parameters
 
     // Set maximum stencil width
@@ -1236,12 +1257,6 @@ void Solver::initializeSimulation()
     if (tbox::RestartManager::getManager()->isFromRestart()) {
         // TODO
     } else {
-        const int tag_buffer = 2;  // two cells of buffer ensures that the
-                                   // finer grid on the next level extends
-                                   // beyond the tagged cell by at least the
-                                   // maximum stencil width (at the finer
-                                   // grid resolution)
-
         d_gridding_algorithm->makeCoarsestLevel(d_initial_curvature);
 
         int level_num = 0;
@@ -1249,7 +1264,7 @@ void Solver::initializeSimulation()
 
             // Make finer level
             d_gridding_algorithm->makeFinerLevel(
-                    tag_buffer,
+                    d_tag_buffer,
                     true, // initial_cycle=true
                     d_step_count,
                     d_initial_curvature);
@@ -1287,7 +1302,7 @@ void Solver::initializeSimulation()
         // --- Regrid hierarchy
 
         std::vector<int> tag_buffer_vector;
-        tag_buffer_vector.push_back(tag_buffer);
+        tag_buffer_vector.push_back(d_tag_buffer);
         d_gridding_algorithm->regridAllFinerLevels(
             0, // regrid all levels
             tag_buffer_vector,
