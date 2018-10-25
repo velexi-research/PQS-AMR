@@ -41,6 +41,9 @@ PQS_REAL PQS_MATH_2D_MAX_NORM_DIFF(
     const PQS_REAL* v,
     const int *v_gb_lo,
     const int *v_gb_hi,
+    const PQS_REAL* control_volume,
+    const int *control_volume_gb_lo,
+    const int *control_volume_gb_hi,
     const int *patch_box_lo,
     const int *patch_box_hi);
 

@@ -139,11 +139,15 @@ PQS_REAL computeMaxNormDiff(
                 max_norm_diff_on_patch = PQS_MATH_3D_MAX_NORM_DIFF(
                         u, u_ghostbox_lo, u_ghostbox_hi,
                         v, v_ghostbox_lo, v_ghostbox_hi,
+                        control_volume,
+                        control_volume_ghostbox_lo, control_volume_ghostbox_hi,
                         interior_box_lo, interior_box_hi);
             } else if ( dim == 2 ) {
                 max_norm_diff_on_patch = PQS_MATH_2D_MAX_NORM_DIFF(
                         u, u_ghostbox_lo, u_ghostbox_hi,
                         v, v_ghostbox_lo, v_ghostbox_hi,
+                        control_volume,
+                        control_volume_ghostbox_lo, control_volume_ghostbox_hi,
                         interior_box_lo, interior_box_hi);
             }
 

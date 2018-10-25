@@ -8,13 +8,16 @@ c***********************************************************************
 
 c***********************************************************************
 c
-c Compute max norm of the difference between 'u' and 'v'.
+c Compute max norm of the difference between 'u' and 'v' where control
+c volume is non-zero.
 c
 c Parameters
 c ----------
 c u: first function in the expression |u - v|
 c
 c v: second function in the expression |u - v|
+c
+c control_volume: control volume
 c
 c patch_box_lo: lower corner of index range for patch box
 c
@@ -26,7 +29,13 @@ c *_gb_hi: upper corner of index range for ghost box
 c
 c Return value
 c ------------
-c max norm of (u - v)
+c max norm of (u - v) in region where phi < 0 where control volume is
+c non-zero
+c
+c Notes
+c -----
+c - Control volume is considered non-zero when it is greater than
+c   zero_tol.
 c
 c***********************************************************************
       @REAL@ function pqsMath3dMaxNormDiff(
@@ -34,6 +43,7 @@ c***********************************************************************
      &  u_gb_lo, u_gb_hi,
      &  v,
      &  v_gb_lo, v_gb_hi,
+     &  control_volume, control_volume_gb_lo, control_volume_gb_hi,
      &  patch_box_lo, patch_box_hi)
 ***********************************************************************
 c { begin function
@@ -49,7 +59,16 @@ c { begin function
      &         v_gb_lo(2):v_gb_hi(2),
      &         v_gb_lo(3):v_gb_hi(3))
 
+      integer control_volume_gb_lo(1:3), control_volume_gb_hi(1:3)
+      @REAL@ control_volume(
+     &      control_volume_gb_lo(1):control_volume_gb_hi(1),
+     &      control_volume_gb_lo(2):control_volume_gb_hi(2),
+     &      control_volume_gb_lo(3):control_volume_gb_hi(3))
+
       integer patch_box_lo(1:3), patch_box_hi(1:3)
+
+      @REAL@ zero_tol
+      parameter (zero_tol=@ZERO_TOL@)
 
       integer i, j, k
       @REAL@ max_norm
@@ -62,8 +81,10 @@ c     loop over patch box {
         do j=patch_box_lo(2),patch_box_hi(2)
           do i=patch_box_lo(1),patch_box_hi(1)
 
-            if (max_norm .lt. abs(u(i,j,k) - v(i,j,k))) then
-              max_norm = abs(u(i,j,k) - v(i,j,k))
+            if (control_volume(i,j,k) .gt. zero_tol) then
+              if (max_norm .lt. abs(u(i,j,k) - v(i,j,k))) then
+                max_norm = abs(u(i,j,k) - v(i,j,k))
+              endif
             endif
 
           enddo
