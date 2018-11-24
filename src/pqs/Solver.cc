@@ -58,8 +58,9 @@
 #include "PQS/math/Toolbox.h"
 #include "PQS/math/TimeIntegration.h"
 #include "PQS/pqs/Algorithms.h"
+#include "PQS/pqs/DataTransferModule.h"
 #include "PQS/pqs/Solver.h"
-#include "PQS/pqs/TagInitAndDataTransferModule.h"
+#include "PQS/pqs/TagAndInitializeModule.h"
 #include "PQS/utilities/error.h"
 
 // Class/type declarations
@@ -202,6 +203,11 @@ void Solver::resetHierarchyConfiguration(
 
     d_lsm_algorithms->resetHierarchyConfiguration(coarsest_level_num,
                                                   finest_level_num);
+
+    // --- Call resetHierarchyConfiguration() for PQS::DataTransferModule
+
+    d_data_xfer_module->resetHierarchyConfiguration(coarsest_level_num,
+                                                    finest_level_num);
 
 } // Solver::resetHierarchyConfiguration()
 
@@ -356,8 +362,7 @@ void Solver::equilibrateInterface(
             }
 
             // Fill ghost cells
-            d_tag_init_and_data_xfer_module->fillGhostCells(
-                    fill_ghost_cell_context);
+            d_data_xfer_module->fillGhostCells(fill_ghost_cell_context);
 
             // --- Compute RHS of level set evolution equation
 
@@ -469,7 +474,7 @@ void Solver::equilibrateInterface(
 
             // --- Enforce consistency of phi across PatchLevels
 
-            d_tag_init_and_data_xfer_module->enforcePhiConsistency(LSM_NEXT);
+            d_data_xfer_module->enforcePhiConsistency(LSM_NEXT);
         }
 
         // --- Update metrics used in stopping criteria
@@ -699,15 +704,15 @@ void Solver::printClassData(ostream& os) const
     os << "(Solver*) this = " << (Solver*) this << endl;
     os << "d_patch_hierarchy = " << d_patch_hierarchy.get() << endl;
     os << "d_gridding_algorithm = " << d_gridding_algorithm.get() << endl;
-    os << "d_tag_init_and_data_xfer_module = "
-       << d_tag_init_and_data_xfer_module.get() << endl;
+    os << "d_tag_and_init_module = " << d_tag_and_init_module.get() << endl;
+    os << "d_data_xfer_module = " << d_data_xfer_module.get() << endl;
     os << "d_pqs_algorithms = " << d_pqs_algorithms.get() << endl;
 
     os << endl;
     d_gridding_algorithm->printClassData(os);
 
     os << endl;
-    d_tag_init_and_data_xfer_module->printClassData(os);
+    d_tag_and_init_module->printClassData(os);
 
     os << endl;
     d_pqs_algorithms->printClassData(os);
@@ -1241,7 +1246,8 @@ void Solver::setupGridManagement(
     // SAMRAI{ BoxGenerator, LoadBalancer, GriddingAlgorithm }
     //
     // throw runtime_error(
-    // "'TagInitAndDataTransferModule' section not found in configuration database");
+    // "'TagAndInitializeModule' section not found in configuration
+    // database");
 
     // --- Preparations
 
@@ -1265,10 +1271,10 @@ void Solver::setupGridManagement(
                 "LoadBalancer",
                 samrai_config_db->getDatabase("LoadBalancer")));
 
-    // Construct PQS::pqs::TagInitAndDataTransferModule
-    d_tag_init_and_data_xfer_module =
-        shared_ptr<pqs::TagInitAndDataTransferModule>(
-            new pqs::TagInitAndDataTransferModule(
+    // Construct PQS::pqs::TagAndInitializeModule
+    d_tag_and_init_module =
+        shared_ptr<pqs::TagAndInitializeModule>(
+            new pqs::TagAndInitializeModule(
                 config_db->getDatabase("PQS"),
                 d_patch_hierarchy,
                 this,
@@ -1281,13 +1287,24 @@ void Solver::setupGridManagement(
                 d_control_volume_id,
                 d_max_stencil_width));
 
+    // Construct PQS::pqs::DataTransferModule
+    d_data_xfer_module =
+        shared_ptr<pqs::DataTransferModule>(new pqs::DataTransferModule(
+                config_db->getDatabase("PQS"),
+                d_patch_hierarchy,
+                d_phi_pqs_id,
+                d_phi_lsm_current_id,
+                d_phi_lsm_next_id,
+                d_psi_id,
+                d_max_stencil_width));
+
     // Construct SAMRAI::mesh::GriddingAlgorithm object
     d_gridding_algorithm = shared_ptr<mesh::GriddingAlgorithm> (
         new mesh::GriddingAlgorithm(
             d_patch_hierarchy,
             "GriddingAlgorithm",
             samrai_config_db->getDatabase("GriddingAlgorithm"),
-            d_tag_init_and_data_xfer_module, box_generator, load_balancer));
+            d_tag_and_init_module, box_generator, load_balancer));
 
 } // Solver::setupGridManagement()
 
@@ -1315,8 +1332,8 @@ void Solver::initializeSimulation()
 
         // --- Enforce consistency of phi and psi across PatchLevels
 
-        d_tag_init_and_data_xfer_module->enforcePhiConsistency(PQS);
-        d_tag_init_and_data_xfer_module->enforcePsiConsistency();
+        d_data_xfer_module->enforcePhiConsistency(PQS);
+        d_data_xfer_module->enforcePsiConsistency();
 
         // --- Enforce that phi and psi are signed distance functions
 

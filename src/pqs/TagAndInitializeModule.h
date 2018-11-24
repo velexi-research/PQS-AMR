@@ -1,7 +1,7 @@
-/*! \file TagInitAndDataTransferModule.h
+/*! \file TagAndInitializeModule.h
  *
  * \brief
- * Header file for TagInitAndDataTransferModule class.
+ * Header file for TagAndInitializeModule class.
  */
 
 /*
@@ -15,10 +15,10 @@
  * ---------------------------------------------------------------------
  */
 
-#ifndef INCLUDED_PQS_pqs_TagInitAndDataTransferModule_h
-#define INCLUDED_PQS_pqs_TagInitAndDataTransferModule_h
+#ifndef INCLUDED_PQS_pqs_TagAndInitializeModule_h
+#define INCLUDED_PQS_pqs_TagAndInitializeModule_h
 
-/*! \class PQS::pqs::TagInitAndDataTransferModule
+/*! \class PQS::pqs::TagAndInitializeModule
  *
  * \brief
  * TODO: add description
@@ -62,12 +62,12 @@ using namespace SAMRAI;
 namespace SAMRAI { namespace hier { class BaseGridGeometry; } }
 
 
-// --- PQS::pqs::TagInitAndDataTransferModule Class
+// --- PQS::pqs::TagAndInitializeModule Class
 
 namespace PQS {
 namespace pqs {
 
-class TagInitAndDataTransferModule:
+class TagAndInitializeModule:
     public mesh::TagAndInitializeStrategy
 {
 public:
@@ -82,7 +82,7 @@ public:
      ************************************************************************/
 
     /*!
-     * This constructor for TagInitAndDataTransferModule creates a TODO
+     * This constructor for TagAndInitializeModule creates a TODO
      *
      * Parameters
      * ----------
@@ -119,7 +119,7 @@ public:
      * max_stencil_width: maximum stencil width required for computations
      *
      */
-    TagInitAndDataTransferModule(
+    TagAndInitializeModule(
         const shared_ptr<tbox::Database>& config_db,
         const shared_ptr<hier::PatchHierarchy>& patch_hierarchy,
         pqs::Solver* pqs_solver,
@@ -137,57 +137,7 @@ public:
      * Default destructor frees memory allocated for data transfer scratch
      * space.
      */
-    virtual ~TagInitAndDataTransferModule();
-
-    //! @}
-
-    //! @{
-
-    /*!
-     ************************************************************************
-     *
-     * @name Data transfer methods
-     *
-     ************************************************************************/
-
-    /*!
-     * Fill ghostcells for Patches in PatchLevel.
-     *
-     * Parameters
-     * ----------
-     * context: variable context that ghost cell data should be filled for
-     *
-     * Return value
-     * ------------
-     * None
-     */
-    virtual void fillGhostCells(const int context) const;
-
-    /*!
-     * Enforce consistency of phi across PatchLevels.
-     *
-     * Parameters
-     * ----------
-     * context: variable context that data should be made consistent for
-     *
-     * Return value
-     * ------------
-     * None
-     */
-    virtual void enforcePhiConsistency(const int context) const;
-
-    /*!
-     * Enforce consistency of psi across PatchLevels.
-     *
-     * Parameters
-     * ----------
-     * None
-     *
-     * Return value
-     * ------------
-     * None
-     */
-    virtual void enforcePsiConsistency() const;
+    virtual ~TagAndInitializeModule();
 
     //! @}
 
@@ -575,10 +525,6 @@ protected:
 
     // --- PatchData IDs
 
-    // PatchData component selectors to organize variables by
-    // data management cycle requirements
-    hier::ComponentSelector d_scratch_variables;
-
     // fluid-fluid interface level set function
     int d_phi_pqs_id;
     int d_phi_lsm_current_id;
@@ -602,7 +548,7 @@ protected:
     // PQS solver
     //
     // NOTE: pqs_solver is not a shared pointer because
-    //       pqs::TagInitAndDataTransferModule objects are created by
+    //       pqs::TagAndInitializeModule objects are created by
     //       pqs::Solver objects
     pqs::Solver* d_pqs_solver;
 
@@ -614,34 +560,6 @@ protected:
 
     // Data transfer: fill new level
     shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_new_level;
-
-    // Data transfer: fill boundary data for phi when solving level set
-    // evolution equation
-    shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_current;
-    vector< shared_ptr<xfer::RefineSchedule> >
-            d_xfer_fill_bdry_schedules_lsm_current;
-
-    shared_ptr<xfer::RefineAlgorithm> d_xfer_fill_bdry_lsm_next;
-    vector< shared_ptr<xfer::RefineSchedule> >
-            d_xfer_fill_bdry_schedules_lsm_next;
-
-    // Data transfer: enforce consistency of phi when solving level set
-    // evolution equation
-    shared_ptr<xfer::CoarsenAlgorithm>
-            d_xfer_enforce_phi_consistency_lsm_next;
-    vector< shared_ptr<xfer::CoarsenSchedule> >
-            d_xfer_enforce_phi_consistency_schedules_lsm_next;
-
-    // Data transfer: enforce consistency of phi when initializing simulation
-    shared_ptr<xfer::CoarsenAlgorithm>
-            d_xfer_enforce_phi_consistency_pqs;
-    vector< shared_ptr<xfer::CoarsenSchedule> >
-            d_xfer_enforce_phi_consistency_schedules_pqs;
-
-    // Data transfer: enforce consistency of psi
-    shared_ptr<xfer::CoarsenAlgorithm> d_xfer_enforce_psi_consistency;
-    vector< shared_ptr<xfer::CoarsenSchedule> >
-            d_xfer_enforce_psi_consistency_schedules;
 
     // --- Object name
     //
@@ -680,7 +598,7 @@ private:
      * ----------
      * rhs: object to copy
      */
-    TagInitAndDataTransferModule(const TagInitAndDataTransferModule& rhs);
+    TagAndInitializeModule(const TagAndInitializeModule& rhs);
 
     /*
      * Private assignment operator to prevent use.
@@ -693,14 +611,14 @@ private:
      * ------------
      * return object
      */
-    const TagInitAndDataTransferModule& operator=(
-            const TagInitAndDataTransferModule& rhs) {
+    const TagAndInitializeModule& operator=(
+            const TagAndInitializeModule& rhs) {
         return *this;
     }
 
-};  // PQS::pqs::TagInitAndDataTransferModule class
+};  // PQS::pqs::TagAndInitializeModule class
 
 }  // PQS::pqs namespace
 }  // PQS namespace
 
-#endif // INCLUDED_PQS_pqs_TagInitAndDataTransferModule_h
+#endif // INCLUDED_PQS_pqs_TagAndInitializeModule_h

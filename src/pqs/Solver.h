@@ -125,7 +125,8 @@ using namespace std;
 using namespace SAMRAI;
 
 // Class/type declarations
-namespace PQS { namespace pqs { class TagInitAndDataTransferModule; } }
+namespace PQS { namespace pqs { class TagAndInitializeModule; } }
+namespace PQS { namespace pqs { class DataTransferModule; } }
 
 
 // --- PQS::pqs::Solver Class
@@ -754,21 +755,16 @@ protected:
     // PQS algorithms
     shared_ptr<pqs::Algorithms> d_pqs_algorithms;
 
+    // PQS data transfer module
+    shared_ptr<pqs::DataTransferModule> d_data_xfer_module;
+
     // LSM algorithms
     shared_ptr<PQS::math::LSM::Algorithms> d_lsm_algorithms;
 
     // SAMR grid
     shared_ptr<hier::PatchHierarchy> d_patch_hierarchy;
     shared_ptr<mesh::GriddingAlgorithm> d_gridding_algorithm;
-    shared_ptr<pqs::TagInitAndDataTransferModule>
-            d_tag_init_and_data_xfer_module;
-
-    // Boundary conditions
-    //shared_ptr<BoundaryConditionModule> d_bc_module;
-    //tbox::Array<hier::IntVector> d_lower_bc_phi;
-    //tbox::Array<hier::IntVector> d_upper_bc_phi;
-    //tbox::Array<hier::IntVector> d_lower_bc_psi;
-    //tbox::Array<hier::IntVector> d_upper_bc_psi;
+    shared_ptr<pqs::TagAndInitializeModule> d_tag_and_init_module;
 
 private:
 
