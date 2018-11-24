@@ -134,10 +134,9 @@ public:
         const int max_stencil_width);
 
     /*!
-     * Default destructor frees memory allocated for data transfer scratch
-     * space.
+     * Empty default destructor.
      */
-    virtual ~TagAndInitializeModule();
+    virtual ~TagAndInitializeModule() {};
 
     //! @}
 
