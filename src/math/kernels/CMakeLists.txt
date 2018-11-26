@@ -24,6 +24,8 @@ else (SINGLE_PRECISION)
 endif (SINGLE_PRECISION)
 
 # Generate fortran files
+configure_file(boundary_conditions_2d.f.in boundary_conditions_2d.f)
+configure_file(boundary_conditions_3d.f.in boundary_conditions_3d.f)
 configure_file(level_set_method_2d.f.in level_set_method_2d.f)
 configure_file(level_set_method_3d.f.in level_set_method_3d.f)
 configure_file(spatial_derivatives_2d.f.in spatial_derivatives_2d.f)

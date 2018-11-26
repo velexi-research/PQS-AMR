@@ -1,0 +1,178 @@
+c***********************************************************************
+c
+c boundary_conditions_3d.f
+c
+c F77 routines for setting boundary conditions for 3D problems
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c The boundary location index is used to identify the location of the
+c boundary relative to the computational domain.  In 3D, the boundary
+c location index conventions are:
+c
+c   x_lo: 0
+c   x_hi: 1
+c   y_lo: 2
+c   y_hi: 3
+c   z_lo: 4
+c   z_hi: 5
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c Fill boundary data using linear extrapolation from grid points in
+c interior of the domain.
+c
+c Parameters
+c ----------
+c u: [input/output] function to fill boundary data for
+c
+c interior_box_lo: lower corner of index range for interior cells
+c
+c interior_box_hi: upper corner of index range for interior cells
+c
+c bdry_box_lo: lower corner of index range for boundary cells to fill
+c
+c bdry_box_hi: upper corner of index range for boundary cells to fill
+c
+c bdry_location_idx: boundary location index
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * boundary box indices must be a subset of ghostbox indices.
+c
+c * if bdry_location_idx is out of the range for 2D, then no
+c   boundary data values are set
+c
+c***********************************************************************
+      subroutine pqsMath3dFillBdryDataLinearExtrapolation(
+     &  u, u_gb_lo, u_gb_hi,
+     &  interior_box_lo, interior_box_hi,
+     &  bdry_box_lo, bdry_box_hi,
+     &  bdry_location_idx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer u_gb_lo(1:3), u_gb_hi(1:3)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2),
+     &         u_gb_lo(3):u_gb_hi(3))
+
+      integer interior_box_lo(1:3), interior_box_hi(1:3)
+      integer bdry_box_lo(1:3), bdry_box_hi(1:3)
+      integer bdry_location_idx
+
+c     local variables
+      integer i,j,k
+      real dist, slope
+
+      if (bdry_location_idx .eq. 0) then
+c     { extrapolate data in x-direction at lower end
+        do k=bdry_box_lo(3),bdry_box_hi(3)
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+
+            slope = u(interior_box_lo(1)+1,j,k)
+     &            - u(interior_box_lo(1),j,k)
+
+            do i=bdry_box_lo(1),bdry_box_hi(1)
+              dist = i - interior_box_lo(1)
+              u(i,j,k) = u(interior_box_lo(1),j,k) + slope*dist
+            enddo
+          enddo
+        enddo
+c     } end extrapolate data in x-direction at lower end
+
+      elseif (bdry_location_idx .eq. 1) then
+c     { extrapolate data in x-direction at upper end
+        do k=bdry_box_lo(3),bdry_box_hi(3)
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+
+            slope = u(interior_box_hi(1),j,k)
+     &            - u(interior_box_hi(1)-1,j,k)
+
+            do i=bdry_box_lo(1),bdry_box_hi(1)
+              dist = i - interior_box_hi(1)
+              u(i,j,k) = u(interior_box_hi(1),j,k) + slope*dist
+            enddo
+          enddo
+        enddo
+c     } extrapolate data in x-direction at upper end
+
+      elseif (bdry_location_idx .eq. 2) then
+c     { extrapolate data in y-direction at lower end
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+          do k=bdry_box_lo(3),bdry_box_hi(3)
+
+            slope = u(i,interior_box_lo(2)+1,k)
+     &            - u(i,interior_box_lo(2),k)
+
+            do j=bdry_box_lo(2),bdry_box_hi(2)
+              dist = j - interior_box_lo(2)
+              u(i,j,k) = u(i,interior_box_lo(2),k) + slope*dist
+            enddo
+          enddo
+        enddo
+c     } end extrapolate data in y-direction at lower end
+
+      elseif (bdry_location_idx .eq. 3) then
+c     { extrapolate data in y-direction at upper end
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+          do k=bdry_box_lo(3),bdry_box_hi(3)
+
+            slope = u(i,interior_box_hi(2),k)
+     &            - u(i,interior_box_hi(2)-1,k)
+
+            do j=bdry_box_lo(2),bdry_box_hi(2)
+              dist = j - interior_box_hi(2)
+              u(i,j,k) = u(i,interior_box_hi(2),k) + slope*dist
+            enddo
+          enddo
+        enddo
+c     } end extrapolate data in y-direction at upper end
+
+      elseif (bdry_location_idx .eq. 4) then
+c     { extrapolate data in z-direction at lower end
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+
+            slope = u(i,j,interior_box_lo(3)+1)
+     &            - u(i,j,interior_box_lo(3))
+
+            do k=bdry_box_lo(3),bdry_box_hi(3)
+              dist = k - interior_box_lo(3)
+              u(i,j,k) = u(i,j,interior_box_lo(3)) + slope*dist
+            enddo
+          enddo
+        enddo
+c     } end extrapolate data in z-direction at lower end
+
+      elseif (bdry_location_idx .eq. 5) then
+c     { extrapolate data in z-direction at upper end
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+
+            slope = u(i,j,interior_box_hi(3))
+     &            - u(i,j,interior_box_hi(3)-1)
+
+            do k=bdry_box_lo(3),bdry_box_hi(3)
+              dist = k - interior_box_hi(3)
+              u(i,j,k) = u(i,j,interior_box_hi(3)) + slope*dist
+            enddo
+          enddo
+        enddo
+c     } end extrapolate data in z-direction at upper end
+
+      endif
+
+      return
+      end
+c } end subroutine
+c***********************************************************************

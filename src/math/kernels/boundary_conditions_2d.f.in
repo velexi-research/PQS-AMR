@@ -1,0 +1,131 @@
+c***********************************************************************
+c
+c boundary_conditions_2d.f
+c
+c F77 routines for setting boundary conditions for 2D problems
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c The boundary location index is used to identify the location of the
+c boundary relative to the computational domain.  In 2D, the boundary
+c location index conventions are:
+c
+c   x_lo: 0
+c   x_hi: 1
+c   y_lo: 2
+c   y_hi: 3
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c Fill boundary data using linear extrapolation from grid points in
+c interior of the domain.
+c
+c Parameters
+c ----------
+c u: [input/output] function to fill boundary data for
+c
+c interior_box_lo: lower corner of index range for interior cells
+c
+c interior_box_hi: upper corner of index range for interior cells
+c
+c bdry_box_lo: lower corner of index range for boundary cells to fill
+c
+c bdry_box_hi: upper corner of index range for boundary cells to fill
+c
+c bdry_location_idx: boundary location index
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * boundary box indices must be a subset of ghostbox indices.
+c
+c * if bdry_location_idx is out of the range for 2D, then no
+c   boundary data values are set
+c
+c***********************************************************************
+      subroutine pqsMath2dFillBdryDataLinearExtrapolation(
+     &  u, u_gb_lo, u_gb_hi,
+     &  interior_box_lo, interior_box_hi,
+     &  bdry_box_lo, bdry_box_hi,
+     &  bdry_location_idx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer u_gb_lo(1:2), u_gb_hi(1:2)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2))
+
+      integer interior_box_lo(1:2), interior_box_hi(1:2)
+      integer bdry_box_lo(1:2), bdry_box_hi(1:2)
+      integer bdry_location_idx
+
+c     local variables
+      integer i,j
+      real dist, slope
+
+      if (bdry_location_idx .eq. 0) then
+c     { extrapolate data in x-direction at lower end
+        do j=bdry_box_lo(2),bdry_box_hi(2)
+
+          slope = u(interior_box_lo(1)+1,j) - u(interior_box_lo(1),j)
+
+          do i=bdry_box_lo(1),bdry_box_hi(1)
+            dist = i - interior_box_lo(1)
+            u(i,j) = u(interior_box_lo(1),j) + slope*dist
+          enddo
+        enddo
+c     } end extrapolate data in x-direction at lower end
+
+      elseif (bdry_location_idx .eq. 1) then
+c     {  extrapolate data in x-direction at upper end
+        do j=bdry_box_lo(2),bdry_box_hi(2)
+
+          slope = u(interior_box_hi(1),j) - u(interior_box_hi(1)-1,j)
+
+          do i=bdry_box_lo(1),bdry_box_hi(1)
+            dist = i - interior_box_hi(1)
+            u(i,j) = u(interior_box_hi(1),j) + slope*dist
+          enddo
+        enddo
+c     } end extrapolate data in x-direction at upper end
+
+      elseif (bdry_location_idx .eq. 2) then
+c     {  extrapolate data in y-direction at lower end
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+
+          slope = u(i,interior_box_lo(2)+1) - u(i,interior_box_lo(2))
+
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+            dist = j - interior_box_lo(2)
+            u(i,j) = u(i,interior_box_lo(2)) + slope*dist
+          enddo
+        enddo
+c     } end extrapolate data in y-direction at lower end
+
+      elseif (bdry_location_idx .eq. 3) then
+c     {  extrapolate data in y-direction at upper end
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+
+          slope = u(i,interior_box_hi(2)) - u(i,interior_box_hi(2)-1)
+
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+            dist = j - interior_box_hi(2)
+            u(i,j) = u(i,interior_box_hi(2)) + slope*dist
+          enddo
+        enddo
+c     } end extrapolate data in y-direction at upper end
+
+      endif
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
