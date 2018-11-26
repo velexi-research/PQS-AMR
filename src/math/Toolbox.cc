@@ -70,7 +70,7 @@ PQS_REAL computeMaxNormDiff(
 
     PQS_REAL max_norm_diff = 0.0;
 
-    // loop over PatchHierarchy and compute the integral on each Patch
+    // loop over PatchHierarchy and compute max norm of (u - v) on each Patch
     // by calling Fortran subroutines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num = 0; level_num < num_levels; level_num++) {
@@ -187,8 +187,8 @@ void computeMin(
 
     // --- Compute min(u, v)
 
-    // loop over PatchHierarchy and compute the integral on each Patch
-    // by calling Fortran subroutines
+    // loop over PatchHierarchy and min(u, v) on each Patch by calling
+    // Fortran subroutines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
     for (int level_num = 0; level_num < num_levels; level_num++) {
 
