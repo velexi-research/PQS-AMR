@@ -550,7 +550,8 @@ void Solver::equilibrateInterface(
 
     // --- Reinitialize phi
 
-    if (d_step_count % d_reinitialization_interval == 0) {
+    if ( (d_reinitialization_interval > 0) &&
+         (d_step_count % d_reinitialization_interval == 0) ) {
 
         // Emit status message
         tbox::pout << "  Reinitializing phi ... " << endl;
@@ -561,7 +562,8 @@ void Solver::equilibrateInterface(
 
     // --- Regrid hierarchy
 
-    if (d_step_count % d_regrid_interval == 0) {
+    if ( (d_regrid_interval > 0) &&
+         (d_step_count % d_regrid_interval == 0) ) {
 
         // Emit status message
         tbox::pout << "  Regridding mesh ... " << endl;

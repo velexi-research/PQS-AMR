@@ -261,11 +261,6 @@ protected:
 private:
 
     /*
-     * Load configuration parameters from specified database.
-     */
-    void loadConfiguration(const shared_ptr<tbox::Database>& config_db);
-
-    /*
      * Set up data transfer objects and associated scratch space variables.
      *
      * Parameters

@@ -27,27 +27,36 @@
 // SAMRAI
 #include "SAMRAI/hier/BaseGridGeometry.h"
 #include "SAMRAI/hier/IntVector.h"
+#include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
+#include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
+#include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/tbox/Dimension.h"
+#include "SAMRAI/tbox/Utilities.h"
 #include "SAMRAI/xfer/CoarsenAlgorithm.h"
 #include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
 #include "SAMRAI/xfer/RefineSchedule.h"
-
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/math/BoundaryConditions.h"
 #include "PQS/pqs/Solver.h"
 #include "PQS/utilities/error.h"
 #include "PQS/pqs/DataTransferModule.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class CoarsenOperator; } }
-namespace SAMRAI { namespace hier { class PatchLevel; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
 namespace SAMRAI { namespace tbox { class Database; } }
+
+
+// --- Constants
+
+// bogus boundary data value
+#define BOGUS_BDRY_DATA (-9999)
 
 
 // --- Class implementation
@@ -56,7 +65,7 @@ namespace PQS {
 namespace pqs {
 
 
-    // --- Public methods
+// --- Public methods
 
 // Constructor
 DataTransferModule::DataTransferModule(
@@ -101,9 +110,6 @@ DataTransferModule::DataTransferModule(
     d_psi_id = psi_id;
     d_patch_hierarchy = patch_hierarchy;
 
-    // Load configuration parameters
-    loadConfiguration(config_db);
-
     // Set up data transfer objects
     setupDataTransferObjects(patch_hierarchy->getGridGeometry(),
                              max_stencil_width);
@@ -126,16 +132,48 @@ void DataTransferModule::fillGhostCells(
     for (int level_num = 0;
             level_num < d_patch_hierarchy->getNumberOfLevels(); level_num++) {
 
+        // --- Transfer data from other Patches and PatchLevels
+
         if (context == LSM_CURRENT) {
             d_xfer_fill_bdry_schedules_lsm_current[level_num]->fillData(
                     0.0,    // not used
-                    true);  // apply physical boundary conditions
+                    false);  // do not apply physical boundary conditions
         } else if (context == LSM_NEXT) {
             d_xfer_fill_bdry_schedules_lsm_next[level_num]->fillData(
                     0.0,    // not used
-                    true);  // apply physical boundary conditions
+                    false);  // do not apply physical boundary conditions
         }
-    }
+
+        // --- Fill boundary data for level set functions by using
+        //     linear extrapolation to set values
+
+        shared_ptr<hier::PatchLevel> patch_level =
+            d_patch_hierarchy->getPatchLevel(level_num);
+        for (hier::PatchLevel::Iterator pi(patch_level->begin());
+            pi!=patch_level->end(); pi++) {
+
+            shared_ptr<hier::Patch> patch = *pi;
+
+            int phi_id;
+            if (context == LSM_CURRENT) {
+                phi_id = d_phi_lsm_current_id;
+            } else if (context == LSM_NEXT) {
+                phi_id = d_phi_lsm_next_id;
+            }
+            shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                    patch->getPatchData(d_phi_lsm_current_id));
+
+            // Get ghost cell width
+            hier::IntVector ghost_width_to_fill(phi_data->getGhostCellWidth());
+
+            // Set boundary conditions
+            PQS::math::fillBdryDataLinearExtrapolation(
+                d_patch_hierarchy, phi_id);
+
+        }  // loop over Patches
+    }  // loop over PatchLevels
+
 } // DataTransferModule::fillGhostCells()
 
 void DataTransferModule::enforcePhiConsistency(
@@ -218,25 +256,21 @@ void DataTransferModule::resetHierarchyConfiguration(
         if (level_num == 0) {
             d_xfer_fill_bdry_schedules_lsm_current[level_num] =
                 d_xfer_fill_bdry_lsm_current->createSchedule(
-                    patch_level, NULL);  // TODO: change NULL to boundary
-                                         // condition module
+                    patch_level, NULL);
 
             d_xfer_fill_bdry_schedules_lsm_next[level_num] =
                 d_xfer_fill_bdry_lsm_next->createSchedule(
-                    patch_level, NULL);  // TODO: change NULL to boundary
-                                         // condition module
+                    patch_level, NULL);
         } else {
             d_xfer_fill_bdry_schedules_lsm_current[level_num] =
                 d_xfer_fill_bdry_lsm_current->createSchedule(
                     patch_level, level_num-1,
-                    d_patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                             // condition module
+                    d_patch_hierarchy, NULL);
 
             d_xfer_fill_bdry_schedules_lsm_next[level_num] =
                 d_xfer_fill_bdry_lsm_next->createSchedule(
                     patch_level, level_num-1,
-                    d_patch_hierarchy, NULL);  // TODO: change NULL to boundary
-                                             // condition module
+                    d_patch_hierarchy, NULL);
         }
     }
 
@@ -278,13 +312,6 @@ void DataTransferModule::resetHierarchyConfiguration(
 } // DataTransferModule::resetHierarchyConfiguration()
 
 // --- Private methods
-
-void DataTransferModule::loadConfiguration(
-        const shared_ptr<tbox::Database>& config_db)
-{
-    // --- Load parameters
-    // TODO
-} // DataTransferModule::loadConfiguration()
 
 void DataTransferModule::setupDataTransferObjects(
         const shared_ptr<hier::BaseGridGeometry>& grid_geometry,
