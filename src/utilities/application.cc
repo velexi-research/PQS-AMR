@@ -196,7 +196,7 @@ void run_pqs(
 
     // Initialize calculation
     if (!is_from_restart) {
-        if (pqs_solver->useSlightlyCompressibleModel()) {
+        if (pqs_solver->initializeWithSlightlyCompressibleModel()) {
             // Emit status message
             tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
             tbox::pout << "  Equilibrating initial interface using "

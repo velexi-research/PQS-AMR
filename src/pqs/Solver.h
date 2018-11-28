@@ -317,6 +317,18 @@ public:
      *      'lsm_max_num_iterations' value from the configuration database is
      *      used.
      *
+     * saturation_steady_state_condition: phi is considered to have reached
+     *      steady-state when the saturation
+     *
+     *          max | (saturation(t+dt) - saturationphi(t)) / dt | <
+     *              saturation_steady_state_condition.
+     *
+     *      When 'saturation_steady_state_condition' is set zero, the
+     *      saturation is not used as a stopping criteria.  When
+     *      'saturation_steady_state_condition' is set to a negative number,
+     *      the 'lsm_saturation_steady_state_condition' value from the
+     *      configuration database is used.
+     *
      * Return value
      * ------------
      * None
@@ -336,7 +348,8 @@ public:
             const PQS_ALGORITHM_TYPE algorithm_type,
             double steady_state_condition = -1,
             double stop_time = -1,
-            int max_num_iterations = -1);
+            int max_num_iterations = -1,
+            double saturation_steady_state_condition = -1);
 
     /*!
      * Reinitialize fluid-fluid interface to be a signed distance function.
@@ -412,7 +425,7 @@ public:
      * true if initial fluid-fluid interface should be equilibrated using
      * Slightly Compressible Model; false otherwise.
      */
-    virtual bool useSlightlyCompressibleModel() const;
+    virtual bool initializeWithSlightlyCompressibleModel() const;
 
     /*!
      * Get initial mean curvature of fluid-fluid interface.
@@ -660,7 +673,7 @@ protected:
     double d_curvature_step;
 
     // Physical parameters
-    bool d_use_slightly_compressible_model;
+    bool d_init_with_slightly_compressible_model;
 
     double d_contact_angle;  // units: degrees. default: 0
     double d_surface_tension;

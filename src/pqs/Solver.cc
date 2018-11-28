@@ -216,7 +216,8 @@ void Solver::equilibrateInterface(
         const PQS_ALGORITHM_TYPE algorithm_type,
         double steady_state_condition,
         double stop_time,
-        int max_num_iterations)
+        int max_num_iterations,
+        double saturation_steady_state_condition)
 {
     // --- Check arguments
 
@@ -267,8 +268,10 @@ void Solver::equilibrateInterface(
     if (max_num_iterations < 0) {
         max_num_iterations = d_lsm_max_num_iterations;
     }
-    double saturation_steady_state_condition =
+    if (saturation_steady_state_condition < 0) {
+        saturation_steady_state_condition =
             d_lsm_saturation_steady_state_condition;
+    }
 
     // Initialize loop variables
     double t = 0.0;
@@ -497,31 +500,6 @@ void Solver::equilibrateInterface(
             previous_saturation = saturation;
         }
 
-        if (d_enable_debug) {
-            tbox::pout << "steady-state condition: " << steady_state_condition
-                       << endl;
-            tbox::pout << "d_steady-state condition: "
-                       << d_lsm_steady_state_condition << endl;
-            tbox::pout << "dt: " << dt << endl;
-            tbox::pout << delta_phi << ", " << steady_state_condition * dt
-                       << ", " << (delta_phi > steady_state_condition * dt)
-                       << endl;
-            tbox::pout << step << ", " << max_num_iterations << endl;
-            tbox::pout << t << ", " << stop_time << endl;
-            tbox::pout << t + dt << ", " << stop_time << endl;
-            tbox::pout << delta_saturation << ","
-                       << saturation_steady_state_condition * dt << ", "
-                       << (delta_saturation >
-                                saturation_steady_state_condition * dt)
-                       << endl;
-            tbox::pout << "volume: " << non_wetting_phase_volume << endl;
-            tbox::pout << "target_volume: " << d_target_volume << endl;
-            tbox::pout << "pore volume: " << pore_space_volume << endl;
-            tbox::pout << "solid phase volume: " << solid_phase_volume << endl;
-            tbox::pout << "radius: " << sqrt(non_wetting_phase_volume/M_PI)
-                       << endl;
-        }
-
         // --- Prepare for next iteration
 
         // Update time and step
@@ -530,6 +508,45 @@ void Solver::equilibrateInterface(
 
         // Swap phi data from LSM current and LSM next contexts
         math_ops->swapData(d_phi_lsm_next_id, d_phi_lsm_current_id);
+
+        // --- Emit debugging messages
+
+        if (d_enable_debug) {
+            tbox::pout << "-------------- DEBUGGING -----------------" << endl;
+            tbox::pout << "PQS::pqs::Solver::equilibrateInterface()" << endl;
+
+            tbox::pout << "algorithm_type: ";
+            if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
+                tbox::pout << "PRESCRIBED_CURVATURE_MODEL" << endl;
+            } else {
+                tbox::pout << "SLIGHTLY_COMPRESSIBLE_MODEL" << endl;
+            }
+
+            tbox::pout << "d(max|phi|)/dt: " << delta_phi / dt
+                       << " (steady-state condition="
+                       << steady_state_condition << ")" << endl;
+            tbox::pout << "time: " << t
+                       << " (stop_time=" << stop_time << ","
+                       << "dt=" << dt << ")" << endl;
+            tbox::pout << "step: " << step
+                       << " (max_num_iterations=" << max_num_iterations
+                       << ")" << endl;
+            tbox::pout << "d(saturation)/dt: " << delta_saturation / dt
+                       << " (saturation steady-state condition="
+                       << saturation_steady_state_condition << ")" << endl;
+
+            if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
+                tbox::pout << "volume: " << non_wetting_phase_volume;
+                tbox::pout << " (target_volume=" << d_target_volume
+                           << ")" << endl;
+                tbox::pout << "pore volume: " << pore_space_volume << endl;
+                tbox::pout << "solid phase volume: "
+                           << solid_phase_volume << endl;
+            }
+            tbox::pout << "------------------------------------------" << endl;
+            tbox::pout << endl;
+        }
+
     }
 
     // --- Copy phi data from LSM to PQS context
@@ -634,10 +651,10 @@ double Solver::getCurvatureIncrement() const
     return d_curvature_step;
 } // Solver::getCurvatureIncrement()
 
-bool Solver::useSlightlyCompressibleModel() const
+bool Solver::initializeWithSlightlyCompressibleModel() const
 {
-    return d_use_slightly_compressible_model;
-} // Solver::useSlightlyCompressibleModel()
+    return d_init_with_slightly_compressible_model;
+} // Solver::initializeWithSlightlyCompressibleModel()
 
 double Solver::getContactAngle() const
 {
@@ -762,8 +779,8 @@ void Solver::verifyConfigurationDatabase(
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'surface_tension' missing from 'PQS' database");
     }
-    if (pqs_config_db->isBool("use_slightly_compressible_model") &&
-        pqs_config_db->getBool("use_slightly_compressible_model"))
+    if (pqs_config_db->isBool("init_with_slightly_compressible_model") &&
+        pqs_config_db->getBool("init_with_slightly_compressible_model"))
     {
         if (!pqs_config_db->isDouble("bulk_modulus")) {
             PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -880,10 +897,10 @@ void Solver::loadConfiguration(
     }
     d_surface_tension = pqs_config_db->getDouble("surface_tension");
 
-    d_use_slightly_compressible_model =
+    d_init_with_slightly_compressible_model =
             pqs_config_db->getBoolWithDefault(
-                    "use_slightly_compressible_model", false);
-    if (d_use_slightly_compressible_model) {
+                    "init_with_slightly_compressible_model", false);
+    if (d_init_with_slightly_compressible_model) {
         d_bulk_modulus = pqs_config_db->getDouble("bulk_modulus");
         d_target_volume = pqs_config_db->getDouble("target_volume");
     } else {
