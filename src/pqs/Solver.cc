@@ -526,7 +526,7 @@ void Solver::equilibrateInterface(
                        << " (steady-state condition="
                        << steady_state_condition << ")" << endl;
             tbox::pout << "time: " << t
-                       << " (stop_time=" << stop_time << ","
+                       << " (stop_time=" << stop_time << ", "
                        << "dt=" << dt << ")" << endl;
             tbox::pout << "step: " << step
                        << " (max_num_iterations=" << max_num_iterations
