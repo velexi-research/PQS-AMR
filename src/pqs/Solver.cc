@@ -215,8 +215,8 @@ void Solver::equilibrateInterface(
         const double curvature,
         const PQS_ALGORITHM_TYPE algorithm_type,
         double steady_state_condition,
-        double stop_time,
         int max_num_iterations,
+        double stop_time,
         double saturation_steady_state_condition)
 {
     // --- Check arguments
@@ -262,12 +262,14 @@ void Solver::equilibrateInterface(
         steady_state_condition = d_lsm_steady_state_condition;
     }
 
-    if (stop_time < 0) {
-        stop_time = d_lsm_stop_time;
-    }
     if (max_num_iterations < 0) {
         max_num_iterations = d_lsm_max_num_iterations;
     }
+
+    if (stop_time < 0) {
+        stop_time = d_lsm_stop_time;
+    }
+
     if (saturation_steady_state_condition < 0) {
         saturation_steady_state_condition =
             d_lsm_saturation_steady_state_condition;
@@ -299,8 +301,8 @@ void Solver::equilibrateInterface(
     // --- Perform level set method computation
 
     while ( (delta_phi > steady_state_condition * dt) &&
+            (step < max_num_iterations) &&
             (!stop_time || (t < stop_time)) &&
-            (!max_num_iterations || (step < max_num_iterations)) &&
             (!saturation_steady_state_condition ||
               (delta_saturation > saturation_steady_state_condition * dt)) ) {
 
@@ -512,7 +514,7 @@ void Solver::equilibrateInterface(
         // --- Emit debugging messages
 
         if (d_enable_debug) {
-            tbox::pout << "-------------- DEBUGGING -----------------" << endl;
+            tbox::pout << "----------------- DEBUG ------------------" << endl;
             tbox::pout << "PQS::pqs::Solver::equilibrateInterface()" << endl;
 
             tbox::pout << "algorithm_type: ";
@@ -595,6 +597,13 @@ void Solver::equilibrateInterface(
             0, // regrid all levels
             tag_buffer_vector,
             d_step_count, d_curvature);
+    }
+
+    // --- Emit warning messages
+
+    if (step == max_num_iterations) {
+        tbox::pout << "WARNING: interface equilibration failed to converge... "
+                   << endl;
     }
 
     // --- Update curvature and step count
@@ -917,18 +926,18 @@ void Solver::loadConfiguration(
                   "'lsm_steady_state_condition' must be positive.");
     }
 
+    d_lsm_max_num_iterations = pqs_config_db->getIntegerWithDefault(
+            "lsm_max_num_iterations", Solver::DEFAULT_LSM_MAX_ITERATIONS);
+    if (d_lsm_max_num_iterations <= 0) {
+        PQS_ERROR(this, "loadConfiguration",
+                  "'lsm_max_num_iterations' must be positive.");
+    }
+
     d_lsm_stop_time = pqs_config_db->getDoubleWithDefault(
             "lsm_stop_time", Solver::DEFAULT_LSM_STOP_TIME);
     if (d_lsm_stop_time < 0) {
         PQS_ERROR(this, "loadConfiguration",
                   "'lsm_stop_time' must be non-negative.");
-    }
-
-    d_lsm_max_num_iterations = pqs_config_db->getIntegerWithDefault(
-            "lsm_max_num_iterations", Solver::DEFAULT_LSM_MAX_ITERATIONS);
-    if (d_lsm_max_num_iterations < 0) {
-        PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_max_num_iterations' must be non-negative.");
     }
 
     d_lsm_saturation_steady_state_condition =

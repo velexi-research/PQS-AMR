@@ -288,7 +288,7 @@ void run_pqs(
                     pqs_solver->getControlVolumePatchDataId())
                 - solid_phase_volume;
 
-            tbox::pout << "-------------- DEBUGGING -----------------" << endl;
+            tbox::pout << "----------------- DEBUG ------------------" << endl;
             tbox::pout << "Volume of non-wetting phase: "
                        << non_wetting_phase_volume << endl;
             tbox::pout << "------------------------------------------" << endl;

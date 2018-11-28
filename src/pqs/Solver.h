@@ -183,9 +183,9 @@ public:
      *
      ************************************************************************/
 
-    static constexpr double DEFAULT_LSM_STEADY_STATE_CONDITION = 1.e-3;
+    static constexpr double DEFAULT_LSM_STEADY_STATE_CONDITION = 0.01;
+    static const int DEFAULT_LSM_MAX_ITERATIONS = 100;
     static constexpr double DEFAULT_LSM_STOP_TIME = 0.0;
-    static const int DEFAULT_LSM_MAX_ITERATIONS = 0;
     static constexpr double DEFAULT_LSM_SATURATION_STEADY_STATE_CONDITION = 0.0;
 
     static const int DEFAULT_REINITIALIZATION_INTERVAL = 5;
@@ -303,19 +303,17 @@ public:
      *      the 'lsm_steady_state_condition' value from the configuration
      *      database is used.
      *
+     * max_num_iterations: maximum number of time steps to evolve level set
+     *      function. When 'max_num_iterations' is set to a non-positive
+     *      number, the 'lsm_max_num_iterations' value from the configuration
+     *      database is used.
+     *
      * stop_time: time at which evolution of the level set function is
      *      stopped (even if the fluid-fluid interface has not yet reached
      *      steady-state). When 'stop_time' is set to zero, the time is not
      *      used as a stopping criteria.  When 'stop_time' is set to a
      *      negative number, the 'lsm_stop_time' value from the configuration
      *      database is used.
-     *
-     * max_num_iterations: maximum number of time steps to evolve level set
-     *      function. When 'max_num_iterations' is set zero, the number of
-     *      steps is not used as a stopping criteria.  When
-     *      'max_num_iterations' is set to a negative number, the
-     *      'lsm_max_num_iterations' value from the configuration database is
-     *      used.
      *
      * saturation_steady_state_condition: phi is considered to have reached
      *      steady-state when the saturation
@@ -347,8 +345,8 @@ public:
             const double curvature,
             const PQS_ALGORITHM_TYPE algorithm_type,
             double steady_state_condition = -1,
-            double stop_time = -1,
             int max_num_iterations = -1,
+            double stop_time = -1,
             double saturation_steady_state_condition = -1);
 
     /*!
