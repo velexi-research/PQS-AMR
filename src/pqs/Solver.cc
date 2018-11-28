@@ -301,7 +301,7 @@ void Solver::equilibrateInterface(
     // --- Perform level set method computation
 
     while ( (delta_phi > steady_state_condition * dt) &&
-            (step < max_num_iterations) &&
+            (!max_num_iterations || (step < max_num_iterations)) &&
             (!stop_time || (t < stop_time)) &&
             (!saturation_steady_state_condition ||
               (delta_saturation > saturation_steady_state_condition * dt)) ) {
@@ -527,12 +527,12 @@ void Solver::equilibrateInterface(
             tbox::pout << "d(max|phi|)/dt: " << delta_phi / dt
                        << " (steady-state condition="
                        << steady_state_condition << ")" << endl;
-            tbox::pout << "time: " << t
-                       << " (stop_time=" << stop_time << ", "
-                       << "dt=" << dt << ")" << endl;
             tbox::pout << "step: " << step
                        << " (max_num_iterations=" << max_num_iterations
                        << ")" << endl;
+            tbox::pout << "time: " << t
+                       << " (stop_time=" << stop_time << ", "
+                       << "dt=" << dt << ")" << endl;
             tbox::pout << "d(saturation)/dt: " << delta_saturation / dt
                        << " (saturation steady-state condition="
                        << saturation_steady_state_condition << ")" << endl;
@@ -601,7 +601,7 @@ void Solver::equilibrateInterface(
 
     // --- Emit warning messages
 
-    if (step == max_num_iterations) {
+    if (max_num_iterations && (step == max_num_iterations)) {
         tbox::pout << "WARNING: interface equilibration failed to converge... "
                    << endl;
     }
@@ -928,9 +928,9 @@ void Solver::loadConfiguration(
 
     d_lsm_max_num_iterations = pqs_config_db->getIntegerWithDefault(
             "lsm_max_num_iterations", Solver::DEFAULT_LSM_MAX_ITERATIONS);
-    if (d_lsm_max_num_iterations <= 0) {
+    if (d_lsm_max_num_iterations < 0) {
         PQS_ERROR(this, "loadConfiguration",
-                  "'lsm_max_num_iterations' must be positive.");
+                  "'lsm_max_num_iterations' must be non-negative.");
     }
 
     d_lsm_stop_time = pqs_config_db->getDoubleWithDefault(

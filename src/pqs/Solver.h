@@ -304,9 +304,11 @@ public:
      *      database is used.
      *
      * max_num_iterations: maximum number of time steps to evolve level set
-     *      function. When 'max_num_iterations' is set to a non-positive
-     *      number, the 'lsm_max_num_iterations' value from the configuration
-     *      database is used.
+     *      function. When 'max_num_iterations' is set to zero, the number of
+     *      time steps taken is not used as a stopping criteria.  When
+     *      'max_num_iterations' is set to a negative number, the
+     *      'lsm_max_num_iterations' value from the configuration database is
+     *      used.
      *
      * stop_time: time at which evolution of the level set function is
      *      stopped (even if the fluid-fluid interface has not yet reached
