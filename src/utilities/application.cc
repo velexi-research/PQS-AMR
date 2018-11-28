@@ -199,16 +199,13 @@ void run_pqs(
         if (pqs_solver->useSlightlyCompressibleModel()) {
             // Emit status message
             tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-            tbox::pout << "  Equilibrating initial interface using " << endl;
-            tbox::pout << "  Slightly Compressible Model ... " << endl;
-            tbox::pout << endl;
+            tbox::pout << "  Equilibrating initial interface using "
+                       << "Slightly Compressible Model ... " << endl;
             tbox::pout << "  Approximate curvature: " << curvature << endl;
 
             pqs_solver->equilibrateInterface(
-                    curvature, pqs::SLIGHTLY_COMPRESSIBLE_MODEL,
-                    -1,  // use steady_state_condition from configuration file
-                    0,  // do not use stop_time as a stopping criterion
-                    0); // do not use max_iterations as a stopping criterion
+                    curvature, pqs::SLIGHTLY_COMPRESSIBLE_MODEL);
+
         } else {
             // Emit status message
             tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
@@ -277,7 +274,7 @@ void run_pqs(
             }
         }
 
-        // Emit debugging data
+        // Emit debugging messages
         if (enable_debug) {
             double solid_phase_volume = math::LSM::computeVolume(
                     pqs_solver->getPatchHierarchy(),
@@ -290,8 +287,12 @@ void run_pqs(
                     -1, // compute volume for phi < 0
                     pqs_solver->getControlVolumePatchDataId())
                 - solid_phase_volume;
-            cout << "Volume of non-wetting phase: "
-                 << non_wetting_phase_volume << endl;
+
+            tbox::pout << "-------------- DEBUGGING -----------------" << endl;
+            tbox::pout << "Volume of non-wetting phase: "
+                       << non_wetting_phase_volume << endl;
+            tbox::pout << "------------------------------------------" << endl;
+            tbox::pout << endl;
         }
 
         // Exit loop if we have reached the final curvature value
