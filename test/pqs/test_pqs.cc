@@ -75,7 +75,7 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(pqs_config_db->isDouble("contact_angle"));
     EXPECT_TRUE(pqs_config_db->isDouble("surface_tension"));
 
-    EXPECT_TRUE(pqs_config_db->isBool("use_slightly_compressible_model"));
+    EXPECT_TRUE(pqs_config_db->isBool("init_with_slightly_compressible_model"));
     EXPECT_TRUE(pqs_config_db->isDouble("bulk_modulus"));
     EXPECT_TRUE(pqs_config_db->isDouble("target_volume"));
 
