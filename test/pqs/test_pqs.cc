@@ -145,7 +145,7 @@ TEST_F(pqsTest, test_Solver_Solver_with_patch_hierarchy)
     EXPECT_EQ(solver->getSurfaceTension(),
               pqs_config_db->getDouble("surface_tension"));
 
-    EXPECT_TRUE(solver->useSlightlyCompressibleModel());
+    EXPECT_TRUE(solver->initializeWithSlightlyCompressibleModel());
     EXPECT_EQ(solver->getBulkModulus(),
               pqs_config_db->getDouble("bulk_modulus"));
     EXPECT_EQ(solver->getTargetVolume(),
