@@ -662,7 +662,7 @@ double Solver::getCurvatureIncrement() const
 
 bool Solver::initializeWithSlightlyCompressibleModel() const
 {
-    return d_init_with_slightly_compressible_model;
+    return d_initialize_with_slightly_compressible_model;
 } // Solver::initializeWithSlightlyCompressibleModel()
 
 double Solver::getContactAngle() const
@@ -788,8 +788,8 @@ void Solver::verifyConfigurationDatabase(
         PQS_ERROR(this, "verifyConfigurationDatabase",
                   "'surface_tension' missing from 'PQS' database");
     }
-    if (pqs_config_db->isBool("init_with_slightly_compressible_model") &&
-        pqs_config_db->getBool("init_with_slightly_compressible_model"))
+    if (pqs_config_db->isBool("initialize_with_slightly_compressible_model") &&
+        pqs_config_db->getBool("initialize_with_slightly_compressible_model"))
     {
         if (!pqs_config_db->isDouble("bulk_modulus")) {
             PQS_ERROR(this, "verifyConfigurationDatabase",
@@ -906,10 +906,10 @@ void Solver::loadConfiguration(
     }
     d_surface_tension = pqs_config_db->getDouble("surface_tension");
 
-    d_init_with_slightly_compressible_model =
+    d_initialize_with_slightly_compressible_model =
             pqs_config_db->getBoolWithDefault(
-                    "init_with_slightly_compressible_model", false);
-    if (d_init_with_slightly_compressible_model) {
+                    "initialize_with_slightly_compressible_model", false);
+    if (d_initialize_with_slightly_compressible_model) {
         d_bulk_modulus = pqs_config_db->getDouble("bulk_modulus");
         d_target_volume = pqs_config_db->getDouble("target_volume");
     } else {

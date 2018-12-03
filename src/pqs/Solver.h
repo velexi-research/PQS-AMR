@@ -673,7 +673,7 @@ protected:
     double d_curvature_step;
 
     // Physical parameters
-    bool d_init_with_slightly_compressible_model;
+    bool d_initialize_with_slightly_compressible_model;
 
     double d_contact_angle;  // units: degrees. default: 0
     double d_surface_tension;
