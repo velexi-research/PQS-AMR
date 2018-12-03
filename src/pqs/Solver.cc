@@ -524,6 +524,8 @@ void Solver::equilibrateInterface(
                 tbox::pout << "SLIGHTLY_COMPRESSIBLE_MODEL" << endl;
             }
 
+            tbox::pout << "target curvature: " << curvature << endl;
+
             tbox::pout << "d(max|phi|)/dt: " << delta_phi / dt
                        << " (steady-state condition="
                        << steady_state_condition << ")" << endl;
@@ -1389,9 +1391,11 @@ void Solver::initializeSimulation()
         std::vector<int> tag_buffer_vector;
         for (int level_num = 0;
                 level_num < d_patch_hierarchy->getNumberOfLevels();
-                level_num++ ) {
+                level_num++) {
+
             tag_buffer_vector.push_back(d_tag_buffer);
         }
+
         d_gridding_algorithm->regridAllFinerLevels(
             0, // regrid all levels
             tag_buffer_vector,
