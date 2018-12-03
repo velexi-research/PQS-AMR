@@ -84,13 +84,16 @@ pqsTest::pqsTest() {
 
     pqs_config_db->putDouble("contact_angle", 30);
     pqs_config_db->putDouble("surface_tension", 0.1);
-    pqs_config_db->putBool("init_with_slightly_compressible_model", true);
+    pqs_config_db->putBool("initialize_with_slightly_compressible_model", true);
     pqs_config_db->putDouble("bulk_modulus", 1.0);
     pqs_config_db->putDouble("target_volume", 0.5);
 
     // Numerical method parameters
-    pqs_config_db->putString("lsm_spatial_derivative_type", "WENO5");
+    pqs_config_db->putString("lsm_spatial_derivative_type", "ENO1");
     pqs_config_db->putInteger("time_integration_order", 1);
+
+    // AMR parameters
+    pqs_config_db->putInteger("refinement_cutoff_multiplier", 2);
 
     // ------ SAMRAI configuration
 
@@ -224,11 +227,11 @@ void pqsTest::initializeGeometryAndHierarchy(
         if (num_dimensions == 2) {
             int ratio_to_coarser[2] = {2, 2};
             ratio_to_coarser_db->putIntegerArray(level_name,
-                                                       ratio_to_coarser, 2);
+                                                 ratio_to_coarser, 2);
         } else {
             int ratio_to_coarser[3] = {2, 2, 2};
             ratio_to_coarser_db->putIntegerArray(level_name,
-                                                       ratio_to_coarser, 3);
+                                                 ratio_to_coarser, 3);
         }
     }
 

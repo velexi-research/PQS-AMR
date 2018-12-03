@@ -75,7 +75,8 @@ TEST_F(pqsTest, test_config_db_structure)
     EXPECT_TRUE(pqs_config_db->isDouble("contact_angle"));
     EXPECT_TRUE(pqs_config_db->isDouble("surface_tension"));
 
-    EXPECT_TRUE(pqs_config_db->isBool("init_with_slightly_compressible_model"));
+    EXPECT_TRUE(pqs_config_db->isBool(
+                "initialize_with_slightly_compressible_model"));
     EXPECT_TRUE(pqs_config_db->isDouble("bulk_modulus"));
     EXPECT_TRUE(pqs_config_db->isDouble("target_volume"));
 
@@ -173,7 +174,7 @@ TEST_F(pqsTest, test_Solver_Solver_without_patch_hierarchy)
     // --- Preparations
 
     // Configure and initialize geometry and PatchHierarchy
-    int num_dimensions = 3;
+    int num_dimensions = 2;
     pqsTest::initializeGeometryAndHierarchy(config_db,
                                             grid_geometry,
                                             patch_hierarchy,

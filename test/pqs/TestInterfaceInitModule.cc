@@ -19,6 +19,7 @@
 // --- Headers, namespaces, and type declarations
 
 // Standard library
+#include <cmath>
 #include <memory>
 
 // SAMRAI
@@ -28,6 +29,7 @@
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/pdat/CellData.h"
+#include "SAMRAI/tbox/Dimension.h"
 #include "SAMRAI/tbox/Utilities.h"
 
 // PQS
@@ -59,26 +61,53 @@ void TestInterfaceInitModule::initializeInterface(
                     patch.getPatchGeometry());
     const double* dx = patch_geom->getDx();
     const double* X_lower = patch_geom->getXLower();
+    const int dim = patch_geom->getDim().getValue();
 
     // Get patch box
     hier::Box patch_box = patch.getBox();
+    const hier::IntVector patch_box_lower = patch_box.lower();
+    const hier::IntVector patch_box_upper = patch_box.upper();
 
     // Get patch data
     shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
             SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
                     patch.getPatchData(phi_id));
 
+    const hier::IntVector ghostbox_lower = phi_data->getGhostBox().lower();
+    const hier::IntVector ghostbox_upper = phi_data->getGhostBox().upper();
+
     PQS_REAL* phi = phi_data->getPointer();
 
-    // --- Initialize phi
+    // --- Initialize phi to signed distance to circle of radius 0.25
 
-    // Set phi to 1 everywhere except for single edge of box
-    phi_data->fill(1.0);
-
-    const hier::IntVector patch_box_lower = patch_box.lower();
-    const hier::IntVector patch_box_upper = patch_box.upper();
-    for (int i = patch_box_lower[0] ; i <= patch_box_upper[0]; i++) {
-        phi[i] = 0.0;
+    if (dim == 2) {
+        for (int j = patch_box_lower[1] ; j <= patch_box_upper[1]; j++) {
+            for (int i = patch_box_lower[0] ; i <= patch_box_upper[0]; i++) {
+                double x = X_lower[0] + dx[0] * (i - patch_box_lower[0] + 0.5);
+                double y = X_lower[1] + dx[1] * (j - patch_box_lower[1] + 0.5);
+                int idx = (i - ghostbox_lower[0]) +
+                          (j - ghostbox_lower[1]) *
+                              (ghostbox_upper[0] - ghostbox_lower[0]);
+                phi[idx] = sqrt(x*x + y*y) - 0.25;
+            }
+        }
+    } else if (dim == 3) {
+        for (int k = patch_box_lower[2] ; k <= patch_box_upper[2]; k++) {
+            for (int j = patch_box_lower[1] ; j <= patch_box_upper[1]; j++) {
+                for (int i = patch_box_lower[0] ; i <= patch_box_upper[0]; i++) {
+                    double x = X_lower[0] + dx[0] * (i - patch_box_lower[0] + 0.5);
+                    double y = X_lower[1] + dx[1] * (j - patch_box_lower[1] + 0.5);
+                    double z = X_lower[2] + dx[2] * (k - patch_box_lower[2] + 0.5);
+                    int idx = (i - ghostbox_lower[0]) +
+                              (j - ghostbox_lower[1]) *
+                                  (ghostbox_upper[0] - ghostbox_lower[0]) +
+                              (k - ghostbox_lower[2]) *
+                                  (ghostbox_upper[1] - ghostbox_lower[1]) *
+                                  (ghostbox_upper[0] - ghostbox_lower[0]);
+                    phi[idx] = sqrt(x*x + y*y + z*z) - 0.25;
+                }
+            }
+        }
     }
 }
 
