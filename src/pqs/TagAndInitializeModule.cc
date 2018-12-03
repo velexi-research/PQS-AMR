@@ -219,14 +219,12 @@ void TagAndInitializeModule::initializeLevelData(
         }
     } else {
         // If appropriate, fill new PatchLevel with data from the old PatchLevel
-        if ((level_num > 0) || (old_patch_level!=NULL)) {
-            shared_ptr<xfer::RefineSchedule> sched =
-                d_xfer_fill_new_level->createSchedule(
-                patch_level, old_patch_level, level_num-1,
-                patch_hierarchy, NULL);
+        shared_ptr<xfer::RefineSchedule> sched =
+            d_xfer_fill_new_level->createSchedule(
+            patch_level, old_patch_level, level_num-1,
+            patch_hierarchy);
 
-            sched->fillData(init_data_time);
-        }
+        sched->fillData(init_data_time);
     }
 
     // deallocate data on old PatchLevel if it exists
