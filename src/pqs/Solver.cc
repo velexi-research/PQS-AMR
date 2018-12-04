@@ -330,29 +330,29 @@ void Solver::equilibrateInterface(
 
             // Configuration for computation of RHS of evolution equation
             int phi_id;
+            int fill_ghost_cell_context;
             if (d_time_integration_order == 1) {
                 phi_id = d_phi_lsm_current_id;
+                fill_ghost_cell_context = LSM_CURRENT;
             } else if (d_time_integration_order == 2) {
                 if (rk_stage == 1) {
                     phi_id = d_phi_lsm_current_id;
+                    fill_ghost_cell_context = LSM_CURRENT;
                 } else if (rk_stage == 2) {
                     phi_id = d_phi_lsm_next_id;
+                    fill_ghost_cell_context = LSM_NEXT;
                 }
             } else if (d_time_integration_order == 3) {
                 if (rk_stage == 1) {
                     phi_id = d_phi_lsm_current_id;
+                    fill_ghost_cell_context = LSM_CURRENT;
                 } else if (rk_stage == 2) {
                     phi_id = d_phi_lsm_next_id;
+                    fill_ghost_cell_context = LSM_NEXT;
                 } else if (rk_stage == 3) {
                     phi_id = d_phi_lsm_next_id;
+                    fill_ghost_cell_context = LSM_NEXT;
                 }
-            }
-
-            int fill_ghost_cell_context;
-            if (rk_stage == 1) {
-                fill_ghost_cell_context = LSM_CURRENT;
-            } else {
-                fill_ghost_cell_context = LSM_NEXT;
             }
 
             // --- Impose boundary conditions
