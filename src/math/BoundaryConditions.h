@@ -31,7 +31,7 @@
 
 // SAMRAI headers
 #include "SAMRAI/SAMRAI_config.h"  // IWYU pragma: keep
-#include "SAMRAI/hier/PatchHierarchy.h"
+#include "SAMRAI/hier/Patch.h"
 
 // PQS headers
 #include "PQS/PQS_config.h"
@@ -49,17 +49,17 @@ namespace PQS {
 namespace math {
 
 /*!
- * Fill boundary data using linear extrapolation from the interior
+ * Fill boundary data on Patch using linear extrapolation from the interior
  * of the domain.
  *
  * Parameters
  * ----------
- * patch_hierarchy: PatchHierarchy to perform computation on
+ * patch: Patch to fill boundary data for
  *
  * u_id: PatchData id of variable to fill boundary data for
  */
 void fillBdryDataLinearExtrapolation(
-        const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
+        const hier::Patch& patch,
         const int u_id);
 
 }  // PQS::math namespace

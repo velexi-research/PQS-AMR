@@ -10,14 +10,42 @@ c***********************************************************************
 c
 c The boundary location index is used to identify the location of the
 c boundary relative to the computational domain.  In 3D, the boundary
-c location index conventions are:
+c location index conventions are the following.
 c
+c Face Boundaries
+c ---------------
 c   x_lo: 0
 c   x_hi: 1
 c   y_lo: 2
 c   y_hi: 3
 c   z_lo: 4
 c   z_hi: 5
+c
+c Edge Boundaries
+c ---------------
+c   x_lo, y_lo: 0
+c   x_hi, y_lo: 1
+c   x_lo, y_hi: 2
+c   x_hi, y_hi: 3
+c   x_lo, z_lo: 4
+c   x_hi, z_lo: 5
+c   x_lo, z_hi: 6
+c   x_hi, z_hi: 7
+c   y_lo, z_lo: 8
+c   y_hi, z_lo: 9
+c   y_lo, z_hi: 10
+c   y_hi, z_hi: 11
+c
+c Node Boundaries
+c ---------------
+c   x_lo, y_lo, z_lo: 0
+c   x_hi, y_lo, z_lo: 1
+c   x_lo, y_hi, z_lo: 2
+c   x_hi, y_hi, z_lo: 3
+c   x_lo, y_lo, z_hi: 4
+c   x_hi, y_lo, z_hi: 5
+c   x_lo, y_hi, z_hi: 6
+c   x_hi, y_hi, z_hi: 7
 c
 c***********************************************************************
 
@@ -52,7 +80,7 @@ c * if bdry_location_idx is out of the range for 2D, then no
 c   boundary data values are set
 c
 c***********************************************************************
-      subroutine pqsMath3dFillBdryDataLinearExtrapolation(
+      subroutine pqsMath3dFillFaceBdryDataLinearExtrapolation(
      &  u, u_gb_lo, u_gb_hi,
      &  interior_box_lo, interior_box_hi,
      &  bdry_box_lo, bdry_box_hi,
@@ -171,6 +199,411 @@ c     { extrapolate data in z-direction at upper end
 c     } end extrapolate data in z-direction at upper end
 
       endif
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Fill edge boundary data using linear extrapolation from grid points
+c in interior of the domain.
+c
+c Parameters
+c ----------
+c u: [input/output] function to fill boundary data for
+c
+c interior_box_lo: lower corner of index range for interior cells
+c
+c interior_box_hi: upper corner of index range for interior cells
+c
+c bdry_box_lo: lower corner of index range for boundary cells to fill
+c
+c bdry_box_hi: upper corner of index range for boundary cells to fill
+c
+c bdry_location_idx: boundary location index
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * boundary box indices must be a subset of ghostbox indices.
+c
+c * if bdry_location_idx is out of the range for 2D, then no
+c   boundary data values are set
+c
+c***********************************************************************
+      subroutine pqsMath3dFillEdgeBdryDataLinearExtrapolation(
+     &  u, u_gb_lo, u_gb_hi,
+     &  interior_box_lo, interior_box_hi,
+     &  bdry_box_lo, bdry_box_hi,
+     &  bdry_location_idx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer u_gb_lo(1:3), u_gb_hi(1:3)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2),
+     &         u_gb_lo(3):u_gb_hi(3))
+
+      integer interior_box_lo(1:3), interior_box_hi(1:3)
+      integer bdry_box_lo(1:3), bdry_box_hi(1:3)
+      integer bdry_location_idx
+
+c     local variables
+      integer i, j, k
+      integer corner_i, corner_j, corner_k
+      real corner_value
+      real slope_x, slope_y, slope_z
+      real delta_x, delta_y, delta_z
+
+      if (bdry_location_idx .lt. 4) then
+c       edge is parallel to z-axis
+
+        do k=bdry_box_lo(3),bdry_box_hi(3)
+
+          if (bdry_location_idx .eq. 0) then
+c           set parameters for extrapolation in (-1, -1, 0) direction
+            corner_i = interior_box_lo(1)
+            corner_j = interior_box_lo(2)
+
+            slope_x = u(corner_i+1,corner_j,k) - u(corner_i,corner_j,k)
+            slope_y = u(corner_i,corner_j+1,k) - u(corner_i,corner_j,k)
+
+          elseif (bdry_location_idx .eq. 1) then
+c           set parameters for extrapolation in (1, -1, 0) direction
+            corner_i = interior_box_hi(1)
+            corner_j = interior_box_lo(2)
+
+            slope_x = u(corner_i,corner_j,k) - u(corner_i-1,corner_j,k)
+            slope_y = u(corner_i,corner_j+1,k) - u(corner_i,corner_j,k)
+
+          elseif (bdry_location_idx .eq. 2) then
+c           set parameters for extrapolation in (-1, 1, 0) direction
+            corner_i = interior_box_lo(1)
+            corner_j = interior_box_hi(2)
+
+            slope_x = u(corner_i+1,corner_j,k) - u(corner_i,corner_j,k)
+            slope_y = u(corner_i,corner_j,k) - u(corner_i,corner_j-1,k)
+
+          elseif (bdry_location_idx .eq. 3) then
+c           set parameters for extrapolation in (1, 1, 0) direction
+            corner_i = interior_box_hi(1)
+            corner_j = interior_box_hi(2)
+
+            slope_x = u(corner_i,corner_j,k) - u(corner_i-1,corner_j,k)
+            slope_y = u(corner_i,corner_j,k) - u(corner_i,corner_j-1,k)
+
+          endif
+
+          corner_value = u(corner_i, corner_j, k)
+
+          do j=bdry_box_lo(2),bdry_box_hi(2)
+            do i=bdry_box_lo(1),bdry_box_hi(1)
+              delta_x = i - corner_i
+              delta_y = j - corner_j
+              u(i,j,k) = corner_value
+     &                 + slope_x*delta_x + slope_y*delta_y
+            enddo
+          enddo
+        enddo
+
+      elseif (bdry_location_idx .lt. 8) then
+c       edge is parallel to y-axis
+
+        do j=bdry_box_lo(2),bdry_box_hi(2)
+
+          if (bdry_location_idx .eq. 4) then
+c           set parameters for extrapolation in (-1, 0, -1) direction
+            corner_i = interior_box_lo(1)
+            corner_k = interior_box_lo(3)
+
+            slope_x = u(corner_i+1,j,corner_k) - u(corner_i,j,corner_k)
+            slope_z = u(corner_i,j,corner_k+1) - u(corner_i,j,corner_k)
+
+          elseif (bdry_location_idx .eq. 5) then
+c           set parameters for extrapolation in (1, 0, -1) direction
+            corner_i = interior_box_hi(1)
+            corner_k = interior_box_lo(3)
+
+            slope_x = u(corner_i,j,corner_k) - u(corner_i-1,j,corner_k)
+            slope_z = u(corner_i,j,corner_k+1) - u(corner_i,j,corner_k)
+
+          elseif (bdry_location_idx .eq. 6) then
+c           set parameters for extrapolation in (-1, 0, 1) direction
+            corner_i = interior_box_lo(1)
+            corner_k = interior_box_hi(3)
+
+            slope_x = u(corner_i+1,j,corner_k) - u(corner_i,j,corner_k)
+            slope_z = u(corner_i,j,corner_k) - u(corner_i,j,corner_k-1)
+
+          elseif (bdry_location_idx .eq. 7) then
+c           set parameters for extrapolation in (1, 0, 1) direction
+            corner_i = interior_box_hi(1)
+            corner_k = interior_box_hi(3)
+
+            slope_x = u(corner_i,j,corner_k) - u(corner_i-1,j,corner_k)
+            slope_z = u(corner_i,j,corner_k) - u(corner_i,j,corner_k-1)
+
+          endif
+
+          corner_value = u(corner_i, j, corner_k)
+
+          do k=bdry_box_lo(3),bdry_box_hi(3)
+            do i=bdry_box_lo(1),bdry_box_hi(1)
+              delta_x = i - corner_i
+              delta_z = k - corner_k
+              u(i,j,k) = corner_value
+     &                 + slope_x*delta_x + slope_z*delta_z
+            enddo
+          enddo
+        enddo
+
+      elseif (bdry_location_idx .lt. 12) then
+c       edge is parallel to x-axis
+
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+
+          if (bdry_location_idx .eq. 8) then
+c           set parameters for extrapolation in (0, -1, -1) direction
+            corner_j = interior_box_lo(2)
+            corner_k = interior_box_lo(3)
+
+            slope_y = u(i,corner_j+1,corner_k) - u(i,corner_j,corner_k)
+            slope_z = u(i,corner_j,corner_k+1) - u(i,corner_j,corner_k)
+
+          elseif (bdry_location_idx .eq. 9) then
+c           set parameters for extrapolation in (0, 1, -1) direction
+            corner_j = interior_box_hi(2)
+            corner_k = interior_box_lo(3)
+
+            slope_y = u(i,corner_j,corner_k) - u(i,corner_j-1,corner_k)
+            slope_z = u(i,corner_j,corner_k+1) - u(i,corner_j,corner_k)
+
+          elseif (bdry_location_idx .eq. 10) then
+c           set parameters for extrapolation in (0, -1, 1) direction
+            corner_j = interior_box_lo(2)
+            corner_k = interior_box_hi(3)
+
+            slope_y = u(i,corner_j+1,corner_k) - u(i,corner_j,corner_k)
+            slope_z = u(i,corner_j,corner_k) - u(i,corner_j,corner_k-1)
+
+          elseif (bdry_location_idx .eq. 11) then
+c           set parameters for extrapolation in (0, 1, 1) direction
+            corner_j = interior_box_hi(2)
+            corner_k = interior_box_hi(3)
+
+            slope_y = u(i,corner_j,corner_k) - u(i,corner_j-1,corner_k)
+            slope_z = u(i,corner_j,corner_k) - u(i,corner_j,corner_k-1)
+
+          endif
+
+          corner_value = u(i, corner_j, corner_k)
+
+          do k=bdry_box_lo(3),bdry_box_hi(3)
+            do j=bdry_box_lo(2),bdry_box_hi(2)
+              delta_y = j - corner_j
+              delta_z = k - corner_k
+              u(i,j,k) = corner_value
+     &                 + slope_y*delta_y + slope_z*delta_z
+            enddo
+          enddo
+        enddo
+
+
+      endif
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Fill node boundary data using linear extrapolation from grid points
+c in interior of the domain.
+c
+c Parameters
+c ----------
+c u: [input/output] function to fill boundary data for
+c
+c interior_box_lo: lower corner of index range for interior cells
+c
+c interior_box_hi: upper corner of index range for interior cells
+c
+c bdry_box_lo: lower corner of index range for boundary cells to fill
+c
+c bdry_box_hi: upper corner of index range for boundary cells to fill
+c
+c bdry_location_idx: boundary location index
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * boundary box indices must be a subset of ghostbox indices.
+c
+c * if bdry_location_idx is out of the range for 2D, then no
+c   boundary data values are set
+c
+c***********************************************************************
+      subroutine pqsMath3dFillNodeBdryDataLinearExtrapolation(
+     &  u, u_gb_lo, u_gb_hi,
+     &  interior_box_lo, interior_box_hi,
+     &  bdry_box_lo, bdry_box_hi,
+     &  bdry_location_idx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer u_gb_lo(1:3), u_gb_hi(1:3)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2),
+     &         u_gb_lo(3):u_gb_hi(3))
+
+      integer interior_box_lo(1:3), interior_box_hi(1:3)
+      integer bdry_box_lo(1:3), bdry_box_hi(1:3)
+      integer bdry_location_idx
+
+c     local variables
+      integer i, j, k
+      integer corner_i, corner_j, corner_k
+      real corner_value
+      real slope_x, slope_y, slope_z
+      real delta_x, delta_y, delta_z
+
+      if (bdry_location_idx .eq. 0) then
+c       set parameters for extrapolation in (-1, -1, -1) direction
+        corner_i = interior_box_lo(1)
+        corner_j = interior_box_lo(2)
+        corner_k = interior_box_lo(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i+1,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j+1,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k+1)
+     &          - u(corner_i,corner_j,corner_k)
+
+      elseif (bdry_location_idx .eq. 1) then
+c       set parameters for extrapolation in (1, -1, -1) direction
+        corner_i = interior_box_hi(1)
+        corner_j = interior_box_lo(2)
+        corner_k = interior_box_lo(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i-1,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j+1,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k+1)
+     &          - u(corner_i,corner_j,corner_k)
+
+      elseif (bdry_location_idx .eq. 2) then
+c       set parameters for extrapolation in (-1, 1, -1) direction
+        corner_i = interior_box_lo(1)
+        corner_j = interior_box_hi(2)
+        corner_k = interior_box_lo(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i+1,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j-1,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k+1)
+     &          - u(corner_i,corner_j,corner_k)
+
+      elseif (bdry_location_idx .eq. 3) then
+c       set parameters for extrapolation in (1, 1, -1) direction
+        corner_i = interior_box_hi(1)
+        corner_j = interior_box_hi(2)
+        corner_k = interior_box_lo(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i-1,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j-1,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k+1)
+     &          - u(corner_i,corner_j,corner_k)
+
+      elseif (bdry_location_idx .eq. 4) then
+c       set parameters for extrapolation in (-1, -1, 1) direction
+        corner_i = interior_box_lo(1)
+        corner_j = interior_box_lo(2)
+        corner_k = interior_box_lo(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i+1,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j+1,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k-1)
+
+      elseif (bdry_location_idx .eq. 5) then
+c       set parameters for extrapolation in (1, -1, 1) direction
+        corner_i = interior_box_hi(1)
+        corner_j = interior_box_lo(2)
+        corner_k = interior_box_hi(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i-1,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j+1,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k-1)
+
+      elseif (bdry_location_idx .eq. 6) then
+c       set parameters for extrapolation in (-1, 1, 1) direction
+        corner_i = interior_box_lo(1)
+        corner_j = interior_box_hi(2)
+        corner_k = interior_box_hi(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i+1,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j-1,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k-1)
+
+      elseif (bdry_location_idx .eq. 7) then
+c       set parameters for extrapolation in (1, 1, 1) direction
+        corner_i = interior_box_hi(1)
+        corner_j = interior_box_hi(2)
+        corner_k = interior_box_hi(3)
+        corner_value = u(corner_i, corner_j, corner_k)
+
+        slope_x = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i-1,corner_j,corner_k)
+        slope_y = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j-1,corner_k)
+        slope_z = u(corner_i,corner_j,corner_k)
+     &          - u(corner_i,corner_j,corner_k-1)
+
+      endif
+
+c     extrapolate to compute boundary box values
+      do k=bdry_box_lo(3),bdry_box_hi(3)
+        do j=bdry_box_lo(2),bdry_box_hi(2)
+          do i=bdry_box_lo(1),bdry_box_hi(1)
+            delta_x = i - corner_i
+            delta_y = j - corner_j
+            delta_z = k - corner_k
+            u(i,j,k) = corner_value + slope_x*delta_x
+     &               + slope_y*delta_y + slope_z*delta_z
+          enddo
+        enddo
+      enddo
 
       return
       end

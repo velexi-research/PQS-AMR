@@ -38,14 +38,46 @@ extern "C" {
  *      C/C++ code          Fortran code
  *      ----------          ------------
  */
-#define PQS_MATH_3D_FILL_BDRY_DATA_LINEAR_EXTRAPOLATION \
-                            pqsmath3dfillbdrydatalinearextrapolation_
+#define PQS_MATH_3D_FILL_FACE_BDRY_DATA_LINEAR_EXTRAPOLATION \
+                            pqsmath3dfillfacebdrydatalinearextrapolation_
+
+#define PQS_MATH_3D_FILL_EDGE_BDRY_DATA_LINEAR_EXTRAPOLATION \
+                            pqsmath3dfilledgebdrydatalinearextrapolation_
+
+#define PQS_MATH_3D_FILL_NODE_BDRY_DATA_LINEAR_EXTRAPOLATION \
+                            pqsmath3dfillnodebdrydatalinearextrapolation_
 
 
 /*!
  * See documentation in boundary_conditions_3d.f.in
  */
-void PQS_MATH_3D_FILL_BDRY_DATA_LINEAR_EXTRAPOLATION(
+void PQS_MATH_3D_FILL_FACE_BDRY_DATA_LINEAR_EXTRAPOLATION(
+    PQS_REAL *u,
+    const int *u_gb_lo,
+    const int *u_gb_hi,
+    const int *interior_box_lo,
+    const int *interior_box_hi,
+    const int *bdry_box_lo,
+    const int *bdry_box_hi,
+    const int *bdry_location_idx);
+
+/*!
+ * See documentation in boundary_conditions_3d.f.in
+ */
+void PQS_MATH_3D_FILL_EDGE_BDRY_DATA_LINEAR_EXTRAPOLATION(
+    PQS_REAL *u,
+    const int *u_gb_lo,
+    const int *u_gb_hi,
+    const int *interior_box_lo,
+    const int *interior_box_hi,
+    const int *bdry_box_lo,
+    const int *bdry_box_hi,
+    const int *bdry_location_idx);
+
+/*!
+ * See documentation in boundary_conditions_3d.f.in
+ */
+void PQS_MATH_3D_FILL_NODE_BDRY_DATA_LINEAR_EXTRAPOLATION(
     PQS_REAL *u,
     const int *u_gb_lo,
     const int *u_gb_hi,
