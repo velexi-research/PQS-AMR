@@ -148,13 +148,9 @@ void PoreInitModule::initializePoreSpace(
                            center_3);
     } else if (d_dim == 3) {
         const double center_1[3] = {d_X_lower[0], d_X_lower[1], d_X_lower[2]};
-        const double center_2[3] = {d_X_upper[0], d_X_lower[1], d_X_lower[2]};
-        const double center_3[3] = {d_X_lower[0], d_X_upper[1], d_X_lower[2]};
+        const double center_2[3] = {d_X_lower[0], d_X_upper[1], d_X_upper[2]};
+        const double center_3[3] = {d_X_upper[0], d_X_lower[1], d_X_upper[2]};
         const double center_4[3] = {d_X_upper[0], d_X_upper[1], d_X_lower[2]};
-        const double center_5[3] = {d_X_lower[0], d_X_lower[1], d_X_upper[2]};
-        const double center_6[3] = {d_X_upper[0], d_X_lower[1], d_X_upper[2]};
-        const double center_7[3] = {d_X_lower[0], d_X_upper[1], d_X_upper[2]};
-        const double center_8[3] = {d_X_upper[0], d_X_upper[1], d_X_upper[2]};
 
         INIT_PORE_SPACE_3D(psi,
                            psi_ghostbox_lo, psi_ghostbox_hi,
@@ -165,11 +161,7 @@ void PoreInitModule::initializePoreSpace(
                            center_1,
                            center_2,
                            center_3,
-                           center_4,
-                           center_5,
-                           center_6,
-                           center_7,
-                           center_8);
+                           center_4);
     }
 } // PoreInitModule::initializeInterface()
 

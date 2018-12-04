@@ -47,11 +47,7 @@ void INIT_PORE_SPACE_3D(
     const double *center_1,
     const double *center_2,
     const double *center_3,
-    const double *center_4,
-    const double *center_5,
-    const double *center_6,
-    const double *center_7,
-    const double *center_8);
+    const double *center_4);
 
 #ifdef __cplusplus
 }
