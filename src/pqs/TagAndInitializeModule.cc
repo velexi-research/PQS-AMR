@@ -43,14 +43,15 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
-#include "PQS/utilities/error.h"
-#include "PQS/utilities/macros.h"
+#include "PQS/math/BoundaryConditions.h"
 #include "PQS/pqs/InterfaceInitStrategy.h"
 #include "PQS/pqs/PoreInitStrategy.h"
 #include "PQS/pqs/Solver.h"
 #include "PQS/pqs/TagAndInitializeModule.h"
 #include "PQS/pqs/kernels/kernels_2d.h"
 #include "PQS/pqs/kernels/kernels_3d.h"
+#include "PQS/utilities/error.h"
+#include "PQS/utilities/macros.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class CoarsenOperator; } }
@@ -130,6 +131,8 @@ TagAndInitializeModule::TagAndInitializeModule(
     }
 
     // Set data members
+    d_max_stencil_width = max_stencil_width;
+
     d_phi_pqs_id = phi_pqs_id;
     d_phi_lsm_current_id = phi_lsm_current_id;
     d_phi_lsm_next_id = phi_lsm_next_id;
@@ -218,13 +221,15 @@ void TagAndInitializeModule::initializeLevelData(
                                                            d_phi_pqs_id);
         }
     } else {
-        // If appropriate, fill new PatchLevel with data from the old PatchLevel
+        // Fill new PatchLevel with data from the old PatchLevel and coarser
+        // levels in the PatchHierarchy
         shared_ptr<xfer::RefineSchedule> sched =
             d_xfer_fill_new_level->createSchedule(
             patch_level, old_patch_level, level_num-1,
-            patch_hierarchy);
+            patch_hierarchy,
+            this);
 
-        sched->fillData(init_data_time);
+        sched->fillData(init_data_time, true);
     }
 
     // deallocate data on old PatchLevel if it exists
@@ -450,6 +455,25 @@ void TagAndInitializeModule::resetRefineBoxes(
 {
 } // TagAndInitializeModule::resetRefineBoxes()
 
+void TagAndInitializeModule::setPhysicalBoundaryConditions(
+        hier::Patch& patch,
+        const double fill_time,
+        const hier::IntVector& ghost_width_to_fill)
+{
+    // Fill boundary data for level set functions by using linear
+    // extrapolation to set values
+    PQS::math::fillBdryDataLinearExtrapolation(patch, d_phi_scratch_id);
+    PQS::math::fillBdryDataLinearExtrapolation(patch, d_psi_scratch_id);
+
+} // TagAndInitializeModule::setPhysicalBoundaryConditions()
+
+hier::IntVector TagAndInitializeModule::getRefineOpStencilWidth(
+        const tbox::Dimension& dim) const {
+
+    return hier::IntVector(dim, d_max_stencil_width);
+
+} // TagAndInitializeModule::getRefineOpStencilWidth()
+
 void TagAndInitializeModule::printClassData(ostream& os) const
 {
     os << endl;
@@ -471,10 +495,6 @@ void TagAndInitializeModule::printClassData(ostream& os) const
 void TagAndInitializeModule::loadConfiguration(
         const shared_ptr<tbox::Database>& config_db)
 {
-    // --- Preparations
-
-    const int max_stencil_width = d_pqs_solver->getMaxStencilWidth();
-
     // --- Load parameters
 
     // AMR parameters
@@ -482,15 +502,15 @@ void TagAndInitializeModule::loadConfiguration(
         d_refinement_cutoff_multiplier =
                 config_db->getInteger("refinement_cutoff_multiplier");
     } else {
-        d_refinement_cutoff_multiplier = 5 * max_stencil_width;
+        d_refinement_cutoff_multiplier = 5 * d_max_stencil_width;
     }
 
-    if (d_refinement_cutoff_multiplier < max_stencil_width) {
+    if (d_refinement_cutoff_multiplier < d_max_stencil_width) {
         PQS_ERROR(this, "loadConfiguration",
                   string("'d_refinement_cutoff_multiplier' (=") +
                   to_string(d_refinement_cutoff_multiplier) +
                   string(") less than 'max_stencil_width' (=") +
-                  to_string(max_stencil_width) +
+                  to_string(d_max_stencil_width) +
                   string(")"));
     }
 } // TagAndInitializeModule::loadConfiguration()

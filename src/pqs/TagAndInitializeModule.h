@@ -46,6 +46,7 @@
 #include "SAMRAI/xfer/CoarsenAlgorithm.h"
 #include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
+#include "SAMRAI/xfer/RefinePatchStrategy.h"
 #include "SAMRAI/xfer/RefineSchedule.h"
 
 // PQS
@@ -68,7 +69,8 @@ namespace PQS {
 namespace pqs {
 
 class TagAndInitializeModule:
-    public mesh::TagAndInitializeStrategy
+    public mesh::TagAndInitializeStrategy,
+    public xfer::RefinePatchStrategy
 {
 public:
 
@@ -116,7 +118,8 @@ public:
      *
      * control_volume_id: PatchData ID for the control volume data
      *
-     * max_stencil_width: maximum stencil width required for computations
+     * max_stencil_width: maximum stencil width required for refinement
+     *      computations
      *
      */
     TagAndInitializeModule(
@@ -481,6 +484,66 @@ public:
     /*!
      ************************************************************************
      *
+     * @name Methods inherited from RefinePatchStrategy
+     *
+     ************************************************************************/
+
+    /*!
+     * Set boundary conditions on Patch.
+     *
+     * Parameters
+     * ----------
+     * patch: Patch to fill physical boundary conditions for
+     *
+     * fill_time: simulation time that boundary conditions are to filled
+     *
+     * ghost_width_to_fill: boundary cell width to fill
+     *
+     * Return value
+     * ------------
+     * None
+     */
+    virtual void setPhysicalBoundaryConditions(
+        hier::Patch& patch,
+        const double fill_time,
+        const hier::IntVector& ghost_width_to_fill);
+
+    /*!
+     * Return maximum stencil width needed for user-defined data refinement
+     * operations.
+     *
+     * Parameters
+     * ----------
+     * dim: dimension of problem
+     */
+    virtual hier::IntVector getRefineOpStencilWidth(
+            const tbox::Dimension& dim) const;
+
+    /*!
+     * No-op because PQS does not require processing before refinement.
+     */
+    virtual void preprocessRefine(
+        hier::Patch& fine,
+        const hier::Patch& coarse,
+        const hier::Box& fine_box,
+        const hier::IntVector& ratio) {}
+
+    /*!
+     * No-op because PQS does not require processing after refinement.
+     */
+    virtual void postprocessRefine(
+        hier::Patch& fine,
+        const hier::Patch& coarse,
+        const hier::Box& fine_box,
+        const hier::IntVector& ratio) {}
+
+    //! @}
+
+    //! @{
+
+    /*!
+     ************************************************************************
+     *
      * @name Accessor methods for object parameters and state
      *
      ************************************************************************/
@@ -509,6 +572,9 @@ protected:
      ****************************************************************/
 
     // --- Parameters
+
+    // maximum stencil width for refinement operations
+    int d_max_stencil_width;
 
     // AMR parameters
     int d_refinement_cutoff_multiplier;  // cutoff value (in units of the

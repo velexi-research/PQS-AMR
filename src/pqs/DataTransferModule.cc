@@ -27,13 +27,9 @@
 // SAMRAI
 #include "SAMRAI/hier/BaseGridGeometry.h"
 #include "SAMRAI/hier/IntVector.h"
-#include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
-#include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
-#include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/tbox/Dimension.h"
-#include "SAMRAI/tbox/Utilities.h"
 #include "SAMRAI/xfer/CoarsenAlgorithm.h"
 #include "SAMRAI/xfer/CoarsenSchedule.h"
 #include "SAMRAI/xfer/RefineAlgorithm.h"
@@ -47,6 +43,8 @@
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class CoarsenOperator; } }
+namespace SAMRAI { namespace hier { class Patch; } }
+namespace SAMRAI { namespace hier { class PatchLevel; } }
 namespace SAMRAI { namespace hier { class RefineOperator; } }
 namespace SAMRAI { namespace hier { class Variable; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
@@ -102,12 +100,19 @@ DataTransferModule::DataTransferModule(
         PQS_ERROR(this, "DataTransferModule",
                   "'psi_id' must be non-negative");
     }
+    if (max_stencil_width < 0) {
+        PQS_ERROR(this, "DataTransferModule",
+                  "'max_stencil_width' must be non-negative");
+    }
 
     // Set data members
+    d_max_stencil_width = max_stencil_width;
+
     d_phi_pqs_id = phi_pqs_id;
     d_phi_lsm_current_id = phi_lsm_current_id;
     d_phi_lsm_next_id = phi_lsm_next_id;
     d_psi_id = psi_id;
+
     d_patch_hierarchy = patch_hierarchy;
 
     // Set up data transfer objects
@@ -117,7 +122,7 @@ DataTransferModule::DataTransferModule(
 } // DataTransferModule::DataTransferModule()
 
 void DataTransferModule::fillGhostCells(
-        const int context) const
+        const int context)
 {
     // Check arguments
     if ( (context != LSM_CURRENT) && (context != LSM_NEXT) ) {
@@ -135,43 +140,17 @@ void DataTransferModule::fillGhostCells(
         // --- Transfer data from other Patches and PatchLevels
 
         if (context == LSM_CURRENT) {
+            // Fill boundary data
             d_xfer_fill_bdry_schedules_lsm_current[level_num]->fillData(
                     0.0,    // not used
-                    false);  // do not apply physical boundary conditions
+                    true);  // apply physical boundary conditions
         } else if (context == LSM_NEXT) {
+            // Fill boundary data
             d_xfer_fill_bdry_schedules_lsm_next[level_num]->fillData(
                     0.0,    // not used
-                    false);  // do not apply physical boundary conditions
+                    true);  // apply physical boundary conditions
         }
 
-        // --- Fill boundary data for level set functions by using
-        //     linear extrapolation to set values
-
-        shared_ptr<hier::PatchLevel> patch_level =
-            d_patch_hierarchy->getPatchLevel(level_num);
-        for (hier::PatchLevel::Iterator pi(patch_level->begin());
-            pi!=patch_level->end(); pi++) {
-
-            shared_ptr<hier::Patch> patch = *pi;
-
-            int phi_id;
-            if (context == LSM_CURRENT) {
-                phi_id = d_phi_lsm_current_id;
-            } else if (context == LSM_NEXT) {
-                phi_id = d_phi_lsm_next_id;
-            }
-            shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
-                SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
-                    patch->getPatchData(d_phi_lsm_current_id));
-
-            // Get ghost cell width
-            hier::IntVector ghost_width_to_fill(phi_data->getGhostCellWidth());
-
-            // Set boundary conditions
-            PQS::math::fillBdryDataLinearExtrapolation(
-                d_patch_hierarchy, phi_id);
-
-        }  // loop over Patches
     }  // loop over PatchLevels
 
 } // DataTransferModule::fillGhostCells()
@@ -211,6 +190,24 @@ void DataTransferModule::enforcePsiConsistency() const
         d_xfer_enforce_psi_consistency_schedules[level_num]->coarsenData();
     }
 } // DataTransferModule::enforcePsiConsistency()
+
+void DataTransferModule::setPhysicalBoundaryConditions(
+        hier::Patch& patch,
+        const double fill_time,
+        const hier::IntVector& ghost_width_to_fill)
+{
+    // Fill boundary data for level set functions by using linear
+    // extrapolation to set values
+    PQS::math::fillBdryDataLinearExtrapolation(patch, d_phi_scratch_id);
+
+} // DataTransferModule::setPhysicalBoundaryConditions()
+
+hier::IntVector DataTransferModule::getRefineOpStencilWidth(
+        const tbox::Dimension& dim) const {
+
+    return hier::IntVector(dim, d_max_stencil_width);
+
+} // DataTransferModule::getRefineOpStencilWidth()
 
 void DataTransferModule::resetHierarchyConfiguration(
         const int coarsest_level_num,
@@ -256,21 +253,21 @@ void DataTransferModule::resetHierarchyConfiguration(
         if (level_num == 0) {
             d_xfer_fill_bdry_schedules_lsm_current[level_num] =
                 d_xfer_fill_bdry_lsm_current->createSchedule(
-                    patch_level, NULL);
+                    patch_level, this);
 
             d_xfer_fill_bdry_schedules_lsm_next[level_num] =
                 d_xfer_fill_bdry_lsm_next->createSchedule(
-                    patch_level, NULL);
+                    patch_level, this);
         } else {
             d_xfer_fill_bdry_schedules_lsm_current[level_num] =
                 d_xfer_fill_bdry_lsm_current->createSchedule(
                     patch_level, level_num-1,
-                    d_patch_hierarchy, NULL);
+                    d_patch_hierarchy, this);
 
             d_xfer_fill_bdry_schedules_lsm_next[level_num] =
                 d_xfer_fill_bdry_lsm_next->createSchedule(
                     patch_level, level_num-1,
-                    d_patch_hierarchy, NULL);
+                    d_patch_hierarchy, this);
         }
     }
 
@@ -350,11 +347,6 @@ void DataTransferModule::setupDataTransferObjects(
         PQS_ERROR(this, "setupDataTransferObjects",
                   "Error mapping 'd_psi_id' to Variable object.");
     }
-    d_psi_scratch_id =
-        var_db->registerVariableAndContext(psi_variable,
-                                           scratch_context,
-                                           scratch_ghost_cell_width);
-
 
     // --- Get refinement operators for filling PatchData from coarser
     //     PatchLevels
