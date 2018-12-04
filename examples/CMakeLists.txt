@@ -14,3 +14,4 @@
 # Add individual examples
 add_subdirectory(no-solid-phase)
 add_subdirectory(periodic-packing)
+add_subdirectory(simple-packing)

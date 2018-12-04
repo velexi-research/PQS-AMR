@@ -1,0 +1,111 @@
+c***********************************************************************
+c
+c pore_kernels_3d.f
+c
+c Subroutines to initialize pore-solid interface for example
+c application with pore space defined by a simple packing of spheres.
+c
+c***********************************************************************
+
+c***********************************************************************
+c
+c Initalize level set function, phi, for pore-solid interface to be
+c a simple packing of spheres at corners of computational domain.
+c
+c Parameters
+c ----------
+c phi: [output] level set function that defines pore-solid interface
+c
+c x_lower: array containing coordinates of lower corner of grid
+c    (excluding ghost cells)
+c
+c dx: array containing grid spacing in each coordinate direction
+c
+c radius: radius of spheres
+c
+c *_gb_lo: lower corner of index range for ghostbox
+c
+c *_gb_hi: upper corner of index range for ghostbox
+c
+c fb_lo: lower corner of index range for fillbox
+c
+c fb_hi: upper corner of index range for fillbox
+c
+c***********************************************************************
+      subroutine init_pore_space_3d(
+     &  phi,
+     &  phi_gb_lo, phi_gb_hi,
+     &  fb_lo, fb_hi,
+     &  x_lower,
+     &  dx,
+     &  radius,
+     &  center_1,
+     &  center_2,
+     &  center_3,
+     &  center_4,
+     &  center_5,
+     &  center_6,
+     &  center_7,
+     &  center_8)
+c***********************************************************************
+      implicit none
+
+      integer phi_gb_lo(1:3), phi_gb_hi(1:3)
+      @REAL@ phi(phi_gb_lo(1):phi_gb_hi(1),
+     &           phi_gb_lo(2):phi_gb_hi(2),
+     &           phi_gb_lo(3):phi_gb_hi(3))
+
+      integer fb_lo(1:3), fb_hi(1:3)
+
+      real*8 dx(1:3)
+      real*8 x_lower(1:3)
+
+      real*8 radius
+      real*8 center_1(1:3)
+      real*8 center_2(1:3)
+      real*8 center_3(1:3)
+      real*8 center_4(1:3)
+      real*8 center_5(1:3)
+      real*8 center_6(1:3)
+      real*8 center_7(1:3)
+      real*8 center_8(1:3)
+
+      real*8 x, y, z
+      integer i, j, k
+
+c     loop over grid
+      do k=fb_lo(3), fb_hi(3)
+        do j=fb_lo(2), fb_hi(2)
+          do i=fb_lo(1), fb_hi(1)
+
+            x = x_lower(1) + dx(1)*(i-fb_lo(1)+0.5)
+            y = x_lower(2) + dx(2)*(j-fb_lo(2)+0.5)
+            z = x_lower(3) + dx(3)*(k-fb_lo(3)+0.5)
+
+            phi(i,j,k) = min(
+     &        sqrt((x-center_1(1))**2 + (y-center_1(2))**2 +
+     &             (z-center_1(3))**2) - radius,
+     &        sqrt((x-center_2(1))**2 + (y-center_2(2))**2 +
+     &             (z-center_2(3))**2) - radius,
+     &        sqrt((x-center_3(1))**2 + (y-center_3(2))**2 +
+     &             (z-center_3(3))**2) - radius,
+     &        sqrt((x-center_4(1))**2 + (y-center_4(2))**2 +
+     &             (z-center_4(3))**2) - radius,
+     &        sqrt((x-center_5(1))**2 + (y-center_5(2))**2 +
+     &             (z-center_5(3))**2) - radius,
+     &        sqrt((x-center_6(1))**2 + (y-center_6(2))**2 +
+     &             (z-center_6(3))**2) - radius,
+     &        sqrt((x-center_7(1))**2 + (y-center_7(2))**2 +
+     &             (z-center_7(3))**2) - radius,
+     &        sqrt((x-center_8(1))**2 + (y-center_8(2))**2 +
+     &             (z-center_8(3))**2) - radius
+     &      )
+
+          enddo
+        enddo
+      enddo
+c     } end loop over grid
+
+      return
+      end
+c***********************************************************************
