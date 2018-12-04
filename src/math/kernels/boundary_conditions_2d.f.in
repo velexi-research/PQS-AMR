@@ -10,19 +10,28 @@ c***********************************************************************
 c
 c The boundary location index is used to identify the location of the
 c boundary relative to the computational domain.  In 2D, the boundary
-c location index conventions are:
+c location index conventions are the following.
 c
+c Edge Boundaries
+c ---------------
 c   x_lo: 0
 c   x_hi: 1
 c   y_lo: 2
 c   y_hi: 3
 c
+c Node Boundaries
+c ---------------
+c   x_lo, y_lo: 0
+c   x_hi, y_lo: 1
+c   x_lo, y_hi: 2
+c   x_hi, y_hi: 3
+c
 c***********************************************************************
 
 c***********************************************************************
 c
-c Fill boundary data using linear extrapolation from grid points in
-c interior of the domain.
+c Fill edge boundary data using linear extrapolation from grid points
+c in interior of the domain.
 c
 c Parameters
 c ----------
@@ -50,7 +59,7 @@ c * if bdry_location_idx is out of the range for 2D, then no
 c   boundary data values are set
 c
 c***********************************************************************
-      subroutine pqsMath2dFillBdryDataLinearExtrapolation(
+      subroutine pqsMath2dFillEdgeBdryDataLinearExtrapolation(
      &  u, u_gb_lo, u_gb_hi,
      &  interior_box_lo, interior_box_hi,
      &  bdry_box_lo, bdry_box_hi,
@@ -69,61 +78,168 @@ c { begin subroutine
 
 c     local variables
       integer i,j
-      real dist, slope
+      real delta, slope
 
       if (bdry_location_idx .eq. 0) then
-c     { extrapolate data in x-direction at lower end
+c     { begin extrapolate data in x-direction at lower end
         do j=bdry_box_lo(2),bdry_box_hi(2)
 
           slope = u(interior_box_lo(1)+1,j) - u(interior_box_lo(1),j)
 
           do i=bdry_box_lo(1),bdry_box_hi(1)
-            dist = i - interior_box_lo(1)
-            u(i,j) = u(interior_box_lo(1),j) + slope*dist
+            delta = i - interior_box_lo(1)
+            u(i,j) = u(interior_box_lo(1),j) + slope*delta
           enddo
         enddo
 c     } end extrapolate data in x-direction at lower end
 
       elseif (bdry_location_idx .eq. 1) then
-c     {  extrapolate data in x-direction at upper end
+c     { begin extrapolate data in x-direction at upper end
         do j=bdry_box_lo(2),bdry_box_hi(2)
 
           slope = u(interior_box_hi(1),j) - u(interior_box_hi(1)-1,j)
 
           do i=bdry_box_lo(1),bdry_box_hi(1)
-            dist = i - interior_box_hi(1)
-            u(i,j) = u(interior_box_hi(1),j) + slope*dist
+            delta = i - interior_box_hi(1)
+            u(i,j) = u(interior_box_hi(1),j) + slope*delta
           enddo
         enddo
 c     } end extrapolate data in x-direction at upper end
 
       elseif (bdry_location_idx .eq. 2) then
-c     {  extrapolate data in y-direction at lower end
+c     { begin extrapolate data in y-direction at lower end
         do i=bdry_box_lo(1),bdry_box_hi(1)
 
           slope = u(i,interior_box_lo(2)+1) - u(i,interior_box_lo(2))
 
           do j=bdry_box_lo(2),bdry_box_hi(2)
-            dist = j - interior_box_lo(2)
-            u(i,j) = u(i,interior_box_lo(2)) + slope*dist
+            delta = j - interior_box_lo(2)
+            u(i,j) = u(i,interior_box_lo(2)) + slope*delta
           enddo
         enddo
 c     } end extrapolate data in y-direction at lower end
 
       elseif (bdry_location_idx .eq. 3) then
-c     {  extrapolate data in y-direction at upper end
+c     { begin extrapolate data in y-direction at upper end
         do i=bdry_box_lo(1),bdry_box_hi(1)
 
           slope = u(i,interior_box_hi(2)) - u(i,interior_box_hi(2)-1)
 
           do j=bdry_box_lo(2),bdry_box_hi(2)
-            dist = j - interior_box_hi(2)
-            u(i,j) = u(i,interior_box_hi(2)) + slope*dist
+            delta = j - interior_box_hi(2)
+            u(i,j) = u(i,interior_box_hi(2)) + slope*delta
           enddo
         enddo
 c     } end extrapolate data in y-direction at upper end
 
       endif
+
+      return
+      end
+c } end subroutine
+c***********************************************************************
+
+c***********************************************************************
+c
+c Fill node boundary data using linear extrapolation from grid points
+c in interior of the domain.
+c
+c Parameters
+c ----------
+c u: [input/output] function to fill boundary data for
+c
+c interior_box_lo: lower corner of index range for interior cells
+c
+c interior_box_hi: upper corner of index range for interior cells
+c
+c bdry_box_lo: lower corner of index range for boundary cells to fill
+c
+c bdry_box_hi: upper corner of index range for boundary cells to fill
+c
+c bdry_location_idx: boundary location index
+c
+c *_gb_lo: lower corner of index range for ghost box
+c
+c *_gb_hi: upper corner of index range for ghost box
+c
+c Notes
+c -----
+c * boundary box indices must be a subset of ghostbox indices.
+c
+c * if bdry_location_idx is out of the range for 2D, then no
+c   boundary data values are set
+c
+c***********************************************************************
+      subroutine pqsMath2dFillNodeBdryDataLinearExtrapolation(
+     &  u, u_gb_lo, u_gb_hi,
+     &  interior_box_lo, interior_box_hi,
+     &  bdry_box_lo, bdry_box_hi,
+     &  bdry_location_idx)
+c***********************************************************************
+c { begin subroutine
+      implicit none
+
+      integer u_gb_lo(1:2), u_gb_hi(1:2)
+      @REAL@ u(u_gb_lo(1):u_gb_hi(1),
+     &         u_gb_lo(2):u_gb_hi(2))
+
+      integer interior_box_lo(1:2), interior_box_hi(1:2)
+      integer bdry_box_lo(1:2), bdry_box_hi(1:2)
+      integer bdry_location_idx
+
+c     local variables
+      integer i, j
+      integer corner_i, corner_j
+      real corner_value
+      real slope_x, slope_y
+      real delta_x, delta_y
+
+      if (bdry_location_idx .eq. 0) then
+c       set parameters for extrapolation in (-1, -1) direction
+        corner_i = interior_box_lo(1)
+        corner_j = interior_box_lo(2)
+        corner_value = u(corner_i, corner_j)
+
+        slope_x = u(corner_i+1,corner_j) - u(corner_i,corner_j)
+        slope_y = u(corner_i,corner_j+1) - u(corner_i,corner_j)
+
+      elseif (bdry_location_idx .eq. 1) then
+c       set parameters for extrapolation in (1, -1) direction
+        corner_i = interior_box_hi(1)
+        corner_j = interior_box_lo(2)
+        corner_value = u(corner_i, corner_j)
+
+        slope_x = u(corner_i,corner_j) - u(corner_i-1,corner_j)
+        slope_y = u(corner_i,corner_j+1) - u(corner_i,corner_j)
+
+      elseif (bdry_location_idx .eq. 2) then
+c       set parameters for extrapolation in (-1, 1) direction
+        corner_i = interior_box_lo(1)
+        corner_j = interior_box_hi(2)
+        corner_value = u(corner_i, corner_j)
+
+        slope_x = u(corner_i+1,corner_j) - u(corner_i,corner_j)
+        slope_y = u(corner_i,corner_j) - u(corner_i,corner_j-1)
+
+      elseif (bdry_location_idx .eq. 3) then
+c       set parameters for extrapolation in (1, 1) direction
+        corner_i = interior_box_hi(1)
+        corner_j = interior_box_hi(2)
+        corner_value = u(corner_i, corner_j)
+
+        slope_x = u(corner_i,corner_j) - u(corner_i-1,corner_j)
+        slope_y = u(corner_i,corner_j) - u(corner_i,corner_j-1)
+
+      endif
+
+c     extrapolate to compute boundary box values
+      do j=bdry_box_lo(2),bdry_box_hi(2)
+        do i=bdry_box_lo(1),bdry_box_hi(1)
+          delta_x = i - corner_i
+          delta_y = j - corner_j
+          u(i,j) = corner_value + slope_x*delta_x + slope_y*delta_y
+        enddo
+      enddo
 
       return
       end
