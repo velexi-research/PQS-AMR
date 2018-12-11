@@ -299,11 +299,8 @@ void run_pqs(
                     pqs_solver->getControlVolumePatchDataId())
                 - solid_phase_volume;
 
-            tbox::pout << "----------------- DEBUG ------------------" << endl;
-            tbox::pout << "Volume of non-wetting phase: "
+            tbox::pout << "DEBUG: Volume of non-wetting phase: "
                        << non_wetting_phase_volume << endl;
-            tbox::pout << "------------------------------------------" << endl;
-            tbox::pout << endl;
         }
 
         // Exit loop if we have reached the final curvature value
