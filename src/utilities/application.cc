@@ -189,6 +189,7 @@ void run_pqs(
     const double initial_curvature = pqs_solver->getInitialCurvature();
     const double final_curvature = pqs_solver->getFinalCurvature();
     const double curvature_increment = pqs_solver->getCurvatureIncrement();
+    const bool curvature_is_increasing = (final_curvature >= initial_curvature);
 
     // Set up loop variables
     double curvature = pqs_solver->getCurvature();
@@ -196,9 +197,10 @@ void run_pqs(
 
     // Initialize calculation
     if (!is_from_restart) {
+        tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
+
         if (pqs_solver->initializeWithSlightlyCompressibleModel()) {
             // Emit status message
-            tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
             tbox::pout << "  Equilibrating initial interface using "
                        << "Slightly Compressible Model ... " << endl;
             tbox::pout << "  Approximate curvature: " << curvature << endl;
@@ -208,10 +210,12 @@ void run_pqs(
 
         } else {
             // Emit status message
-            tbox::pout << "++++++++++++++++++++++++++++++++++++++++++" << endl;
-            tbox::pout << "  Skipping equilibration of initial " << endl;
-            tbox::pout << "  interface using Slightly Compressible " << endl;
-            tbox::pout << "  Model ... " << endl;
+            tbox::pout << "  Equilibrating initial interface using "
+                       << "Prescribed Curvature Model ... " << endl;
+            tbox::pout << "  Approximate curvature: " << curvature << endl;
+
+            pqs_solver->equilibrateInterface(
+                    curvature, pqs::PRESCRIBED_CURVATURE_MODEL);
         }
     } else {
         // Simulation variables loaded from restart files, so fluid-fluid
@@ -240,7 +244,14 @@ void run_pqs(
 
     // --- Main curvature-stepping loop
 
-    while (curvature <= final_curvature) {
+    bool final_curvature_reached = false;
+    if (curvature_is_increasing) {
+        final_curvature_reached = (curvature >= final_curvature);
+    } else {
+        final_curvature_reached = (curvature <= final_curvature);
+    }
+
+    while (!final_curvature_reached) {
         const int step_count = pqs_solver->getStepCount();
 
         // Emit status message
@@ -300,10 +311,24 @@ void run_pqs(
            break;
         }
 
-        // Compute next curvature target
-        curvature += curvature_increment;
-        if (final_curvature < curvature) {
-            curvature = final_curvature;
+        if (curvature_is_increasing) {
+            // Update loop stopping criterion
+            final_curvature_reached = (curvature >= final_curvature);
+
+            // Compute next curvature target
+            curvature += curvature_increment;
+            if (final_curvature < curvature) {
+                curvature = final_curvature;
+            }
+        } else {
+            // Update loop stopping criterion
+            final_curvature_reached = (curvature <= final_curvature);
+
+            // Compute next curvature target
+            curvature -= curvature_increment;
+            if (final_curvature > curvature) {
+                curvature = final_curvature;
+            }
         }
     }
 
