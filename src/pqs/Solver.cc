@@ -35,6 +35,7 @@
 #include "SAMRAI/hier/Box.h"
 #include "SAMRAI/hier/Index.h"
 #include "SAMRAI/hier/IntVector.h"
+#include "SAMRAI/hier/Patch.h"
 #include "SAMRAI/hier/PatchHierarchy.h"
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
@@ -42,6 +43,7 @@
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/mesh/ChopAndPackLoadBalancer.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
+#include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/pdat/CellIterator.h"
 #include "SAMRAI/pdat/CellVariable.h"
 #include "SAMRAI/tbox/Database.h"
@@ -64,7 +66,6 @@
 #include "PQS/utilities/error.h"
 
 // Class/type declarations
-namespace SAMRAI { namespace hier { class Patch; } }
 namespace SAMRAI { namespace hier { class VariableContext; } }
 namespace PQS { namespace pqs { class InterfaceInitStrategy; } }
 namespace PQS { namespace pqs { class PoreInitStrategy; } }
@@ -371,42 +372,59 @@ void Solver::equilibrateInterface(
 
             // --- Compute RHS of level set evolution equation
 
+            // Set RHS to 0 on all PatchLevels coarser than the finest level
             for (int level_num = 0;
-                    level_num < d_patch_hierarchy->getNumberOfLevels();
+                    level_num < d_patch_hierarchy->getFinestLevelNumber();
                     level_num++) {
 
                 shared_ptr<hier::PatchLevel> patch_level =
                     d_patch_hierarchy->getPatchLevel(level_num);
 
-                // Compute RHS of level set evolution equation
                 for (hier::PatchLevel::Iterator pi(patch_level->begin());
                         pi!=patch_level->end(); pi++) {
 
                     shared_ptr<hier::Patch> patch = *pi;
 
-                    // Compute RHS of level set evolution equation on Patch
-                    double stable_dt_on_patch;
-                    if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
-                        stable_dt_on_patch = d_pqs_algorithms->
-                                computePrescribedCurvatureModelRHS(
-                                        patch, phi_id, d_psi_id, d_grad_psi_id,
-                                        curvature, d_surface_tension,
-                                        d_contact_angle);
-                    } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-                        stable_dt_on_patch = d_pqs_algorithms->
-                                computeSlightlyCompressibleModelRHS(
-                                        patch, phi_id, d_psi_id, d_grad_psi_id,
-                                        curvature, d_surface_tension,
-                                        d_bulk_modulus,
-                                        non_wetting_phase_volume,
-                                        d_target_volume,
-                                        d_contact_angle);
-                    }
+                    shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
+                        SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                            patch->getPatchData(d_lse_rhs_id));
 
-                    // Update maximum stable time step
-                    if (stable_dt_on_patch < max_stable_dt_on_proc) {
-                        max_stable_dt_on_proc = stable_dt_on_patch;
-                    }
+                    rhs_data->fillAll(0.0);
+                }
+            }
+
+            // Compute RHS for level set evolution equation on finest level
+            int finest_level_num = d_patch_hierarchy->getFinestLevelNumber();
+            shared_ptr<hier::PatchLevel> patch_level =
+                d_patch_hierarchy->getPatchLevel(finest_level_num);
+
+            for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                    pi!=patch_level->end(); pi++) {
+
+                shared_ptr<hier::Patch> patch = *pi;
+
+                // Compute RHS of level set evolution equation on Patch
+                double stable_dt_on_patch;
+                if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
+                    stable_dt_on_patch = d_pqs_algorithms->
+                            computePrescribedCurvatureModelRHS(
+                                    patch, phi_id, d_psi_id, d_grad_psi_id,
+                                    curvature, d_surface_tension,
+                                    d_contact_angle);
+                } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
+                    stable_dt_on_patch = d_pqs_algorithms->
+                            computeSlightlyCompressibleModelRHS(
+                                    patch, phi_id, d_psi_id, d_grad_psi_id,
+                                    curvature, d_surface_tension,
+                                    d_bulk_modulus,
+                                    non_wetting_phase_volume,
+                                    d_target_volume,
+                                    d_contact_angle);
+                }
+
+                // Update maximum stable time step
+                if (stable_dt_on_patch < max_stable_dt_on_proc) {
+                    max_stable_dt_on_proc = stable_dt_on_patch;
                 }
             }
 
