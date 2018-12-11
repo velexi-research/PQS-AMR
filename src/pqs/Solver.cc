@@ -532,40 +532,39 @@ void Solver::equilibrateInterface(
         // --- Emit debugging messages
 
         if (d_enable_debug) {
-            tbox::pout << "----------------- DEBUG ------------------" << endl;
-            tbox::pout << "PQS::pqs::Solver::equilibrateInterface()" << endl;
+            tbox::pout << "DEBUG:" << endl;
+            tbox::pout << "  PQS::pqs::Solver::equilibrateInterface()" << endl;
 
-            tbox::pout << "algorithm_type: ";
+            tbox::pout << "  algorithm_type: ";
             if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
-                tbox::pout << "PRESCRIBED_CURVATURE_MODEL" << endl;
+                tbox::pout << "  PRESCRIBED_CURVATURE_MODEL" << endl;
             } else {
-                tbox::pout << "SLIGHTLY_COMPRESSIBLE_MODEL" << endl;
+                tbox::pout << "  SLIGHTLY_COMPRESSIBLE_MODEL" << endl;
             }
 
-            tbox::pout << "target curvature: " << curvature << endl;
+            tbox::pout << "  target curvature: " << curvature << endl;
 
-            tbox::pout << "d(max|phi|)/dt: " << delta_phi / dt
+            tbox::pout << "  d(max|phi|)/dt: " << delta_phi / dt
                        << " (steady-state condition="
                        << steady_state_condition << ")" << endl;
-            tbox::pout << "step: " << step
+            tbox::pout << "  step: " << step
                        << " (max_num_iterations=" << max_num_iterations
                        << ")" << endl;
-            tbox::pout << "time: " << t
+            tbox::pout << "  time: " << t
                        << " (stop_time=" << stop_time << ", "
-                       << "dt=" << dt << ")" << endl;
-            tbox::pout << "d(saturation)/dt: " << delta_saturation / dt
+                       << "  dt=" << dt << ")" << endl;
+            tbox::pout << "  d(saturation)/dt: " << delta_saturation / dt
                        << " (saturation steady-state condition="
                        << saturation_steady_state_condition << ")" << endl;
 
             if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-                tbox::pout << "volume: " << non_wetting_phase_volume;
+                tbox::pout << "  volume: " << non_wetting_phase_volume;
                 tbox::pout << " (target_volume=" << d_target_volume
                            << ")" << endl;
-                tbox::pout << "pore volume: " << pore_space_volume << endl;
-                tbox::pout << "solid phase volume: "
+                tbox::pout << "  pore volume: " << pore_space_volume << endl;
+                tbox::pout << "  solid phase volume: "
                            << solid_phase_volume << endl;
             }
-            tbox::pout << "------------------------------------------" << endl;
             tbox::pout << endl;
         }
 
@@ -593,7 +592,7 @@ void Solver::equilibrateInterface(
          (d_step_count % d_reinitialization_interval == 0) ) {
 
         // Emit status message
-        tbox::pout << "  Reinitializing phi ... " << endl;
+        tbox::pout << "INFO: reinitializing phi ... " << endl;
 
         // Reinitialize fluid-fluid interface to be a signed distance function
         reinitializeInterface(d_reinitialization_algorithm_type);
@@ -605,7 +604,7 @@ void Solver::equilibrateInterface(
          (d_step_count % d_regrid_interval == 0) ) {
 
         // Emit status message
-        tbox::pout << "  Regridding mesh ... " << endl;
+        tbox::pout << "INFO: regridding mesh ... " << endl;
 
         std::vector<int> tag_buffer_vector;
         for (int level_num = 0;
@@ -622,7 +621,10 @@ void Solver::equilibrateInterface(
     // --- Emit warning messages
 
     if (max_num_iterations && (step == max_num_iterations)) {
-        tbox::pout << "WARNING: interface equilibration failed to converge... "
+        tbox::pout << "WARNING: interface equilibration failed to converge."
+                   << endl;
+    } else {
+        tbox::pout << "INFO: interface equilibration successfully converged."
                    << endl;
     }
 
