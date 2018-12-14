@@ -129,10 +129,10 @@ void PoreInitModule::initializePoreSpace(
     // --- Initialize psi
 
     if (d_dim == 2) {
-        const double center_1[2] = {d_X_lower[0], d_X_upper[1]};
-        const double center_2[2] = {
-                d_X_lower[0],
-                d_X_lower[1] - 0.25 * (d_X_upper[1] - d_X_lower[1])};
+        const double center_1[2] = {
+                d_X_lower[0] + 0.25 * (d_X_upper[1] - d_X_lower[1]),
+                d_X_upper[1]};
+        const double center_2[2] = {d_X_lower[0], d_X_lower[1]};
         const double center_3[2] = {
                 d_X_upper[0],
                 d_X_lower[1] + 0.25 * (d_X_upper[1] - d_X_lower[1])};
