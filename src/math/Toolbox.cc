@@ -32,6 +32,7 @@
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/pdat/CellData.h"
 #include "SAMRAI/tbox/Dimension.h"
+#include "SAMRAI/tbox/PIO.h"
 #include "SAMRAI/tbox/SAMRAI_MPI.h"
 #include "SAMRAI/tbox/Utilities.h"
 
@@ -170,9 +171,11 @@ PQS_REAL computeMaxNormDiff(
             if (max_norm_diff < max_norm_diff_on_patch) {
                 max_norm_diff = max_norm_diff_on_patch;
             }
-            tbox::pout << "patch_level: " << patch->getPatchLevelNumber() << endl;
-            tbox::pout << "max_norm_diff_on_patch: " << max_norm_diff_on_patch
-                       << endl;
+            tbox::pout << "DEBUG: patch_level = "
+                       << patch->getPatchLevelNumber() << ","
+                       << "box = " << patch->getBox() << ","
+                       << "max_norm_diff_on_patch = "
+                       << max_norm_diff_on_patch << endl;
 
         } // end loop over patches in level
     } // end loop over levels in hierarchy
