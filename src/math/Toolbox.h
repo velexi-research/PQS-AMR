@@ -62,6 +62,9 @@ namespace math {
  *
  * control_volume_id: PatchData id for control volume
  *
+ * coarsest_level_number: level number of coarsest PatchLevel to include
+ *      in computation
+ *
  * Return value
  * ------------
  * max norm of (u - v)
@@ -70,7 +73,8 @@ PQS_REAL computeMaxNormDiff(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int u_id,
         const int v_id,
-        const int control_volume_id = -1);
+        const int control_volume_id = -1,
+        const int coarsest_level_number = 0);
 
 /*!
  * Compute grid function equal to min(u, v).

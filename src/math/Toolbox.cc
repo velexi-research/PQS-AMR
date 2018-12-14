@@ -55,7 +55,8 @@ PQS_REAL computeMaxNormDiff(
         const shared_ptr<hier::PatchHierarchy> patch_hierarchy,
         const int u_id,
         const int v_id,
-        const int control_volume_id)
+        const int control_volume_id,
+        const int coarsest_level_number)
 {
     // --- Check arguments
 
@@ -66,6 +67,20 @@ PQS_REAL computeMaxNormDiff(
                          string("for patch_hierarchy. Valid dimensions: 2, 3"));
     }
 
+    if (coarsest_level_number < 0) {
+        PQS_ERROR_STATIC("math", "computeMaxNormDiff",
+                         string("'coarsest_level_number' (=") +
+                         to_string(coarsest_level_number) +
+                         ") must be non-negative.");
+    }
+
+    if (coarsest_level_number > patch_hierarchy->getFinestLevelNumber()) {
+        PQS_ERROR_STATIC("math", "computeMaxNormDiff",
+                         string("'coarsest_level_number' (=") +
+                         to_string(coarsest_level_number) +
+                         ") must not be greater than finest level number.");
+    }
+
     // --- Compute max norm of (u - v)
 
     PQS_REAL max_norm_diff = 0.0;
@@ -73,7 +88,8 @@ PQS_REAL computeMaxNormDiff(
     // loop over PatchHierarchy and compute max norm of (u - v) on each Patch
     // by calling Fortran subroutines
     const int num_levels = patch_hierarchy->getNumberOfLevels();
-    for (int level_num = 0; level_num < num_levels; level_num++) {
+    for (int level_num = coarsest_level_number;
+            level_num < num_levels; level_num++) {
 
         shared_ptr<hier::PatchLevel> level =
                 patch_hierarchy->getPatchLevel(level_num);
@@ -154,6 +170,9 @@ PQS_REAL computeMaxNormDiff(
             if (max_norm_diff < max_norm_diff_on_patch) {
                 max_norm_diff = max_norm_diff_on_patch;
             }
+            tbox::pout << "patch_level: " << patch->getPatchLevelNumber() << endl;
+            tbox::pout << "max_norm_diff_on_patch: " << max_norm_diff_on_patch
+                       << endl;
 
         } // end loop over patches in level
     } // end loop over levels in hierarchy
