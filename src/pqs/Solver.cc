@@ -30,9 +30,13 @@
 #include "mpi.h"
 
 // SAMRAI
+#include "SAMRAI/appu/CartesianBoundaryDefines.h"
 #include "SAMRAI/geom/CartesianGridGeometry.h"
-#include "SAMRAI/hier/ComponentSelector.h"
+#include "SAMRAI/geom/CartesianPatchGeometry.h"
+#include "SAMRAI/hier/BoundaryBox.h"
 #include "SAMRAI/hier/Box.h"
+#include "SAMRAI/hier/CoarseFineBoundary.h"
+#include "SAMRAI/hier/ComponentSelector.h"
 #include "SAMRAI/hier/Index.h"
 #include "SAMRAI/hier/IntVector.h"
 #include "SAMRAI/hier/Patch.h"
@@ -40,6 +44,7 @@
 #include "SAMRAI/hier/PatchLevel.h"
 #include "SAMRAI/hier/VariableDatabase.h"
 #include "SAMRAI/math/HierarchyCellDataOpsReal.h"
+#include "SAMRAI/math/PatchCellDataNormOpsReal.h"
 #include "SAMRAI/mesh/BergerRigoutsos.h"
 #include "SAMRAI/mesh/ChopAndPackLoadBalancer.h"
 #include "SAMRAI/mesh/GriddingAlgorithm.h"
@@ -55,6 +60,8 @@
 
 // PQS
 #include "PQS/PQS_config.h"  // IWYU pragma: keep
+#include "PQS/math/kernels/boundary_conditions_2d.h"
+#include "PQS/math/kernels/boundary_conditions_3d.h"
 #include "PQS/math/LSMAlgorithms.h"
 #include "PQS/math/LSMToolbox.h"
 #include "PQS/math/Toolbox.h"
@@ -64,6 +71,7 @@
 #include "PQS/pqs/Solver.h"
 #include "PQS/pqs/TagAndInitializeModule.h"
 #include "PQS/utilities/error.h"
+#include "PQS/utilities/macros.h"
 
 // Class/type declarations
 namespace SAMRAI { namespace hier { class VariableContext; } }
@@ -212,6 +220,13 @@ void Solver::resetHierarchyConfiguration(
 
 } // Solver::resetHierarchyConfiguration()
 
+/* TODO: Refine algorithm to only update level set functions on
+ *       finest grid level. Requires special consideration of boundary
+ *       conditions at coarse-fine boundary and correct handling of
+ *       regridding (e.g., correction of values obtained from coarser
+ *       levels that are incorrect because they have not been evolved in
+ *       time).
+ */
 void Solver::equilibrateInterface(
         const double curvature,
         const PQS_ALGORITHM_TYPE algorithm_type,
@@ -231,11 +246,11 @@ void Solver::equilibrateInterface(
     }
 
     // Get dimensionality of problem
-    const int dim = d_patch_hierarchy->getDim().getValue();
-    if ((dim != 2) && (dim != 3)) {
+    const tbox::Dimension dim = d_patch_hierarchy->getDim();
+    if ((dim.getValue() != 2) && (dim.getValue() != 3)) {
         PQS_ERROR(this, "equilibrateInterface",
                   string("Invalid number of spatial dimensions (=") +
-                  to_string(dim) +
+                  to_string(dim.getValue()) +
                   string("). Valid values: 2, 3."));
     }
 
@@ -246,6 +261,17 @@ void Solver::equilibrateInterface(
             shared_ptr< SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL> >(
                     new SAMRAI::math::HierarchyCellDataOpsReal<PQS_REAL>(
                              d_patch_hierarchy));
+
+    // Create SAMRAI::math::PatchCellDataNormOpsReal object
+    shared_ptr< SAMRAI::math::PatchCellDataNormOpsReal<PQS_REAL> >
+        math_patch_ops =
+            shared_ptr< SAMRAI::math::PatchCellDataNormOpsReal<PQS_REAL> >(
+                new SAMRAI::math::PatchCellDataNormOpsReal<PQS_REAL>());
+
+    // Get finest PatchLevel
+    int finest_level_num = d_patch_hierarchy->getFinestLevelNumber();
+    shared_ptr<hier::PatchLevel> finest_patch_level =
+        d_patch_hierarchy->getPatchLevel(finest_level_num);
 
     // Compute volume of pore space
     const double pore_space_volume = math::LSM::computeVolume(
@@ -370,8 +396,119 @@ void Solver::equilibrateInterface(
             // Fill ghost cells
             d_data_xfer_module->fillGhostCells(fill_ghost_cell_context);
 
+/* TODO: activate code for "local-only" algorithm
+
+            // Replace ghost cells for finest level with linearly
+            // extrapolated values.
+            const hier::IntVector max_ghostcell_width(dim, d_max_stencil_width);
+            hier::CoarseFineBoundary coarse_fine_bdry(
+                *d_patch_hierarchy,
+                d_patch_hierarchy->getFinestLevelNumber(),
+                max_ghostcell_width);
+
+            for (hier::PatchLevel::Iterator pi(finest_patch_level->begin());
+                    pi!=finest_patch_level->end(); pi++) {
+
+                const shared_ptr<hier::Patch> patch = *pi;
+
+                // get PatchData and PatchGeometry
+                shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+                    SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                        patch->getPatchData(phi_id));
+
+                const shared_ptr<geom::CartesianPatchGeometry> patch_geometry(
+                        SAMRAI_SHARED_PTR_CAST<geom::CartesianPatchGeometry>(
+                                patch->getPatchGeometry()));
+
+                // get index space ranges
+                hier::Box phi_ghostbox = phi_data->getGhostBox();
+                const hier::IntVector phi_ghostbox_lower = phi_ghostbox.lower();
+                const hier::IntVector phi_ghostbox_upper = phi_ghostbox.upper();
+                PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_lo, phi_ghostbox_lower);
+                PQS_INT_VECT_TO_INT_ARRAY(phi_ghostbox_hi, phi_ghostbox_upper);
+
+                const hier::Box interior_box(patch->getBox());
+                const hier::IntVector interior_box_lower = interior_box.lower();
+                const hier::IntVector interior_box_upper = interior_box.upper();
+                PQS_INT_VECT_TO_INT_ARRAY(interior_box_lo, interior_box_lower);
+                PQS_INT_VECT_TO_INT_ARRAY(interior_box_hi, interior_box_upper);
+
+                // get pointer to data
+                PQS_REAL* phi = phi_data->getPointer();
+
+                if (dim.getValue() == 3) {
+                    // Get boundary boxes
+                    vector<hier::BoundaryBox> bdry_boxes =
+                        coarse_fine_bdry.getFaceBoundaries(
+                            patch->getGlobalId());
+
+                    const int num_bdry_boxes =
+                        static_cast<int>(bdry_boxes.size());
+                    for (int i = 0; i < num_bdry_boxes; i++) {
+
+                        const int bdry_location_idx =
+                            bdry_boxes[i].getLocationIndex();
+
+                        // Construct boundary fill box
+                        hier::Box bdry_fillbox(
+                            patch_geometry->getBoundaryFillBox(
+                                bdry_boxes[i], interior_box,
+                                max_ghostcell_width));
+
+                        const hier::IntVector bdry_box_lower =
+                            bdry_fillbox.lower();
+                        const hier::IntVector bdry_box_upper =
+                            bdry_fillbox.upper();
+                        PQS_INT_VECT_TO_INT_ARRAY(bdry_box_lo, bdry_box_lower);
+                        PQS_INT_VECT_TO_INT_ARRAY(bdry_box_hi, bdry_box_upper);
+
+                        // Fill boundary data using linear extrapolation
+                        PQS_MATH_3D_FILL_FACE_BDRY_DATA_LINEAR_EXTRAPOLATION(
+                            phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                            interior_box_lo, interior_box_hi,
+                            bdry_box_lo, bdry_box_hi,
+                            &bdry_location_idx);
+                    }
+                } else if (dim.getValue() == 2) {
+                    // Get boundary boxes
+                    vector<hier::BoundaryBox> bdry_boxes =
+                        coarse_fine_bdry.getEdgeBoundaries(
+                            patch->getGlobalId());
+
+                    const int num_bdry_boxes =
+                        static_cast<int>(bdry_boxes.size());
+                    for (int i = 0; i < num_bdry_boxes; i++) {
+
+                        const int bdry_location_idx =
+                            bdry_boxes[i].getLocationIndex();
+
+                        // Construct boundary fill box
+                        hier::Box bdry_fillbox(
+                            patch_geometry->getBoundaryFillBox(
+                                bdry_boxes[i], interior_box,
+                                max_ghostcell_width));
+
+                        const hier::IntVector bdry_box_lower =
+                            bdry_fillbox.lower();
+                        const hier::IntVector bdry_box_upper =
+                            bdry_fillbox.upper();
+                        PQS_INT_VECT_TO_INT_ARRAY(bdry_box_lo, bdry_box_lower);
+                        PQS_INT_VECT_TO_INT_ARRAY(bdry_box_hi, bdry_box_upper);
+
+                        // Fill boundary data using linear extrapolation
+                        PQS_MATH_2D_FILL_EDGE_BDRY_DATA_LINEAR_EXTRAPOLATION(
+                            phi, phi_ghostbox_lo, phi_ghostbox_hi,
+                            interior_box_lo, interior_box_hi,
+                            bdry_box_lo, bdry_box_hi,
+                            &bdry_location_idx);
+                    }
+                }
+            }
+*/
+
             // --- Compute RHS of level set evolution equation
 
+/* TODO: activate code for "local-only" algorithm
             // Set RHS to 0 on all PatchLevels coarser than the finest level
             for (int level_num = 0;
                     level_num < d_patch_hierarchy->getFinestLevelNumber();
@@ -383,7 +520,7 @@ void Solver::equilibrateInterface(
                 for (hier::PatchLevel::Iterator pi(patch_level->begin());
                         pi!=patch_level->end(); pi++) {
 
-                    shared_ptr<hier::Patch> patch = *pi;
+                    const shared_ptr<hier::Patch> patch = *pi;
 
                     shared_ptr< pdat::CellData<PQS_REAL> > rhs_data =
                         SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
@@ -394,37 +531,44 @@ void Solver::equilibrateInterface(
             }
 
             // Compute RHS for level set evolution equation on finest level
-            int finest_level_num = d_patch_hierarchy->getFinestLevelNumber();
-            shared_ptr<hier::PatchLevel> patch_level =
-                d_patch_hierarchy->getPatchLevel(finest_level_num);
+            for (hier::PatchLevel::Iterator pi(finest_patch_level->begin());
+                    pi!=finest_patch_level->end(); pi++) {
+*/
+            for (int level_num = 0;
+                    level_num < d_patch_hierarchy->getNumberOfLevels();
+                    level_num++) {
 
-            for (hier::PatchLevel::Iterator pi(patch_level->begin());
-                    pi!=patch_level->end(); pi++) {
+                shared_ptr<hier::PatchLevel> patch_level =
+                    d_patch_hierarchy->getPatchLevel(level_num);
 
-                shared_ptr<hier::Patch> patch = *pi;
+                for (hier::PatchLevel::Iterator pi(patch_level->begin());
+                        pi!=patch_level->end(); pi++) {
 
-                // Compute RHS of level set evolution equation on Patch
-                double stable_dt_on_patch;
-                if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
-                    stable_dt_on_patch = d_pqs_algorithms->
-                            computePrescribedCurvatureModelRHS(
-                                    patch, phi_id, d_psi_id, d_grad_psi_id,
-                                    curvature, d_surface_tension,
-                                    d_contact_angle);
-                } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
-                    stable_dt_on_patch = d_pqs_algorithms->
-                            computeSlightlyCompressibleModelRHS(
-                                    patch, phi_id, d_psi_id, d_grad_psi_id,
-                                    curvature, d_surface_tension,
-                                    d_bulk_modulus,
-                                    non_wetting_phase_volume,
-                                    d_target_volume,
-                                    d_contact_angle);
-                }
+                    const shared_ptr<hier::Patch> patch = *pi;
 
-                // Update maximum stable time step
-                if (stable_dt_on_patch < max_stable_dt_on_proc) {
-                    max_stable_dt_on_proc = stable_dt_on_patch;
+                    // Compute RHS of level set evolution equation on Patch
+                    double stable_dt_on_patch;
+                    if (algorithm_type == PRESCRIBED_CURVATURE_MODEL) {
+                        stable_dt_on_patch = d_pqs_algorithms->
+                                computePrescribedCurvatureModelRHS(
+                                        patch, phi_id, d_psi_id, d_grad_psi_id,
+                                        curvature, d_surface_tension,
+                                        d_contact_angle);
+                    } else if (algorithm_type == SLIGHTLY_COMPRESSIBLE_MODEL) {
+                        stable_dt_on_patch = d_pqs_algorithms->
+                                computeSlightlyCompressibleModelRHS(
+                                        patch, phi_id, d_psi_id, d_grad_psi_id,
+                                        curvature, d_surface_tension,
+                                        d_bulk_modulus,
+                                        non_wetting_phase_volume,
+                                        d_target_volume,
+                                        d_contact_angle);
+                    }
+
+                    // Update maximum stable time step
+                    if (stable_dt_on_patch < max_stable_dt_on_proc) {
+                        max_stable_dt_on_proc = stable_dt_on_patch;
+                    }
                 }
             }
 
@@ -503,10 +647,14 @@ void Solver::equilibrateInterface(
         // --- Update metrics used in stopping criteria
 
         // Compute max norm of change in phi
-        delta_phi = math::computeMaxNormDiff(d_patch_hierarchy,
-                                             d_phi_lsm_next_id,
-                                             d_phi_lsm_current_id,
-                                             d_control_volume_id);
+        //
+        // Note: only the finest PatchLevel is included in calculation
+        delta_phi = math::computeMaxNormDiff(
+            d_patch_hierarchy,
+            d_phi_lsm_next_id,
+            d_phi_lsm_current_id,
+            d_control_volume_id,
+            d_patch_hierarchy->getFinestLevelNumber());
 
         // Compute change in saturation
         if (d_lsm_saturation_steady_state_condition > 0) {
@@ -544,6 +692,7 @@ void Solver::equilibrateInterface(
 
             tbox::pout << "  target curvature: " << curvature << endl;
 
+            tbox::pout << "  delta(max|phi|): " << delta_phi << endl;
             tbox::pout << "  d(max|phi|)/dt: " << delta_phi / dt
                        << " (steady-state condition="
                        << steady_state_condition << ")" << endl;
@@ -586,22 +735,39 @@ void Solver::equilibrateInterface(
         patch_level->deallocatePatchData(d_intermediate_variables);
     }
 
-    // --- Reinitialize phi
-
-    if ( (d_reinitialization_interval > 0) &&
-         (d_step_count % d_reinitialization_interval == 0) ) {
-
-        // Emit status message
-        tbox::pout << "INFO: reinitializing phi ... " << endl;
-
-        // Reinitialize fluid-fluid interface to be a signed distance function
-        reinitializeInterface(d_reinitialization_algorithm_type);
-    }
-
     // --- Regrid hierarchy
 
+/* TODO: Implement correct algorithm for identifying when regrid is
+ *       necessary based on value of maximum absolute value of phi on
+ *       coarse-fine boundary of finest PatchLevel
+
+    // Compute min{ max(|phi|) on Patch } for Patches on finest PatchLevel
+    double min_max_abs_phi = std::numeric_limits<double>::max();
+    for (hier::PatchLevel::Iterator pi(finest_patch_level->begin());
+            pi!=finest_patch_level->end(); pi++) {
+
+        const shared_ptr<hier::Patch> patch = *pi;
+
+        const shared_ptr< pdat::CellData<PQS_REAL> > phi_data =
+            SAMRAI_SHARED_PTR_CAST< pdat::CellData<PQS_REAL> >(
+                patch->getPatchData(d_phi_pqs_id));
+
+        double max_abs_phi_on_patch =
+            math_patch_ops->maxNorm(phi_data, phi_data->getBox());
+
+        if (min_max_abs_phi > max_abs_phi_on_patch) {
+            min_max_abs_phi = max_abs_phi_on_patch;
+        }
+    }
+*/
+
+    // Regrid
+    // TODO: add regrid criterion based on current level set function
+    bool mesh_regridded = false;
     if ( (d_regrid_interval > 0) &&
          (d_step_count % d_regrid_interval == 0) ) {
+
+        mesh_regridded = true;
 
         // Emit status message
         tbox::pout << "INFO: regridding mesh ... " << endl;
@@ -616,6 +782,23 @@ void Solver::equilibrateInterface(
             0, // regrid all levels
             tag_buffer_vector,
             d_step_count, d_curvature);
+    }
+
+    // --- Reinitialize phi
+
+    // Note: we reinitialize after regridding so that the finest PatchLevel
+    //       contains a high-accuracy approximation of the level set function
+    //       in regions where values were interpolated from coarser PatchLevels
+
+    if ( mesh_regridded ||
+         ((d_reinitialization_interval > 0) &&
+          (d_step_count % d_reinitialization_interval == 0)) ) {
+
+        // Emit status message
+        tbox::pout << "INFO: reinitializing phi ... " << endl;
+
+        // Reinitialize fluid-fluid interface to be a signed distance function
+        reinitializeInterface(d_reinitialization_algorithm_type);
     }
 
     // --- Emit warning messages
